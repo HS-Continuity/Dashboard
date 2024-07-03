@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ShoppingCartOutlined,
   SignatureOutlined,
@@ -43,7 +43,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     }
   }, [location]);
 
-  const getKeyFromPath = (pathname) => {
+  const getKeyFromPath = pathname => {
     const pathToKey = {
       "/": "1",
       "/admin/member": "2",
@@ -73,17 +73,17 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     {
       key: "1",
       icon: <HomeOutlined />,
-      label: <Link to="/">메인</Link>,
+      label: <Link to='/'>메인</Link>,
     },
     {
       key: "2",
       icon: <SmileOutlined />,
-      label: <Link to="/admin/member">회원 관리</Link>,
+      label: <Link to='/admin/member'>회원 관리</Link>,
     },
     {
       key: "3",
       icon: <TeamOutlined />,
-      label: <Link to="/admin/customer">고객 관리</Link>,
+      label: <Link to='/admin/customer'>고객 관리</Link>,
     },
     {
       key: "4",
@@ -92,27 +92,27 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "4-1",
-          label: <Link to="/admin/product">식품 관리</Link>,
+          label: <Link to='/admin/product'>식품 관리</Link>,
         },
         {
           key: "4-2",
-          label: <Link to="/admin/approval">신청 승인 관리</Link>,
+          label: <Link to='/admin/approval'>신청 승인 관리</Link>,
         },
         {
           key: "4-3",
-          label: <Link to="/admin/category">카테고리 관리</Link>,
+          label: <Link to='/admin/category'>카테고리 관리</Link>,
         },
       ],
     },
     {
       key: "5",
       icon: <SignatureOutlined />,
-      label: <Link to="/admin/review">리뷰 관리</Link>,
+      label: <Link to='/admin/review'>리뷰 관리</Link>,
     },
     {
       key: "6",
       icon: <BarChartOutlined />,
-      label: <Link to="/admin/statistics">통계 관리</Link>,
+      label: <Link to='/admin/statistics'>통계 관리</Link>,
     },
   ];
 
@@ -120,7 +120,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     {
       key: "1",
       icon: <HomeOutlined />,
-      label: <Link to="/">메인</Link>,
+      label: <Link to='/'>메인</Link>,
     },
     {
       key: "12",
@@ -129,15 +129,15 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "12-1",
-          label: <Link to="/member/manage">회원 관리</Link>,
+          label: <Link to='/member/manage'>회원 관리</Link>,
         },
         {
           key: "12-2",
-          label: <Link to="/member/address">주소지 관리</Link>,
+          label: <Link to='/member/address'>주소지 관리</Link>,
         },
         {
           key: "12-3",
-          label: <Link to="/member/payment">결제 수단 관리</Link>,
+          label: <Link to='/member/payment'>결제 수단 관리</Link>,
         },
       ],
     },
@@ -148,15 +148,15 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "13-1",
-          label: <Link to="/product/general">일반 식품 관리</Link>,
+          label: <Link to='/product/general'>일반 식품 관리</Link>,
         },
         {
           key: "13-2",
-          label: <Link to="/product/eco">친환경 식품 관리</Link>,
+          label: <Link to='/product/eco'>친환경 식품 관리</Link>,
         },
         {
           key: "13-3",
-          label: <Link to="/product/timesale">타임세일 식품 관리</Link>,
+          label: <Link to='/product/timesale'>타임세일 식품 관리</Link>,
         },
       ],
     },
@@ -167,23 +167,23 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "14-1",
-          label: <Link to="/order/general">일반 결제 관리</Link>,
+          label: <Link to='/order/general'>일반 결제 관리</Link>,
         },
         {
           key: "14-2",
-          label: <Link to="/order/subscription">정기 결제 관리</Link>,
+          label: <Link to='/order/subscription'>정기 결제 관리</Link>,
         },
       ],
     },
     {
       key: "15",
       icon: <InboxOutlined />,
-      label: <Link to="/inventory">재고</Link>,
+      label: <Link to='/inventory'>재고</Link>,
     },
     {
       key: "16",
       icon: <BarChartOutlined />,
-      label: <Link to="/solution">통계</Link>,
+      label: <Link to='/solution'>통계</Link>,
     },
     {
       key: "17",
@@ -192,14 +192,14 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "17-1",
-          label: <Link to="/delivery">배송 상태 관리</Link>,
+          label: <Link to='/delivery'>배송 상태 관리</Link>,
         },
       ],
     },
     {
       key: "18",
       icon: <GiftOutlined />,
-      label: <Link to="/promotion">프로모션</Link>,
+      label: <Link to='/promotion'>프로모션</Link>,
     },
   ];
 
@@ -210,13 +210,12 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       trigger={null}
       collapsible
       collapsed={collapsed}
-      style={{ background: colorBgContainer }}
-    >
-      <div className="demo-logo-vertical" />
+      style={{ background: colorBgContainer }}>
+      <div className='demo-logo-vertical' />
       <Title level={3}>효성CMS+ 스퀘어</Title>
       <Menu
-        theme="light"
-        mode="inline"
+        theme='light'
+        mode='inline'
         selectedKeys={selectedKeys}
         openKeys={openKeys}
         onOpenChange={setOpenKeys}
