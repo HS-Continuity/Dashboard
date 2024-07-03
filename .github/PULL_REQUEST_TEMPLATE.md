@@ -2,7 +2,7 @@
 
 PR 제목 예시
 
-title : [feat] 소셜 로그인 기능 구현
+title : [FEAT] 소셜 로그인 기능 구현
 
 -->
 
@@ -13,6 +13,7 @@ title : [feat] 소셜 로그인 기능 구현
 ## #️⃣관련 이슈
 
 - Close#{issue 번호}
+- 만약 해당 이슈 close 안할거면 #{issue 번호}
 
 ## 📝세부 작업 내용
 
