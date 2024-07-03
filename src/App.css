@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+aside {
+  background: white !important;
+}
+
+.ant-layout-sider-children {
+  height: 100vh !important;
+}
