@@ -26,7 +26,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
   const [openKeys, setOpenKeys] = useState([]);
 
   // Token 값으로 userRole 불러오기
-  const userRole = "customer"; // 또는 "customer"
+  const userRole = "admin"; // 또는 "customer"
 
   const {
     token: { colorBgContainer },
