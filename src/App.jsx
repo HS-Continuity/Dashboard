@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Main from "./components/layouts/Main";
+import Main from "./components/Layouts/Main";
 
 // Admin pages
 import Home from "./pages/Home";
@@ -25,45 +25,55 @@ import Inventory from "./pages/customer/Inventory";
 import CustomerSolution from "./pages/customer/Solution";
 import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
+import { useFontSizeStore } from "./stores/fontSizeStore";
+import { useEffect } from "react";
 
 function App() {
+  const { fontSize } = useFontSizeStore();
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [fontSize]);
+
   return (
-    <Routes>
-      <Route element={<Main />}>
-        <Route path="/" element={<Home />} />
+    <div className='app-root' style={{ fontSize: `${fontSize}` }}>
+      <Routes>
+        <Route element={<Main />}>
+          <Route path='/' element={<Home />} />
 
-        {/* Admin routes */}
-        <Route path="/admin">
-          <Route path="member" element={<AdminMember />} />
-          <Route path="customer" element={<AdminCustomer />} />
-          <Route path="product" element={<AdminProduct />} />
-          <Route path="approval" element={<AdminApproval />} />
-          <Route path="category" element={<AdminCategory />} />
-          <Route path="review" element={<AdminReview />} />
-          <Route path="statistics" element={<AdminStatistics />} />
-        </Route>
+          {/* Admin routes */}
+          <Route path='/admin'>
+            <Route path='member' element={<AdminMember />} />
+            <Route path='customer' element={<AdminCustomer />} />
+            <Route path='product' element={<AdminProduct />} />
+            <Route path='approval' element={<AdminApproval />} />
+            <Route path='category' element={<AdminCategory />} />
+            <Route path='review' element={<AdminReview />} />
+            <Route path='statistics' element={<AdminStatistics />} />
+          </Route>
 
-        {/* Customer routes */}
-        <Route path="/member">
-          <Route path="manage" element={<MemberManage />} />
-          <Route path="address" element={<MemberAddress />} />
-          <Route path="payment" element={<MemberPayment />} />
+          {/* Customer routes */}
+          <Route path='/member'>
+            <Route path='manage' element={<MemberManage />} />
+            <Route path='address' element={<MemberAddress />} />
+            <Route path='payment' element={<MemberPayment />} />
+          </Route>
+          <Route path='/product'>
+            <Route path='general' element={<ProductGeneral />} />
+            <Route path='eco' element={<ProductEco />} />
+            <Route path='timesale' element={<ProductTimesale />} />
+          </Route>
+          <Route path='/order'>
+            <Route path='general' element={<OrderGeneral />} />
+            <Route path='subscription' element={<OrderSubscription />} />
+          </Route>
+          <Route path='/inventory' element={<Inventory />} />
+          <Route path='/solution' element={<CustomerSolution />} />
+          <Route path='/delivery' element={<Delivery />} />
+          <Route path='/promotion' element={<Promotion />} />
         </Route>
-        <Route path="/product">
-          <Route path="general" element={<ProductGeneral />} />
-          <Route path="eco" element={<ProductEco />} />
-          <Route path="timesale" element={<ProductTimesale />} />
-        </Route>
-        <Route path="/order">
-          <Route path="general" element={<OrderGeneral />} />
-          <Route path="subscription" element={<OrderSubscription />} />
-        </Route>
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/solution" element={<CustomerSolution />} />
-        <Route path="/delivery" element={<Delivery />} />
-        <Route path="/promotion" element={<Promotion />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </div>
   );
 }
 

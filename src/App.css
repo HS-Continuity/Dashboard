@@ -10,3 +10,71 @@ aside {
 .ant-layout-sider-children {
   height: 100vh !important;
 }
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-size: 1rem;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+.app-root {
+  font-size: 16px; /* 기본 크기 */
+}
+
+.app-root,
+.app-root * {
+  font-size: 1rem;
+}
+
+.app-root h1,
+.app-root .ant-typography-h1 {
+  font-size: 2rem;
+}
+
+.app-root h2,
+.app-root .ant-typography-h2 {
+  font-size: 1.5rem;
+}
+
+.app-root h3,
+.app-root .ant-typography-h3 {
+  font-size: 1.17rem;
+}
+
+.app-root h4,
+.app-root .ant-typography-h4 {
+  font-size: 1rem;
+}
+
+.app-root h5,
+.app-root .ant-typography-h5 {
+  font-size: 0.83rem;
+}
+
+.app-root h6,
+.app-root .ant-typography-h6 {
+  font-size: 0.67rem;
+}
+
+/* 특정 요소에 대한 추가 스타일 */
+.app-root .ant-btn {
+  font-size: 1rem;
+}
+
+.app-root .ant-input {
+  font-size: 1rem;
+}
+
+.app-root .ant-select-selection-item {
+  font-size: 1rem;
+}

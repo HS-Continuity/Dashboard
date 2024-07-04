@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Layout, theme } from "antd";
 import { Outlet } from "react-router-dom";
 import Sidenav from "./Sidenav";
@@ -12,15 +12,9 @@ const Main = () => {
   } = theme.useToken();
   return (
     <Layout>
-      <Sidenav
-        collapsed={collapsed}
-        onCollapse={() => setCollapsed(!collapsed)}
-      />
+      <Sidenav collapsed={collapsed} onCollapse={() => setCollapsed(!collapsed)} />
       <Layout>
-        <MainHeader
-          collapsed={collapsed}
-          onCollapse={() => setCollapsed(!collapsed)}
-        />
+        <MainHeader collapsed={collapsed} onCollapse={() => setCollapsed(!collapsed)} />
         <Content
           style={{
             margin: "24px 16px",
@@ -28,8 +22,7 @@ const Main = () => {
             minHeight: 280,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
-          }}
-        >
+          }}>
           <Outlet />
         </Content>
       </Layout>
