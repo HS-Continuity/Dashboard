@@ -2,7 +2,7 @@
 
 PR 제목 예시
 
-title : [FEAT] 소셜 로그인 기능 구현
+title : KAN-000 feat: 소셜 로그인 기능 구현
 
 -->
 
