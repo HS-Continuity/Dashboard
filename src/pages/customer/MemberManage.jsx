@@ -1,9 +1,7 @@
-import { useRef, useState, useEffect } from 'react';
-import { Input, Flex, Space, Table } from 'antd'
+import { useRef, useState } from 'react';
+import { Input, Flex, Space, Table, Button } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-
-import CommonSearchBar from '../../components/Searchbar/CommonSearchBar';
 
 const data = [
   {
@@ -108,15 +106,45 @@ const data = [
   },
 ];
 
-
 const MemberManage = () => {
 
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [sortedInfo, setSortedInfo] = useState({});
+
   const searchInput = useRef(null);
+  const [tableParams, setTableParams] = useState({
+    pagination: {
+      current: 1,  // 현재 페이지 번호
+      pageSize: 50,  //  페이지당 항목 수
+    },
+  });
+
+  const handleChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
+    setFilteredInfo(filters);
+    setSortedInfo(sorter);
+  };
+
+  const clearFilters = () => {
+    setFilteredInfo({});
+  };
+
+  const clearAll = () => {
+    setFilteredInfo({});
+    setSortedInfo({});
+  };
+
+  const handleReset = (clearFilters) => {  //  컬럼별 리셋
+    clearFilters();
+    setSearchText('');
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      
       <div
         style={{
           padding: 8,
@@ -126,14 +154,58 @@ const MemberManage = () => {
         <Input
           ref={searchInput}
           placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
+          value={selectedKeys[0] || ''}  // 빈 문자열도 처리
           onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={() => confirm()}  //  Enter 입력 시 필터링 적용
           style={{
             marginBottom: 8,
             display: 'block',
           }}
         />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Reset
+          </Button>
+          {/* <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              confirm({
+                closeDropdown: false,
+              });
+              setSearchText(selectedKeys[0]);
+              setSearchedColumn(dataIndex);
+            }}
+          >
+            Filter
+          </Button> */}
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              close();
+            }}
+          >
+            close
+          </Button>
+        </Space>
       </div>
     ),
     filterIcon: (filtered) => (
@@ -167,7 +239,7 @@ const MemberManage = () => {
   });
 
   const columns = [
-    {
+    { 
       title: 'NO.',
       dataIndex: 'no',  // 해당 데이터가 어떤 필드에 있는지
       key: 'no',
@@ -179,6 +251,8 @@ const MemberManage = () => {
       dataIndex: '회원ID',
       key: '회원ID',
       fixed: 'left',
+      filteredValue: filteredInfo.회원ID || null,
+      filtered: false,
       ...getColumnSearchProps('회원ID'),
     },
     {
@@ -186,6 +260,8 @@ const MemberManage = () => {
       dataIndex: '회원명',
       key: '회원명',
       fixed: 'left',
+      filteredValue: filteredInfo.회원명 || null,
+      filtered: false,
       ...getColumnSearchProps('회원명'),
     },
     {
@@ -193,6 +269,8 @@ const MemberManage = () => {
       dataIndex: '휴대전화',
       key: '휴대전화',
       fixed: 'left',
+      filteredValue: filteredInfo.휴대전화 || null,
+      filtered: false,
       ...getColumnSearchProps('휴대전화'),
     },
     {
@@ -200,6 +278,8 @@ const MemberManage = () => {
       dataIndex: '이메일',
       key: '이메일',
       fixed: 'left',
+      filteredValue: filteredInfo.이메일 || null,
+      filtered: false,
       ...getColumnSearchProps('이메일'),
     },
     {
@@ -207,6 +287,8 @@ const MemberManage = () => {
       dataIndex: '생년월일',
       key: '생년월일',
       fixed: 'left',
+      filteredValue: filteredInfo.생년월일 || null,
+      filtered: false,
       ...getColumnSearchProps('생년월일'),
     },
     {
@@ -214,18 +296,17 @@ const MemberManage = () => {
       dataIndex: '성별',
       key: '성별',
       filters: [
-        {
-          text: '남',
-          value: '남자',
-        },
-        {
-          text: '여',
-          value: '여자',
-        },
+        { text: '남', value: '남' },
+        { text: '여', value: '여' },
       ],
+      filteredValue: filteredInfo.성별 || null,
+      // onFilter: (value, record) => record.name.includes(value),
+      // ellipsis: true,
+      filtered: false,
       width: 100,
+      onFilter: (value, record) => record.성별 === value,
     },
-  ];
+  ]; 
 
   return(
     <div>
@@ -233,28 +314,23 @@ const MemberManage = () => {
         <Flex gap="small" wrap>
           <h2>회원관리</h2>
         </Flex>
-        <Flex gap="small" wrap>
-          <CommonSearchBar title={"회원번호/회원명"}/>
-        </Flex>
       </Flex>
       <br />
       <br />
+      <Flex gap="small" justify= "flex-end">
+        <Button onClick={clearFilters}>Clear Filter</Button>
+        {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
+      </Flex>
+      <br />
       <Table
       columns={columns}
-      // rowKey={(record) => record.login.uuid}
       dataSource={data}
-      // pagination={tableParams.pagination}
-      // loading={loading}
-      // onChange={handleTableChange}
-      pagination={{
-        pageSize: 50,
-      }}
-      scroll={{
-        y: 500,
-      }}
-    />
+      pagination={tableParams.pagination}
+      onChange={handleChange}  // 페이지 변경 이벤트
+      scroll={{ y: 600,}}
+      />
     </div>
-  )
+  );
 };
 
 export default MemberManage;
