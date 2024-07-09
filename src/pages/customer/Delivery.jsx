@@ -1,8 +1,9 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState } from 'react';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-import moment from 'moment';
+//import Moment from "react-moment";
+//import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 
@@ -84,13 +85,13 @@ const data = [
 
 const Delivery = () => {
 
-  const [selectedDateRange, setSelectedDateRange] = useState(null);
-  const [filteredDate, setFilteredDate] = useState(data);
+  //const [selectedDateRange, setSelectedDateRange] = useState(null);
+  //const [filteredDate, setFilteredDate] = useState(data);
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
   const [searchedColumn, setSearchedColumn] = useState('');
   //const [tableData, setTableData] = useState(data);  //  테이블 상태 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
-  const [filteredData, setFilteredData] = useState(data);  //  초기값은 원본 데이터(data)
+  //const [filteredData, setFilteredData] = useState(data);  //  초기값은 원본 데이터(data)
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,  // 현재 페이지 번호
@@ -105,45 +106,10 @@ const Delivery = () => {
   const statusCounts = {};
   // 2. forEach 사용해서 orderStatusTags 배열 순회하기
   deliveryStatusTags.forEach((tag) => {
-    // 옵셔널 체이닝(?.) 사용해서 item.tags가 존재하는 경우에만 includes(tag) 호출하기
+    // 옵셔널 체이닝(?.) 사용해서 item.tags가 존재하는경우에만 includes(tag) 호출하기a
     // 태그가 key, 개수가 value
     statusCounts[tag] = data.filter((item) => item.tags?.includes(tag)).length;
   });
-
-  const filterData = (filteredDate, filters) => {
-    return filteredDate.filter((item) => { // filteredDate를 사용하여 필터링
-      return Object.keys(filters).every((key) => {
-        const filterValues = filters[key];
-        if (!filterValues) return true; // 필터가 선택되지 않은 경우 통과
-
-        const itemValue = item[key];
-        return Array.isArray(itemValue) 
-          ? filterValues.some((value) => itemValue.includes(value)) // 배열인 경우: some() 사용
-          : filterValues.includes(itemValue); // 배열이 아닌 경우: includes() 사용
-      });
-    });
-  };
-
-  const finalFilteredData = useMemo(() => {
-    return filterData(filteredDate, filteredInfo);
-  }, [filteredDate, filteredInfo]);
-
-  const onDateRangeChange = (dates, dateStrings) => {
-    setSelectedDateRange(dateStrings);  //  선택한 날짜 범위 저장
-    
-    const newFilteredDate = !dateStrings
-      ? data // 날짜 범위가 지워진 경우 원본 데이터 사용
-      : data.filter((item) => {
-          if (dateStrings.length !== 2) {
-            return true;
-          }
-          const startDate = moment(dateStrings[0], 'YYYY-MM-DD');
-          const endDate = moment(dateStrings[1], 'YYYY-MM-DD');
-          const itemDate = moment(item.배송시작일, 'YYYY-MM-DD');
-          return itemDate.isBetween(startDate, endDate, null, '[]');
-        });
-      setFilteredDate(newFilteredDate);
-  };
 
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -153,26 +119,15 @@ const Delivery = () => {
 
   const onHandleChange = (pagination, filters) => {
     setFilteredInfo(filters);  //  필터링 정보 업데이트
-    setFilteredData(filterData(filteredDate, filters));  //  필터링된 데이터 업데이트
-    //setTableData(newFilteredData);  // 테이블 데이터 업데이트
-    setTableParams({
-      ...tableParams,
-      pagination: { ...pagination },
-    });
   };
 
   const onClearFilters = () => {  //  모든 필터 초기화 이벤트
     setFilteredInfo({});
-    setFilteredData(data);  //  필터 초기화 시 원본 데이터로 설정
-    setSelectedDateRange(null); // 기간 검색 필터 초기화
-    //setTableData(data);
-    console.log("모든 필터 초기화")
   };
 
   const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
     clearFilters();
     setSearchText('');
-    setFilteredInfo({});
   };
   
 
@@ -199,7 +154,8 @@ const Delivery = () => {
         <Space>
           <Button
             type="primary"
-            onClick={() => onHandleSearch}
+            // ???
+            onClick={() => confirm()}
             icon={<SearchOutlined />}
             size="small"
             style={{
@@ -236,33 +192,15 @@ const Delivery = () => {
         }}
       />
     ),
-    onFilter: (value, record) => {
-      const filterValues = Array.isArray(filteredInfo[dataIndex])
-    ? filteredInfo[dataIndex]
-    : [filteredInfo[dataIndex]];
-      // const newFilteredInfo = { 
-      //   ...filteredInfo, // 기존 필터 정보 복사
-      //   [dataIndex]: record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) ? value : undefined 
-      // };
-      onHandleChange(tableParams.pagination, {
-        ...filteredInfo,
-        [dataIndex]: record[dataIndex],
-      }); // onHandleChange 호출
+    onFilter: (value, record) => 
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
 
-      //setFilteredInfo(newFilteredInfo);
-      //setFilteredData(filterData(filteredDate, newFilteredInfo));  //  테이블 데이터 업데이트
-      //setTableData(filterData(data, newFilteredInfo));  //  테이블 업데이트
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
     },
-    filteredKeys: filteredInfo[dataIndex] || [],  //  filteredKey 초기화
 
-    // onFilter: (value, record) =>
-    //   record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-
-    // onFilterDropdownOpenChange: (visible) => {
-    //   if (visible) {
-    //     setTimeout(() => searchInput.current?.select(), 100);
-    //   }
-    // },
     render: (text) =>
       searchedColumn === dataIndex ? (
         <Highlighter
@@ -358,8 +296,6 @@ const Delivery = () => {
       ),
       filters: deliveryStatusTags.map((tag) => ({ text: tag, value: tag })), // 필터 생성하기
       filteredValue: filteredInfo.tags || null,  //  컬럼의 dataIndex를 키로 사용
-      //filtered: false,
-      // onFilter: (value, record) => record.배송상태 === value,
       onFilter: (value, record) => record.tags.includes(value),  //  선택된 태그 값(value)이 record.tag 배열에 포함되어 있는지 확인 후 필터링하기
     },
   ];
@@ -369,7 +305,8 @@ const Delivery = () => {
       <Flex gap="small" align="center" justify='space-between'>
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
-          <RangePicker onChange={onDateRangeChange} allowClear />
+          {/* <RangePicker onChange={onDateRangeChange} allowClear /> */}
+          <RangePicker allowClear />
         </Flex>
         <Flex gap="small" wrap>
           {deliveryStatusTags.map((tag) => (
@@ -393,7 +330,7 @@ const Delivery = () => {
       <Table
         columns={columns}
         rowSelection={{}}  // 체크박스
-        dataSource={finalFilteredData}
+        dataSource={data}
         pagination={tableParams.pagination}
         onChange={onHandleChange}  // 페이지 변경 이벤트
         scroll={{ x: 1300 }}
