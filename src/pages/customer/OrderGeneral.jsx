@@ -1,4 +1,6 @@
 import { Flex, Space, DatePicker, Table, Tag } from 'antd'
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 
 import StatusCard from '../../components/Cards/StatusCard';
@@ -141,6 +143,10 @@ const data = [
 
 const OrderGeneral = () => {
 
+  const navigate = useNavigate();
+  const [lastClickedRow, setLastClickedRow] = useState(null);
+  const [lastClickedTime, setLastClickedTime] = useState(null);
+
   // status별 개수 세기
   // 1. 빈 객체 생성하기 (태그별 개수 저장)
   const statusCounts = {};
@@ -150,6 +156,23 @@ const OrderGeneral = () => {
     // 태그가 key, 개수가 value
     statusCounts[tag] = data.filter((item) => item.tags?.includes(tag)).length;
   });
+
+  const onRow = (record, rowIndex) => {
+    return {
+      onClick: (e) => {
+        const currentTime = new Date().getTime();
+        if (
+          lastClickedRow === rowIndex &&
+          currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
+        ) {
+          navigate('/generalDetail'); // 주문 상세 페이지로 이동
+        }
+        setLastClickedRow(rowIndex);
+        setLastClickedTime(currentTime);
+      },
+    };
+  };
+
 
   return (
     <div>
@@ -190,6 +213,7 @@ const OrderGeneral = () => {
         rowSelection={{}}  // 체크박스
         dataSource={data}
         scroll={{ x: 1300 }}
+        onRow={onRow}
       />
     </div>
   );
