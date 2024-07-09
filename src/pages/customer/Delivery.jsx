@@ -1,11 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-
+import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
-import CommonSearchBar from '../../components/Searchbar/CommonSearchBar';
 
 const { RangePicker } = DatePicker;
 const deliveryStatusTags = ['배송준비', '배송완료', '환불'];
@@ -34,7 +33,7 @@ const data = [
     배송번호: 200002,
     회원ID: 'C00001',
     회원명: '이태양',
-    배송시작일: '2024-01-02',
+    배송시작일: '2024-04-02',
     상품: '오이 외 2건',
     tags: ['배송완료']
   },
@@ -45,7 +44,7 @@ const data = [
     배송번호: 200001,
     회원ID: 'C00001',
     회원명: '박은별',
-    배송시작일: '2024-01-01',
+    배송시작일: '2024-03-01',
     상품: '오이 외 1건',
     tags: ['배송준비']},
   {
@@ -55,7 +54,7 @@ const data = [
     배송번호: 200001,
     회원ID: 'C00001',
     회원명: '최바다',
-    배송시작일: '2024-01-01',
+    배송시작일: '2024-02-01',
     상품: '오이 외 1건',
     tags: ['환불']
   },
@@ -77,80 +76,29 @@ const data = [
     배송번호: 200001,
     회원ID: 'C00001',
     회원명: '한별이',
-    배송시작일: '2024-01-01',
+    배송시작일: '2024-05-01',
     상품: '오이 외 1건',
     tags: ['배송완료']
   },
 ];
 
-// const columns = [
-//   {
-//     title: 'NO.',
-//     dataIndex: 'no',  // 해당 데이터가 어떤 필드에 있는지
-//     key: 'no',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '주문번호',
-//     dataIndex: '주문번호',
-//     key: '주문번호',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '배송번호',
-//     dataIndex: '배송번호',
-//     key: '배송번호',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '회원ID',
-//     dataIndex: '회원ID',
-//     key: '회원ID',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '회원명',
-//     dataIndex: '회원명',
-//     key: '회원명',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '배송시작일',
-//     dataIndex: '배송시작일',
-//     key: '배송시작일',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '상품',
-//     dataIndex: '상품',
-//     key: '상품',
-//     fixed: 'left'
-//   },
-//   {
-//     title: '배송상태',
-//     dataIndex: 'tags',  //  밑에 데이터에서 'tags' 필드를 사용하므로
-//     key: 'tags',
-//     render: (_, {tags}) => (
-//       <>
-//         {tags.map((tag) => {  //  배송상태정보가 배송상태 필드에 저장되어 있으므로
-//           // if (!orderStatusTags.includes(tag)) {  //  배열에 tag 값 있는지 확인
-//           //   return null;  // 유효하지 않은 태그는 표시 X
-//           // }
-
-//           let color = tagColors[tag] || 'default';  //  tagColors 객체에 해당 tag의 색상이 없으면 'default' 색상 사용
-//           return (
-//             <Tag color={color} key={tag}>
-//               {tag}
-//             </Tag>
-//           );
-//         })}
-//       </>
-//     ),
-//   },
-// ];
-
-
 const Delivery = () => {
+
+  const [selectedDateRange, setSelectedDateRange] = useState(null);
+  const [filteredDate, setFilteredDate] = useState(data);
+  const [searchText, setSearchText] = useState('');  //  검색 정보 저장
+  const [searchedColumn, setSearchedColumn] = useState('');
+  //const [tableData, setTableData] = useState(data);  //  테이블 상태 저장
+  const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
+  const [filteredData, setFilteredData] = useState(data);  //  초기값은 원본 데이터(data)
+  const [tableParams, setTableParams] = useState({
+    pagination: {
+      current: 1,  // 현재 페이지 번호
+      pageSize: 20,  //  페이지당 항목 수
+    },
+  });
+  //const [sortedInfo, setSortedInfo] = useState({});
+  const searchInput = useRef(null);
 
   // status별 개수 세기
   // 1. 빈 객체 생성하기 (태그별 개수 저장)
@@ -162,39 +110,71 @@ const Delivery = () => {
     statusCounts[tag] = data.filter((item) => item.tags?.includes(tag)).length;
   });
 
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
+  const filterData = (filteredDate, filters) => {
+    return filteredDate.filter((item) => { // filteredDate를 사용하여 필터링
+      return Object.keys(filters).every((key) => {
+        const filterValues = filters[key];
+        if (!filterValues) return true; // 필터가 선택되지 않은 경우 통과
 
-  const [filteredInfo, setFilteredInfo] = useState({});
-  const [sortedInfo, setSortedInfo] = useState({});
-
-  const searchInput = useRef(null);
-  const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,  // 현재 페이지 번호
-      pageSize: 50,  //  페이지당 항목 수
-    },
-  });
-
-  const handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
-    setFilteredInfo(filters);
-    setSortedInfo(sorter);
+        const itemValue = item[key];
+        return Array.isArray(itemValue) 
+          ? filterValues.some((value) => itemValue.includes(value)) // 배열인 경우: some() 사용
+          : filterValues.includes(itemValue); // 배열이 아닌 경우: includes() 사용
+      });
+    });
   };
 
-  const clearFilters = () => {
+  const finalFilteredData = useMemo(() => {
+    return filterData(filteredDate, filteredInfo);
+  }, [filteredDate, filteredInfo]);
+
+  const onDateRangeChange = (dates, dateStrings) => {
+    setSelectedDateRange(dateStrings);  //  선택한 날짜 범위 저장
+    
+    const newFilteredDate = !dateStrings
+      ? data // 날짜 범위가 지워진 경우 원본 데이터 사용
+      : data.filter((item) => {
+          if (dateStrings.length !== 2) {
+            return true;
+          }
+          const startDate = moment(dateStrings[0], 'YYYY-MM-DD');
+          const endDate = moment(dateStrings[1], 'YYYY-MM-DD');
+          const itemDate = moment(item.배송시작일, 'YYYY-MM-DD');
+          return itemDate.isBetween(startDate, endDate, null, '[]');
+        });
+      setFilteredDate(newFilteredDate);
+  };
+
+  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const onHandleChange = (pagination, filters) => {
+    setFilteredInfo(filters);  //  필터링 정보 업데이트
+    setFilteredData(filterData(filteredDate, filters));  //  필터링된 데이터 업데이트
+    //setTableData(newFilteredData);  // 테이블 데이터 업데이트
+    setTableParams({
+      ...tableParams,
+      pagination: { ...pagination },
+    });
+  };
+
+  const onClearFilters = () => {  //  모든 필터 초기화 이벤트
     setFilteredInfo({});
+    setFilteredData(data);  //  필터 초기화 시 원본 데이터로 설정
+    setSelectedDateRange(null); // 기간 검색 필터 초기화
+    //setTableData(data);
+    console.log("모든 필터 초기화")
   };
 
-  const clearAll = () => {
-    setFilteredInfo({});
-    setSortedInfo({});
-  };
-
-  const handleReset = (clearFilters) => {  //  컬럼별 리셋
+  const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
     clearFilters();
     setSearchText('');
+    setFilteredInfo({});
   };
+  
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -219,7 +199,7 @@ const Delivery = () => {
         <Space>
           <Button
             type="primary"
-            onClick={() => confirm()}
+            onClick={() => onHandleSearch}
             icon={<SearchOutlined />}
             size="small"
             style={{
@@ -229,7 +209,7 @@ const Delivery = () => {
             Search
           </Button>
           <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
+            onClick={() => clearFilters && onHandleReset(clearFilters)}
             size="small"
             style={{
               width: 90,
@@ -237,19 +217,6 @@ const Delivery = () => {
           >
             Reset
           </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button> */}
           <Button
             type="link"
             size="small"
@@ -269,13 +236,33 @@ const Delivery = () => {
         }}
       />
     ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    onFilter: (value, record) => {
+      const filterValues = Array.isArray(filteredInfo[dataIndex])
+    ? filteredInfo[dataIndex]
+    : [filteredInfo[dataIndex]];
+      // const newFilteredInfo = { 
+      //   ...filteredInfo, // 기존 필터 정보 복사
+      //   [dataIndex]: record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) ? value : undefined 
+      // };
+      onHandleChange(tableParams.pagination, {
+        ...filteredInfo,
+        [dataIndex]: record[dataIndex],
+      }); // onHandleChange 호출
+
+      //setFilteredInfo(newFilteredInfo);
+      //setFilteredData(filterData(filteredDate, newFilteredInfo));  //  테이블 데이터 업데이트
+      //setTableData(filterData(data, newFilteredInfo));  //  테이블 업데이트
     },
+    filteredKeys: filteredInfo[dataIndex] || [],  //  filteredKey 초기화
+
+    // onFilter: (value, record) =>
+    //   record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+
+    // onFilterDropdownOpenChange: (visible) => {
+    //   if (visible) {
+    //     setTimeout(() => searchInput.current?.select(), 100);
+    //   }
+    // },
     render: (text) =>
       searchedColumn === dataIndex ? (
         <Highlighter
@@ -340,9 +327,9 @@ const Delivery = () => {
       dataIndex: '배송시작일',
       key: '배송시작일',
       fixed: 'left',
-      filteredValue: filteredInfo.회원명 || null,
+      filteredValue: filteredInfo.배송시작일 || null,
       filtered: false,
-      ...getColumnSearchProps('회원명'),
+      ...getColumnSearchProps('배송시작일'),
     },
     {
       title: '상품',
@@ -360,10 +347,6 @@ const Delivery = () => {
       render: (_, {tags}) => (
         <>
           {tags.map((tag) => {  //  배송상태정보가 배송상태 필드에 저장되어 있으므로
-            // if (!orderStatusTags.includes(tag)) {  //  배열에 tag 값 있는지 확인
-            //   return null;  // 유효하지 않은 태그는 표시 X
-            // }
-  
             let color = tagColors[tag] || 'default';  //  tagColors 객체에 해당 tag의 색상이 없으면 'default' 색상 사용
             return (
               <Tag color={color} key={tag}>
@@ -373,21 +356,20 @@ const Delivery = () => {
           })}
         </>
       ),
-      filteredValue: filteredInfo.배송상태 || null,
-      filtered: false,
-      onFilter: (value, record) => record.배송상태 === value,
+      filters: deliveryStatusTags.map((tag) => ({ text: tag, value: tag })), // 필터 생성하기
+      filteredValue: filteredInfo.tags || null,  //  컬럼의 dataIndex를 키로 사용
+      //filtered: false,
+      // onFilter: (value, record) => record.배송상태 === value,
+      onFilter: (value, record) => record.tags.includes(value),  //  선택된 태그 값(value)이 record.tag 배열에 포함되어 있는지 확인 후 필터링하기
     },
   ];
-
 
   return (
     <div>
       <Flex gap="small" align="center" justify='space-between'>
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
-          <RangePicker /> {/* start - end date 검색 */}
-          <Space align="center"><span></span>|<span></span></Space>
-          <CommonSearchBar title={"회원번호/회원명"}/>
+          <RangePicker onChange={onDateRangeChange} allowClear />
         </Flex>
         <Flex gap="small" wrap>
           {deliveryStatusTags.map((tag) => (
@@ -396,8 +378,11 @@ const Delivery = () => {
         </Flex>
       </Flex>
       <br />
-      <Flex gap='small' align='flex-end' vertical>
-        
+      <Flex gap='small' align='center' justify='space-between'>
+        <Flex gap="small" wrap>
+          <Button onClick={onClearFilters}>Clear Filter</Button>
+          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
+        </Flex>
         <Flex gap="small" wrap>
           <Space align="center">배송상태변경</Space>
           <StatusChangeButton title={"배송완료"}/>
@@ -405,18 +390,12 @@ const Delivery = () => {
         </Flex>
       </Flex>
       <br />
-      <br />
-      <Flex gap="small" justify= "flex-end">
-        <Button onClick={clearFilters}>Clear Filter</Button>
-        {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
-      </Flex>
-      <br />
       <Table
         columns={columns}
         rowSelection={{}}  // 체크박스
-        dataSource={data}
+        dataSource={finalFilteredData}
         pagination={tableParams.pagination}
-        onChange={handleChange}  // 페이지 변경 이벤트
+        onChange={onHandleChange}  // 페이지 변경 이벤트
         scroll={{ x: 1300 }}
       />
     </div>
