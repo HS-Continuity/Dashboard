@@ -316,7 +316,6 @@ const MemberManage = () => {
         </Flex>
       </Flex>
       <br />
-      <br />
       <Flex gap="small" justify= "flex-end">
         <Button onClick={clearFilters}>Clear Filter</Button>
         {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
