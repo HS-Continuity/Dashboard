@@ -14,13 +14,16 @@ import AdminStatistics from "./pages/admin/Statistics";
 
 // Customer pages
 import MemberManage from "./pages/customer/MemberManage";
+import MemberManageDetail from "./pages/customer/MemberManageDetail";
 import MemberAddress from "./pages/customer/MemberAddress";
 import MemberPayment from "./pages/customer/MemberPayment";
 import ProductGeneral from "./pages/customer/ProductGeneral";
 import ProductEco from "./pages/customer/ProductEco";
 import ProductTimesale from "./pages/customer/ProductTimesale";
 import OrderGeneral from "./pages/customer/OrderGeneral";
+import OrderGeneralDetail from "./pages/customer/OrderGeneralDetail";
 import OrderSubscription from "./pages/customer/OrderSubscription";
+import OrderSubscriptionDetail from "./pages/customer/OrderSubscriptionDetail";
 import Inventory from "./pages/customer/Inventory";
 import CustomerSolution from "./pages/customer/Solution";
 import Delivery from "./pages/customer/Delivery";
@@ -55,6 +58,7 @@ function App() {
           {/* Customer routes */}
           <Route path='/member'>
             <Route path='manage' element={<MemberManage />} />
+            <Route path='manageDetail' element={<MemberManageDetail />} />
             <Route path='address' element={<MemberAddress />} />
             <Route path='payment' element={<MemberPayment />} />
           </Route>
@@ -65,7 +69,9 @@ function App() {
           </Route>
           <Route path='/order'>
             <Route path='general' element={<OrderGeneral />} />
+            <Route path='generalDetail' element={<OrderGeneralDetail />} />
             <Route path='subscription' element={<OrderSubscription />} />
+            <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} />
           </Route>
           <Route path='/inventory' element={<Inventory />} />
           <Route path='/solution' element={<CustomerSolution />} />
