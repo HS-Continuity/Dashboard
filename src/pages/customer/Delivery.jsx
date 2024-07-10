@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-//import Moment from "react-moment";
-//import moment from 'moment';
+import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 
@@ -85,13 +84,14 @@ const data = [
 
 const Delivery = () => {
 
-  //const [selectedDateRange, setSelectedDateRange] = useState(null);
+  const [selectedDateRange, setSelectedDateRange] = useState([]);
   //const [filteredDate, setFilteredDate] = useState(data);
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
   const [searchedColumn, setSearchedColumn] = useState('');
   //const [tableData, setTableData] = useState(data);  //  테이블 상태 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
-  //const [filteredData, setFilteredData] = useState(data);  //  초기값은 원본 데이터(data)
+  
+  const [filteredData, setFilteredData] = useState(data);  //  초기값은 원본 데이터(data)
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,  // 현재 페이지 번호
@@ -129,6 +129,30 @@ const Delivery = () => {
     clearFilters();
     setSearchText('');
   };
+
+  const handleRangePickerChange = (dates) => {
+    setSelectedDateRange(dates || []);  //  상태 업데이트
+  }
+
+  useEffect(() => {
+    if (!selectedDateRange || selectedDateRange.length === 0) {
+      //return data;  // 날짜 범위 선택 안된 경우 모든 데이터 반환
+      setFilteredData(data);
+    } else {
+      const startDate = selectedDateRange[0].startOf('day').format('YYYY-MM-DD');
+      const endDate = selectedDateRange[1].endOf('day').format('YYYY-MM-DD');
+
+      const filtered =  data.filter(item => {
+        const itemDate = moment(item.배송시작일, 'YYYY-MM-DD').startOf('day');
+        const isInRange = itemDate.isBetween(startDate, endDate, undefined, '[]');
+        // 배송시작일과 startDate가 동일할 때 필터에 걸리지 않는 문제 발생
+        // isBetween 요소에 '[]' 넣어서 startDate와 endDate 를 포함하는 기간으로 설정하여 해결
+
+        return isInRange;
+      });
+      setFilteredData(filtered);
+    }
+  }, [selectedDateRange]);
   
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -306,7 +330,10 @@ const Delivery = () => {
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
           {/* <RangePicker onChange={onDateRangeChange} allowClear /> */}
-          <RangePicker allowClear />
+          <RangePicker 
+            value={selectedDateRange}
+            onChange={handleRangePickerChange}
+            allowClear />
         </Flex>
         <Flex gap="small" wrap>
           {deliveryStatusTags.map((tag) => (
@@ -330,7 +357,7 @@ const Delivery = () => {
       <Table
         columns={columns}
         rowSelection={{}}  // 체크박스
-        dataSource={data}
+        dataSource={filteredData}
         pagination={tableParams.pagination}
         onChange={onHandleChange}  // 페이지 변경 이벤트
         scroll={{ x: 1300 }}
