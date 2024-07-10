@@ -29,50 +29,56 @@ const data = [
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-02-01',
     상품: '오이 외 1건',
-    tags: ['배송완료']
+    tags: ['배송완료'],
+    카테고리: '1번카테'
   },
   {
     key: '2',
     no: 2,
-    주문번호: 100001,
+    주문번호: 100002,
     회원ID: 'C00001',
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-01-01',
     상품: '오이 외 1건',
-    tags: ['결제완료']
+    tags: ['결제완료'],
+    카테고리: '1번카테'
   },
   {
     key: '3',
     no: 3,
-    주문번호: 100001,
+    주문번호: 100003,
     회원ID: 'C00001',
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-01-31',
     상품: '오이 외 1건',
-    tags: ['주문승인']},
+    tags: ['주문승인'],
+    카테고리: '2번카테'
+  },
   {
     key: '4',
     no: 4,
-    주문번호: 100001,
+    주문번호: 100004,
     회원ID: 'C00001',
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-04-01',
     상품: '오이 외 1건',
-    tags: ['배송중']
+    tags: ['배송중'],
+    카테고리: '2번카테'
   },
   {
     key: '5',
     no: 5,
-    주문번호: 100001,
+    주문번호: 100005,
     회원ID: 'C00001',
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-01-15',
     상품: '오이 외 1건',
-    tags: ['결제완료']
+    tags: ['결제완료'],
+    카테고리: '3번카테'
   },
 ];
 
@@ -176,21 +182,6 @@ const OrderGeneral = () => {
     onChange: (selectedRowKeys) => {
       setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
     },
-    // onRow: (record, rowIndex) => { // 각 행에 대한 설정을 반환하는 함수
-    //   return {
-    //     onClick: (event) => { // 행 클릭 이벤트 핸들러
-    //       const currentTime = new Date().getTime();
-    //       if (
-    //         lastClickedRow === record.key && // 동일한 행인지 확인 (key 값으로 비교)
-    //         currentTime - lastClickedTime < 300 
-    //       ) {
-    //         navigate('/generalDetail', { state: { order: record } }); // 데이터 전달하며 이동
-    //       }
-    //       setLastClickedRow(record.key); // 클릭된 행의 key 값 업데이트
-    //       setLastClickedTime(currentTime);
-    //     },
-    //   };
-    // },
   };
 
   useEffect(() => {
@@ -213,7 +204,13 @@ const OrderGeneral = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          navigate('../generalDetail'); // 주문 상세 페이지로 이동
+          navigate('../generalDetail', { 
+            state: { 
+              selectedTags: record.tags,
+              selectedOrderId: record.주문번호,
+              selectedOrderDate: record.배송시작일,
+            } 
+          }); 
         }
         setLastClickedRow(rowIndex);
         setLastClickedTime(currentTime);
