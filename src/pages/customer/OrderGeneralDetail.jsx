@@ -7,10 +7,8 @@ import { useEffect, useState } from 'react';
 
 const { TextArea } = Input;
 const onChange = (date, dateString) => {
-  console.log(date, dateString);
 };
 const onTextChange = (e) => {
-  console.log('Change:', e.target.value);
 };
 // const onHandleBackClick = () => {
 //   navigate(-1); // 이전 페이지로 이동

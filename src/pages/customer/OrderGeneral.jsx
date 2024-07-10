@@ -6,8 +6,6 @@ import Highlighter from 'react-highlight-words';
 import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
-import CommonSearchBar from '../../components/Searchbar/CommonSearchBar';
-
 
 const { RangePicker } = DatePicker;
 const orderStatusTags = ['결제완료', '주문승인', '배송준비중','배송중', '배송완료'];
@@ -174,7 +172,6 @@ const OrderGeneral = () => {
     setFilteredData(applyFilters(updatedData));
     localStorage.setItem('OrderGeneralData', JSON.stringify(updatedData)); 
     setSelectedRowKeys([]);
-    console.log("StatusChangeButton 클릭 후 변경된 데이터:", updatedData);
   }
 
   const rowSelection = {
@@ -189,7 +186,6 @@ const OrderGeneral = () => {
     datasRef.current = storedData;
     setDatas(storedData);
     setFilteredData(applyFilters(datas));
-    console.log("페이지 최초 렌더링 시 데이터:", storedData);
   }, []);
 
   useEffect(() => {

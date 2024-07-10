@@ -6,8 +6,6 @@ import Highlighter from 'react-highlight-words';
 import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
-import CommonSearchBar from '../../components/Searchbar/CommonSearchBar';
-
 
 const { RangePicker } = DatePicker;
 const orderStatusTags = ['결제완료', '주문승인', '배송준비중','배송중', '배송완료'];
@@ -28,6 +26,9 @@ const data = [
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-02-01',
+    배송종료일: '2024-05-01',
+    배송주기: 1,
+    배송요일: 3,
     상품: '오이 외 1건',
     tags: ['배송완료']
   },
@@ -39,6 +40,9 @@ const data = [
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-01-01',
+    배송종료일: '2024-03-01',
+    배송주기: 2,
+    배송요일: 2,
     상품: '오이 외 1건',
     tags: ['결제완료']
   },
@@ -50,6 +54,9 @@ const data = [
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-01-31',
+    배송종료일: '2024-04-01',
+    배송주기: 1,
+    배송요일: 2,
     상품: '오이 외 1건',
     tags: ['주문승인']},
   {
@@ -60,6 +67,9 @@ const data = [
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-04-01',
+    배송종료일: '2024-04-30',
+    배송주기: 1,
+    배송요일: 1,
     상품: '오이 외 1건',
     tags: ['배송중']
   },
@@ -71,6 +81,9 @@ const data = [
     회원명: '김김김',
     휴대전화번호: '010-1111-1111',
     배송시작일: '2024-01-15',
+    배송종료일: '2024-02-15',
+    배송주기: 2,
+    배송요일: 1,
     상품: '오이 외 1건',
     tags: ['결제완료']
   },
@@ -168,7 +181,6 @@ const OrderGeneral = () => {
     setFilteredData(applyFilters(updatedData));
     localStorage.setItem('OrderSubscriptionData', JSON.stringify(updatedData)); 
     setSelectedRowKeys([]);
-    console.log("StatusChangeButton 클릭 후 변경된 데이터:", updatedData);
   }
 
   const rowSelection = {
@@ -183,7 +195,6 @@ const OrderGeneral = () => {
     datasRef.current = storedData;
     setDatas(storedData);
     setFilteredData(applyFilters(datas));
-    console.log("페이지 최초 렌더링 시 데이터:", storedData);
   }, []);
 
   useEffect(() => {
@@ -198,7 +209,16 @@ const OrderGeneral = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          navigate('../subscriptionDetail'); // 주문 상세 페이지로 이동
+          navigate('../subscriptionDetail', {
+            state: { 
+              selectedTags: record.tags,
+              selectedOrderId: record.주문번호,
+              selectedOrderDate: record.배송시작일,
+              selectedOrderEndDate: record.배송종료일,
+              selectedOrderCycle: record.배송주기,
+              selectedOrderDay: record.배송요일
+            }
+          }); // 주문 상세 페이지로 이동
         }
         setLastClickedRow(rowIndex);
         setLastClickedTime(currentTime);
