@@ -24,7 +24,7 @@ const data = [
     회원명: '김하늘',
     배송시작일: '2024-01-01',
     상품: '오이 외 1건',
-    tags: ['배송준비']
+    tags: ['배송완료']
   },
   {
     key: '2',
@@ -35,7 +35,7 @@ const data = [
     회원명: '이태양',
     배송시작일: '2024-04-02',
     상품: '오이 외 2건',
-    tags: ['배송완료']
+    tags: ['배송준비']
   },
   {
     key: '3',
@@ -85,21 +85,20 @@ const data = [
 const Delivery = () => {
 
   const [selectedDateRange, setSelectedDateRange] = useState([]);
-  //const [filteredDate, setFilteredDate] = useState(data);
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
   const [searchedColumn, setSearchedColumn] = useState('');
-  //const [tableData, setTableData] = useState(data);  //  테이블 상태 저장
+  const searchInput = useRef(null);
+  const datasRef = useRef(data);  //  상태 변경 후 영구 저장
+  const [datas, setDatas] = useState(data);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
-  
-  const [filteredData, setFilteredData] = useState(data);  //  초기값은 원본 데이터(data)
+  const [filteredData, setFilteredData] = useState(datasRef.current);  //  초기값은 원본 데이터(data)
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,  // 현재 페이지 번호
       pageSize: 20,  //  페이지당 항목 수
     },
   });
-  //const [sortedInfo, setSortedInfo] = useState({});
-  const searchInput = useRef(null);
 
   // status별 개수 세기
   // 1. 빈 객체 생성하기 (태그별 개수 저장)
@@ -108,7 +107,7 @@ const Delivery = () => {
   deliveryStatusTags.forEach((tag) => {
     // 옵셔널 체이닝(?.) 사용해서 item.tags가 존재하는경우에만 includes(tag) 호출하기a
     // 태그가 key, 개수가 value
-    statusCounts[tag] = data.filter((item) => item.tags?.includes(tag)).length;
+    statusCounts[tag] = datasRef.current.filter((item) => item.tags?.includes(tag)).length;
   });
 
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -130,30 +129,70 @@ const Delivery = () => {
     setSearchText('');
   };
 
-  const handleRangePickerChange = (dates) => {
+  const onHandleRangePickerChange = (dates) => {
     setSelectedDateRange(dates || []);  //  상태 업데이트
   }
 
-  useEffect(() => {
+  const applyFilters = (data) => {
     if (!selectedDateRange || selectedDateRange.length === 0) {
-      //return data;  // 날짜 범위 선택 안된 경우 모든 데이터 반환
-      setFilteredData(data);
+      return data;
     } else {
       const startDate = selectedDateRange[0].startOf('day').format('YYYY-MM-DD');
       const endDate = selectedDateRange[1].endOf('day').format('YYYY-MM-DD');
-
-      const filtered =  data.filter(item => {
+  
+      return data.filter(item => {
         const itemDate = moment(item.배송시작일, 'YYYY-MM-DD').startOf('day');
         const isInRange = itemDate.isBetween(startDate, endDate, undefined, '[]');
-        // 배송시작일과 startDate가 동일할 때 필터에 걸리지 않는 문제 발생
-        // isBetween 요소에 '[]' 넣어서 startDate와 endDate 를 포함하는 기간으로 설정하여 해결
-
-        return isInRange;
-      });
-      setFilteredData(filtered);
-    }
-  }, [selectedDateRange]);
   
+        // 검색어 필터링 로직 추가
+        const searchFilter = filteredInfo.주문번호 || filteredInfo.배송번호 || filteredInfo.회원ID || filteredInfo.회원명 || filteredInfo.상품;
+        const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
+          searchFilter[key].includes(item[key])
+        );
+  
+        return isInRange && isSearchMatch;
+      });
+    }
+  }
+
+  const onHandleStatusChange = (newStatus) => {
+    // 1. 깊은 복사
+    const updatedData = JSON.parse(JSON.stringify(datasRef.current)); 
+
+    // 2. tags 값 변경
+    updatedData.forEach(item => {
+      if (selectedRowKeys.includes(item.key)) {
+        item.tags = [newStatus]; 
+      }
+    });
+
+    // 3. 상태 업데이트 및 localStorage 저장
+    datasRef.current = updatedData;
+    setDatas(updatedData);
+    setFilteredData(applyFilters(updatedData));
+    localStorage.setItem('deliveryData', JSON.stringify(updatedData)); 
+    setSelectedRowKeys([]);
+    console.log("StatusChangeButton 클릭 후 변경된 데이터:", updatedData);
+  }
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys) => {
+      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
+    }
+  };
+
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem('deliveryData')) || data; // localStorage에서 불러오기
+    datasRef.current = storedData;
+    setDatas(storedData);
+    setFilteredData(applyFilters(datas));
+    console.log("페이지 최초 렌더링 시 데이터:", storedData);
+  }, []);
+
+  useEffect(() => {
+    setFilteredData(applyFilters(datas)); // datas 변경 시 filteredData 업데이트
+  }, [datas, selectedDateRange]); // datas와 selectedDateRange에 의존하도록 변경
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -216,8 +255,15 @@ const Delivery = () => {
         }}
       />
     ),
-    onFilter: (value, record) => 
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilter: (value, record) => {
+      setFilteredData(datasRef.current.filter(item => {
+        if (dataIndex === "tags") {
+          return item.tags.includes(value);
+        } else {
+          return item[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
+        }
+      }));
+    },
 
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
@@ -329,10 +375,9 @@ const Delivery = () => {
       <Flex gap="small" align="center" justify='space-between'>
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
-          {/* <RangePicker onChange={onDateRangeChange} allowClear /> */}
           <RangePicker 
             value={selectedDateRange}
-            onChange={handleRangePickerChange}
+            onChange={onHandleRangePickerChange}
             allowClear />
         </Flex>
         <Flex gap="small" wrap>
@@ -349,18 +394,30 @@ const Delivery = () => {
         </Flex>
         <Flex gap="small" wrap>
           <Space align="center">배송상태변경</Space>
-          <StatusChangeButton title={"배송완료"}/>
-          <StatusChangeButton title={"환불신청"}/>
+          <StatusChangeButton 
+            title={"배송완료"}
+            onClick={() => {
+              onHandleStatusChange('배송완료');
+              setSelectedRowKeys([]);
+            }} />
+          <StatusChangeButton 
+            title={"환불신청"}
+            onClick={() => {
+              onHandleStatusChange('환불');
+              setSelectedRowKeys([]);
+            }} />
         </Flex>
       </Flex>
       <br />
       <Table
         columns={columns}
-        rowSelection={{}}  // 체크박스
+        //rowSelection={{}}  // 체크박스
+        rowSelection={rowSelection}
         dataSource={filteredData}
         pagination={tableParams.pagination}
         onChange={onHandleChange}  // 페이지 변경 이벤트
         scroll={{ x: 1300 }}
+        rowKey="key"
       />
     </div>
   );
