@@ -400,6 +400,11 @@ const OrderGeneral = () => {
 
   return (
     <div>
+      <Flex gap="small" align="center" justify="space-between">
+        <Flex gap="small" wrap>
+          <h2>일반주문관리</h2>
+        </Flex>
+      </Flex>
       <Flex gap="small" align="center" justify='space-between'>
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
