@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useNavigate } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
@@ -77,7 +78,7 @@ const data = [
 
 const OrderGeneral = () => {
 
-  const navigate = useNavigate;
+  const navigate = useNavigate();
   const [lastClickedRow, setLastClickedRow] = useState(null);
   const [lastClickedTime, setLastClickedTime] = useState(null);
   const [selectedDateRange, setSelectedDateRange] = useState([]);
@@ -175,17 +176,21 @@ const OrderGeneral = () => {
     onChange: (selectedRowKeys) => {
       setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
     },
-    onClick: (selectedRowKeys) => {
-      const currentTime = new Date().getTime();
-      if (
-        lastClickedRow === rowIndex &&
-        currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-      ) {
-        navigate('/generalDetail'); // 주문 상세 페이지로 이동
-      }
-      setLastClickedRow(rowIndex);
-      setLastClickedTime(currentTime);
-    },
+    // onRow: (record, rowIndex) => { // 각 행에 대한 설정을 반환하는 함수
+    //   return {
+    //     onClick: (event) => { // 행 클릭 이벤트 핸들러
+    //       const currentTime = new Date().getTime();
+    //       if (
+    //         lastClickedRow === record.key && // 동일한 행인지 확인 (key 값으로 비교)
+    //         currentTime - lastClickedTime < 300 
+    //       ) {
+    //         navigate('/generalDetail', { state: { order: record } }); // 데이터 전달하며 이동
+    //       }
+    //       setLastClickedRow(record.key); // 클릭된 행의 key 값 업데이트
+    //       setLastClickedTime(currentTime);
+    //     },
+    //   };
+    // },
   };
 
   useEffect(() => {
@@ -200,21 +205,21 @@ const OrderGeneral = () => {
     setFilteredData(applyFilters(datas)); // datas 변경 시 filteredData 업데이트
   }, [datas, selectedDateRange]); // datas와 selectedDateRange에 의존하도록 변경
 
-  // const onRow = (record, rowIndex) => {
-  //   return {
-  //     onClick: (e) => {
-  //       const currentTime = new Date().getTime();
-  //       if (
-  //         lastClickedRow === rowIndex &&
-  //         currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-  //       ) {
-  //         navigate('/generalDetail'); // 주문 상세 페이지로 이동
-  //       }
-  //       setLastClickedRow(rowIndex);
-  //       setLastClickedTime(currentTime);
-  //     },
-  //   };
-  // };
+  const onRow = (record, rowIndex) => {
+    return {
+      onClick: (e) => {
+        const currentTime = new Date().getTime();
+        if (
+          lastClickedRow === rowIndex &&
+          currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
+        ) {
+          navigate('../generalDetail'); // 주문 상세 페이지로 이동
+        }
+        setLastClickedRow(rowIndex);
+        setLastClickedTime(currentTime);
+      },
+    };
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -456,6 +461,7 @@ const OrderGeneral = () => {
         pagination={tableParams.pagination}
         onChange={onHandleChange}  // 페이지 변경 이벤트
         scroll={{ x: 1300 }}
+        onRow={onRow}
         rowKey="key"
       />
     </div>
