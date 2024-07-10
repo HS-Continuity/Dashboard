@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Input, Flex, Space, Table, Button } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
@@ -110,10 +111,11 @@ const MemberManage = () => {
 
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
-
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
+  const [lastClickedRow, setLastClickedRow] = useState(null);
+  const [lastClickedTime, setLastClickedTime] = useState(null);
   const searchInput = useRef(null);
   const [tableParams, setTableParams] = useState({
     pagination: {
@@ -121,6 +123,8 @@ const MemberManage = () => {
       pageSize: 50,  //  페이지당 항목 수
     },
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (pagination, filters, sorter) => {
     //console.log('Various parameters', pagination, filters, sorter);
@@ -140,6 +144,37 @@ const MemberManage = () => {
   const handleReset = (clearFilters) => {  //  컬럼별 리셋
     clearFilters();
     setSearchText('');
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys) => {
+      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
+    },
+  };
+
+  const onRow = (record, rowIndex) => {
+    return {
+      onClick: (e) => {
+        const currentTime = new Date().getTime();
+        if (
+          lastClickedRow === rowIndex &&
+          currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
+        ) {
+          navigate('../manageDetail', { 
+            state: { 
+              selectedMemberId: record.회원ID,
+              selectedMemberName: record.회원명,
+              selectedMemberGender: record.성별,
+              selectedMemberPhone: record.휴대전화,
+              selectedMemberEmail: record.이메일,
+            } 
+          }); 
+        }
+        setLastClickedRow(rowIndex);
+        setLastClickedTime(currentTime);
+      },
+    };
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -323,10 +358,13 @@ const MemberManage = () => {
       <br />
       <Table
       columns={columns}
+      rowSelection={rowSelection}
       dataSource={data}
       pagination={tableParams.pagination}
       onChange={handleChange}  // 페이지 변경 이벤트
       scroll={{ y: 600,}}
+      onRow={onRow}
+      rowKey="key"
       />
     </div>
   );

@@ -14,6 +14,7 @@ import AdminStatistics from "./pages/admin/Statistics";
 
 // Customer pages
 import MemberManage from "./pages/customer/MemberManage";
+import MemberManageDetail from "./pages/customer/MemberManageDetail";
 import MemberAddress from "./pages/customer/MemberAddress";
 import MemberPayment from "./pages/customer/MemberPayment";
 import ProductGeneral from "./pages/customer/ProductGeneral";
@@ -57,6 +58,7 @@ function App() {
           {/* Customer routes */}
           <Route path='/member'>
             <Route path='manage' element={<MemberManage />} />
+            <Route path='manageDetail' element={<MemberManageDetail />} />
             <Route path='address' element={<MemberAddress />} />
             <Route path='payment' element={<MemberPayment />} />
           </Route>
