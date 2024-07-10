@@ -123,7 +123,7 @@ const MemberManage = () => {
   });
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
+    //console.log('Various parameters', pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -315,7 +315,6 @@ const MemberManage = () => {
           <h2>회원관리</h2>
         </Flex>
       </Flex>
-      <br />
       <br />
       <Flex gap="small" justify= "flex-end">
         <Button onClick={clearFilters}>Clear Filter</Button>
