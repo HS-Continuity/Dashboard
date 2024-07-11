@@ -32,31 +32,21 @@ const ProductGeneral = () => {
   });
 
   // ----------------------------------------------------------------------------------
-  useEffect(() => {
-    // 컴포넌트가 마운트될 때 상품 데이터를 가져옵니다.
+useEffect(() => {
     fetchProductItems()
       .then(data => {
-        setProducts(data); // 가져온 데이터를 상태에 저장합니다.
-      })
-      .catch(error => {
-        console.error('Error fetching products:', error); // 에러 처리
-      });
-  }, []); // 빈 배열을 넣어 한 번만 실행되도록 합니다.
-
-  useEffect(() => {
-    fetchProductItems()
-      .then(data => {
-        const filteredProducts = data.product.map(product => ({  //  필요한 데이터만 가져오기
-          식품ID: product.식품ID,
-          고객ID: product.고객ID,
-          식품상세카테고리ID: product.식품상세카테고리ID,
-          식품명: product.식품명,
-          판매타입코드: product.판매타입코드,
-          식품가격: product.식품가격,
-          기본할인율: product.기본할인율,
-          정기배송할인율: product.정기배송할인율,
-          페이지노출여부: product.페이지노출여부상태값,
-        }));
+        const filteredProducts = data.filter(product => product.판매타입코드 === 1)
+                                            .map(product => ({  //  필요한 데이터만 가져오기
+                                              식품ID: product.식품ID,
+                                              고객ID: product.고객ID,
+                                              식품상세카테고리ID: product.식품상세카테고리ID,
+                                              식품명: product.식품명,
+                                              판매타입코드: product.판매타입코드,
+                                              식품가격: product.식품가격,
+                                              기본할인율: product.기본할인율,
+                                              정기배송할인율: product.정기배송할인율,
+                                              페이지노출여부: product.페이지노출여부상태값,
+                                            }));
         setProducts(filteredProducts); 
       })
       .catch(error => {
