@@ -18,8 +18,10 @@ import MemberManageDetail from "./pages/customer/MemberManageDetail";
 import MemberAddress from "./pages/customer/MemberAddress";
 import MemberPayment from "./pages/customer/MemberPayment";
 import ProductGeneral from "./pages/customer/ProductGeneral";
+import ProductGeneralDetail from "./pages/customer/ProductGeneralDetail";
 import ProductEco from "./pages/customer/ProductEco";
 import ProductTimesale from "./pages/customer/ProductTimesale";
+import ProductCreate from "./pages/customer/ProductCreate";
 import OrderGeneral from "./pages/customer/OrderGeneral";
 import OrderGeneralDetail from "./pages/customer/OrderGeneralDetail";
 import OrderSubscription from "./pages/customer/OrderSubscription";
@@ -64,8 +66,10 @@ function App() {
           </Route>
           <Route path='/product'>
             <Route path='general' element={<ProductGeneral />} />
+            <Route path='generalDetail' element={<ProductGeneralDetail />} />
             <Route path='eco' element={<ProductEco />} />
             <Route path='timesale' element={<ProductTimesale />} />
+            <Route path='create' element={<ProductCreate />} />
           </Route>
           <Route path='/order'>
             <Route path='general' element={<OrderGeneral />} />
