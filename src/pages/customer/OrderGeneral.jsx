@@ -207,6 +207,7 @@ const OrderGeneral = () => {
               selectedOrderDate: record.배송시작일,
             } 
           }); 
+          console.log(e)
         }
         setLastClickedRow(rowIndex);
         setLastClickedTime(currentTime);

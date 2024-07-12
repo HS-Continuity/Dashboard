@@ -1,12 +1,26 @@
 import axios from "axios";
 
 export const fetchProductItems = async () => {
-  const response = await axios.get("http://localhost:3001/product");  // await: 비동기적으로 응답 기다림
+  const response = await axios.get("http://localhost:3001/product",{
+    params: {
+      saleTypeCode: 1
+    }}
+  );  // await: 비동기적으로 응답 기다림
   return response.data; // 모든 데이터 담은 배열
 };
 
 export const fetchTimeAttackItems = async () => {
   const response = await axios.get("http://localhost:3001/timeAttack");  // await: 비동기적으로 응답 기다림
+  return response.data; // 모든 데이터 담은 배열
+};
+
+export const fetchProductItemByItems = async (productId) => {
+  const response = await axios.get(`http://localhost:3001/productDetail`, {
+    params : {
+      productId : productId
+    }
+  });  // await: 비동기적으로 응답 기다림
+  console.log(response.data)
   return response.data; // 모든 데이터 담은 배열
 };
 

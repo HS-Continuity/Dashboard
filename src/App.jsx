@@ -67,7 +67,7 @@ function App() {
           </Route>
           <Route path='/product'>
             <Route path='general' element={<ProductGeneral />} />
-            <Route path='generalDetail' element={<ProductGeneralDetail />} />
+            <Route path='general/:productId' element={<ProductGeneralDetail />} />
             <Route path='eco' element={<ProductEco />} />
             <Route path='timeSale' element={<ProductTimeSale />} />
             <Route path='timeSaleDetail' element={<ProductTimeSaleDetail />} />
