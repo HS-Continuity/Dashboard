@@ -1,15 +1,11 @@
 import { fetchTimeAttackItems } from '../../apis'; // fetchProductItems 함수를 가져오기
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Space, DatePicker, Table, Tag, Button, Input, message } from 'antd'
-import { SearchOutlined, HourglassOutlined } from '@ant-design/icons';
+import { Flex, Space, Table, Button, Input } from 'antd'
+import { SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import Highlighter from 'react-highlight-words';
 import moment from 'moment';
-
-import RegisterButton from '../../components/Buttons/RegisterButton';
-import ApplyButton from '../../components/Buttons/ApplyButton';
-import TimeAttackApplyModal from '../../components/Modals/TimeAttackApplyModal';
 
 import StatusCard from '../../components/Cards/StatusCard';
 
@@ -23,10 +19,7 @@ const ProductTimeSale = () => {
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
 
-  const [ongoingCount, setOngoingCount] = useState(0);  //  진행중 개수
-  const [finishedCount, setFinishedCount] = useState(0);  //  마감 개수
   
-  const [timeSale, setTimeSale] = useState([]); // 상품 데이터를 저장할 상태 변수
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [tableParams, setTableParams] = useState({
@@ -35,7 +28,6 @@ const ProductTimeSale = () => {
       pageSize: 20,  //  페이지당 항목 수
     },
   });
-  const [productForm, setProductForm] = useState({}); // 각 필드별 상태 관리
 
   // ----------------------------------------------------------------------------------
 
@@ -44,23 +36,13 @@ const ProductTimeSale = () => {
     queryFn: () => fetchTimeAttackItems()
   });
 
-  console.log(timeAttack)
+  if (isLoading) {
+    return <div>Loading...</div>; // or a more sophisticated loading indicator
+}
 
-  // useEffect(() => {
-  //   const now = moment();
-  //   const ongoing = timeAttack.filter(item => moment(item.endTime).isAfter(now));
-  //   const finished = timeAttack.filter(item => moment(item.endTime).isBefore(now));
-    
-  //   setOngoingCount(ongoing.length);
-  //   setFinishedCount(finished.length);
-  // }, [timeSale]); // timeAttack 상태가 변경될 때마다 실행
-
-  const now = moment(); // 현재 시간
-  //const endTimeMoment = moment({endTime}); // 종료 시간을 moment 객체로 변환
-
+  // console.log(timeAttack)
   
-
-  // ----------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
 
   
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -105,7 +87,6 @@ const ProductTimeSale = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          // navigate('../timeSaleDetail'); 
           navigate(`${record.productId}`); 
         }
         setLastClickedRow(rowIndex);
@@ -113,20 +94,7 @@ const ProductTimeSale = () => {
       },
     };
   };
-  // useEffect(() => {
-  //   if (timeAttack) { // timeAttack이 존재하는지 확인
-  //     setProductForm(timeAttack[0]); // product가 배열이 아닐 수 있으므로 바로 설정
-  //     const endTime = moment(timeAttack.endTime);
-  //     const currentTime = moment();
-
-  //     // 마감 여부 자동 설정
-  //     const isClosed = currentTime.isAfter(endTime);
-  //     setProductForm({
-  //       ...timeAttack,
-  //       timeSaleStatus: isClosed ? 'O' : 'X'
-  //     });
-  //   }
-  // }, [timeAttack]);
+  
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -274,40 +242,6 @@ const ProductTimeSale = () => {
         onClick: () => handleCellClick(record),
       })
     },
-    // { 
-    //   title: '마감여부', 
-    //   dataIndex: 'endTime', // 종료시간이 기준
-    //   key: '마감여부', 
-    //   // render: (endTimeMoment) => {
-    //   //   if (endTimeMoment.isBefore(now)) { // 종료 시간이 현재 시간보다 이전인 경우
-    //   //     return 'O'; // 마감
-    //   //   } else {
-    //   //     return 'X'; // 진행 중
-    //   //   }
-    //   // },
-
-    //   // render: (endTimeMoment) => endTimeMoment.isBefore(now) ? '마감' : '진행중',
-      
-    //   filters: [
-    //     { text: '마감', value: 'O' },
-    //     { text: '진행중', value: 'X' },
-    //   ],
-    //   filteredValue: filteredInfo.마감여부 || null,
-    //   // onFilter: (value, record) => {
-    //     // const endTimeMoment = moment(record.endTime);
-  
-    //     // if (value === '마감') {
-    //     //   return endTimeMoment.isBefore(now);
-    //     // } else if (value === '진행중') {
-    //     //   return endTimeMoment.isAfter(now);
-    //     // }
-  
-    //     // return false; // 필터 값이 없거나 일치하지 않는 경우 false 반환
-    //   // },
-    //   onCell: (record) => ({
-    //     onClick: () => handleCellClick(record),
-    //   })
-    // },
     {
       title: '마감여부',
       dataIndex: 'endTime', // 종료시간이 기준
@@ -334,6 +268,8 @@ const ProductTimeSale = () => {
   ];
   // --------------------------------------------------------------------------
 
+  // const tableData = timeAttack || []; 
+
   return (
     <div>
       <Flex gap='small' align="center" justify='space-between'>
@@ -346,8 +282,6 @@ const ProductTimeSale = () => {
           <Button onClick={onClearFilters}>Clear Filter</Button>
         </Flex>
         <Flex gap="small" wrap>
-          {/* <StatusCard title="진행중" count={ongoingCount}/>
-          <StatusCard title="마감" count={finishedCount}/> */}
           <StatusCard title="진행중" />
           <StatusCard title="마감" />
         </Flex>

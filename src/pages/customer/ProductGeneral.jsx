@@ -1,5 +1,5 @@
 import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
@@ -21,7 +21,7 @@ const ProductGeneral = () => {
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
   
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  //const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [tableParams, setTableParams] = useState({
@@ -30,6 +30,20 @@ const ProductGeneral = () => {
       pageSize: 20,  //  페이지당 항목 수
     },
   });
+
+  const [state, setState] = useState({
+    isModalOpen: false,
+    selectedRowKeys: [],
+    filteredInfo: {},
+    tableParams: {
+      pagination: {
+        current: 1,
+        pageSize: 20,
+      },
+    },
+  });
+
+  const { isModalOpen } = state;
 
   // ----------------------------------------------------------------------------------
 
@@ -63,6 +77,10 @@ const ProductGeneral = () => {
     setSearchText('');
   };
 
+  const setIsModalOpen = useCallback((isOpen) => {
+    setState(prevState => ({ ...prevState, isModalOpen: isOpen }));
+  }, []); // 빈 배열을 전달하여 useCallback이 한 번만 실행되도록 함
+
   const onShowModal = () => {
     if (selectedRowKeys.length === 0) {
       message.warning('타임어택을 신청할 상품을 선택하세요.');
@@ -73,9 +91,9 @@ const ProductGeneral = () => {
   };
 
 
-  const onHandleExit = () => {
-    setIsModalOpen(false);
-  };
+  // const onHandleExit = () => {
+  //   setIsModalOpen(false); // 모달 상태 변경
+  // };
 
   const onClickCreate = () => {
     navigate('../create');
@@ -336,9 +354,8 @@ const ProductGeneral = () => {
           {isModalOpen && (
             <TimeAttackApplyModal
               isModalOpen={isModalOpen}
-              handleOk={() => setIsModalOpen(true)}  //  모달 닫기
-              handleCancel={onHandleExit}
               selectedProductIds={selectedRowKeys}
+              onClose={() => setIsModalOpen(false)}
             />
           )}
 
