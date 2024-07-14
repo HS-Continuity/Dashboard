@@ -17,7 +17,7 @@ const ProductGeneralDetail = () => {
     navigate(-1); // 이전 페이지로 이동
   };
 
-  
+  // 해당 productId 상품 데이터 조회
   const { data: product, isLoading, isError, error } = useQuery({
     queryKey: ["product", productId],
     queryFn: () => fetchProductItemByItems(productId),
@@ -69,6 +69,7 @@ const ProductGeneralDetail = () => {
     },
   });
 
+  // 수정 버튼 클릭
   const onHandleUpdateClick = async () => {
     console.log('무슨아이템을가지고있니?:',productId)
     try {
@@ -100,6 +101,7 @@ const ProductGeneralDetail = () => {
     }
   };
 
+  // 삭제 버튼 클릭
   const onHandleDeleteClick = () => {
     if (window.confirm("정말로 상품을 삭제하시겠습니까?")) {
       deleteMutation.mutate();

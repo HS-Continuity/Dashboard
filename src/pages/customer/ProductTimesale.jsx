@@ -35,25 +35,10 @@ const ProductTimeSale = () => {
       pageSize: 20,  //  페이지당 항목 수
     },
   });
+  const [productForm, setProductForm] = useState({}); // 각 필드별 상태 관리
 
   // ----------------------------------------------------------------------------------
 
-  // useEffect(() => {
-  //   fetchTimeAttackItems()
-  //     .then(data => {
-  //       const filteredProducts = data.map(timeAttack => ({  //  필요한 데이터만 가져오기
-  //         타임어택세일ID: timeAttack.타임어택세일ID,
-  //         식품ID: timeAttack.식품ID,
-  //         할인율: timeAttack.할인율,
-  //         시작시간: timeAttack.시작시간,
-  //         종료시간: timeAttack.종료시간,
-  //       }));
-  //       setTimeAttack(filteredProducts); 
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching products:', error);
-  //     });
-  // }, []);
   const { data: timeAttack, isLoading } = useQuery({
     queryKey: ["timeAttack"],
     queryFn: () => fetchTimeAttackItems()
@@ -97,11 +82,18 @@ const ProductTimeSale = () => {
     setSearchText('');
   };
 
+  const handleCellClick = (record) => {
+    console.log("클릭한 행의 key: ", record.productId)
+  }
 
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedRowKeys) => {
       setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
+      console.log('key값업데이트', selectedRowKeys)
+    },
+    onClick: (e) => {
+      console.log(e);
     },
   };
 
@@ -113,13 +105,28 @@ const ProductTimeSale = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          navigate('../timeSaleDetail'); 
+          // navigate('../timeSaleDetail'); 
+          navigate(`${record.productId}`); 
         }
         setLastClickedRow(rowIndex);
         setLastClickedTime(currentTime);
       },
     };
   };
+  // useEffect(() => {
+  //   if (timeAttack) { // timeAttack이 존재하는지 확인
+  //     setProductForm(timeAttack[0]); // product가 배열이 아닐 수 있으므로 바로 설정
+  //     const endTime = moment(timeAttack.endTime);
+  //     const currentTime = moment();
+
+  //     // 마감 여부 자동 설정
+  //     const isClosed = currentTime.isAfter(endTime);
+  //     setProductForm({
+  //       ...timeAttack,
+  //       timeSaleStatus: isClosed ? 'O' : 'X'
+  //     });
+  //   }
+  // }, [timeAttack]);
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -217,7 +224,10 @@ const ProductTimeSale = () => {
       key: 'timeAttackSaleId',
       filteredValue: filteredInfo.timeAttackSaleId || null,
       filtered: false,
-      ...getColumnSearchProps('timeAttackSaleId')
+      ...getColumnSearchProps('timeAttackSaleId'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '식품ID', 
@@ -225,7 +235,10 @@ const ProductTimeSale = () => {
       key: 'productId',
       filteredValue: filteredInfo.productId || null,
       filtered: false,
-      ...getColumnSearchProps('productId')
+      ...getColumnSearchProps('productId'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '할인율', 
@@ -234,7 +247,10 @@ const ProductTimeSale = () => {
       render: (discountRate) => `${discountRate}%`,
       filteredValue: filteredInfo.discountRate || null,
       filtered: false,
-      ...getColumnSearchProps('discountRate') 
+      ...getColumnSearchProps('discountRate') ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '시작시간', 
@@ -242,7 +258,10 @@ const ProductTimeSale = () => {
       key: 'startTime',
       filteredValue: filteredInfo.startTime || null,
       filtered: false,
-      ...getColumnSearchProps('startTime') 
+      ...getColumnSearchProps('startTime') ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '종료시간', 
@@ -250,36 +269,67 @@ const ProductTimeSale = () => {
       key: 'endTime',
       filteredValue: filteredInfo.endTime || null,
       filtered: false,
-      ...getColumnSearchProps('endTime')  
+      ...getColumnSearchProps('endTime')  ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
-    { 
-      title: '마감여부', 
+    // { 
+    //   title: '마감여부', 
+    //   dataIndex: 'endTime', // 종료시간이 기준
+    //   key: '마감여부', 
+    //   // render: (endTimeMoment) => {
+    //   //   if (endTimeMoment.isBefore(now)) { // 종료 시간이 현재 시간보다 이전인 경우
+    //   //     return 'O'; // 마감
+    //   //   } else {
+    //   //     return 'X'; // 진행 중
+    //   //   }
+    //   // },
+
+    //   // render: (endTimeMoment) => endTimeMoment.isBefore(now) ? '마감' : '진행중',
+      
+    //   filters: [
+    //     { text: '마감', value: 'O' },
+    //     { text: '진행중', value: 'X' },
+    //   ],
+    //   filteredValue: filteredInfo.마감여부 || null,
+    //   // onFilter: (value, record) => {
+    //     // const endTimeMoment = moment(record.endTime);
+  
+    //     // if (value === '마감') {
+    //     //   return endTimeMoment.isBefore(now);
+    //     // } else if (value === '진행중') {
+    //     //   return endTimeMoment.isAfter(now);
+    //     // }
+  
+    //     // return false; // 필터 값이 없거나 일치하지 않는 경우 false 반환
+    //   // },
+    //   onCell: (record) => ({
+    //     onClick: () => handleCellClick(record),
+    //   })
+    // },
+    {
+      title: '마감여부',
       dataIndex: 'endTime', // 종료시간이 기준
-      key: '마감여부', 
-      // render: (endTimeMoment) => {
-      //   if (endTimeMoment.isBefore(now)) { // 종료 시간이 현재 시간보다 이전인 경우
-      //     return 'O'; // 마감
-      //   } else {
-      //     return 'X'; // 진행 중
-      //   }
-      // },
-      render: (endTimeMoment) => endTimeMoment.isBefore(now) ? '마감' : '진행중',
+      key: '마감여부',
+      render: (endTime) => {
+        const endTimeMoment = moment(endTime);
+        const currentTime = moment();
+        return endTimeMoment.isBefore(currentTime) ? 'O' : 'X'; // 마감 여부 표시
+      },
       filters: [
-        { text: 'O', value: '마감' },
-        { text: 'X', value: '진행중' },
+        { text: '마감', value: 'O' },
+        { text: '진행중', value: 'X' },
       ],
       filteredValue: filteredInfo.마감여부 || null,
       onFilter: (value, record) => {
         const endTimeMoment = moment(record.endTime);
-  
-        if (value === '마감') {
-          return endTimeMoment.isBefore(now);
-        } else if (value === '진행중') {
-          return endTimeMoment.isAfter(now);
-        }
-  
-        return false; // 필터 값이 없거나 일치하지 않는 경우 false 반환
+        const currentTime = moment();
+        return endTimeMoment.isBefore(currentTime) === (value === 'O'); // 마감 여부 필터링
       },
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record), // 셀 클릭 이벤트 처리
+      }),
     },
   ];
   // --------------------------------------------------------------------------
@@ -296,8 +346,10 @@ const ProductTimeSale = () => {
           <Button onClick={onClearFilters}>Clear Filter</Button>
         </Flex>
         <Flex gap="small" wrap>
-          <StatusCard title="진행중" count={ongoingCount}/>
-          <StatusCard title="마감" count={finishedCount}/>
+          {/* <StatusCard title="진행중" count={ongoingCount}/>
+          <StatusCard title="마감" count={finishedCount}/> */}
+          <StatusCard title="진행중" />
+          <StatusCard title="마감" />
         </Flex>
       </Flex>
 

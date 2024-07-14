@@ -109,6 +109,8 @@
   "timeAttack": [
     {
       "timeAttackSaleId": 400010,
+      "productName": "상품7",
+      "productPrice": 8000,
       "productId": 100040,
       "additionalServiceStatusId": 500,
       "startTime": "2024-07-11 09:00:00",
@@ -118,6 +120,8 @@
     },
     {
       "timeAttackSaleId": 400011,
+      "productName": "상품8",
+      "productPrice": 11000,
       "productId": 100041,
       "additionalServiceStatusId": 501,
       "startTime": "2024-07-15 09:00:00",
@@ -127,6 +131,8 @@
     },
     {
       "timeAttackSaleId": 400012,
+      "productName": "상품9",
+      "productPrice": 15000,
       "productId": 100042,
       "additionalServiceStatusId": 502,
       "startTime": "2024-07-12 08:00:00",
