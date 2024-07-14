@@ -22,7 +22,6 @@ const ProductGeneral = () => {
   const searchInput = useRef(null);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [products, setProducts] = useState([]); // 상품 데이터를 저장할 상태 변수
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [tableParams, setTableParams] = useState({
@@ -33,27 +32,7 @@ const ProductGeneral = () => {
   });
 
   // ----------------------------------------------------------------------------------
-  // useEffect(() => {
-  //   fetchProductItems()
-  //     .then(data => {
-  //       const filteredProducts = data.filter(product => product.saleTypeCode === 1)
-  //                                   .map(product => ({  //  필요한 데이터만 가져오기
-  //                                     식품ID: product.productId,
-  //                                     고객ID: product.customerId,
-  //                                     식품상세카테고리ID: product.productDetailCategoryId,
-  //                                     식품명: product.productName,
-  //                                     판매타입코드: product.saleTypeCode,
-  //                                     식품가격: product.productPrice,
-  //                                     기본할인율: product.defaultDiscountPrice,
-  //                                     정기배송할인율: product.regularDeliveryDiscountPrice,
-  //                                     페이지노출여부: product.pageExposureStatus,
-  //                                   }));
-  //       setProducts(filteredProducts); 
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching products:', error);
-  //     });
-  // }, []);
+
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product"],
@@ -93,9 +72,6 @@ const ProductGeneral = () => {
     setIsModalOpen(true);
   };
 
-  // const onHandleSubmit = () => {
-  //   setIsModalOpen(false);
-  // };
 
   const onHandleExit = () => {
     setIsModalOpen(false);
@@ -373,20 +349,7 @@ const ProductGeneral = () => {
         </Flex>
         
       </Flex>
-      {/* {product.length > 0 ? (
-      <Table
-      columns={columns}
-      rowSelection={rowSelection}
-      dataSource={product}
-      pagination={tableParams.pagination}
-      onChange={onHandleChange}  // 페이지 변경 이벤트
-      scroll={{ y: 600,}}
-      onRow={onRow}
-      rowKey="productId"
-      />
-    ) : (
-      <p>Loading...</p>
-    )} */}
+      
     <Table
       columns={columns}
       rowSelection={rowSelection}

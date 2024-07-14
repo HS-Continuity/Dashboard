@@ -23,7 +23,6 @@ const ProductEco = () => {
   const searchInput = useRef(null);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [products, setProducts] = useState([]); // 상품 데이터를 저장할 상태 변수
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [tableParams, setTableParams] = useState({
@@ -39,29 +38,7 @@ const ProductEco = () => {
     queryFn: () => fetchEcoProductItems()
   });
 
-  // useEffect(() => {
-  //   fetchEcoProductItems()
-  //     .then(data => {
-  //       const filteredProducts = data.filter(product => product.판매타입코드 === 2)
-  //                                           .map(product => ({  //  필요한 데이터만 가져오기
-  //                                             식품ID: product.식품ID,
-  //                                             고객ID: product.고객ID,
-  //                                             식품상세카테고리ID: product.식품상세카테고리ID,
-  //                                             식품명: product.식품명,
-  //                                             판매타입코드: product.판매타입코드,
-  //                                             식품가격: product.식품가격,
-  //                                             기본할인율: product.기본할인율,
-  //                                             정기배송할인율: product.정기배송할인율,
-  //                                             페이지노출여부: product.페이지노출여부상태값,
-  //                                           }));
-  //       setProducts(filteredProducts); 
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching products:', error);
-  //     });
-  // }, []);
-
-  // ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------
 
 
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -92,9 +69,6 @@ const ProductEco = () => {
     setIsModalOpen(true);
   };
 
-  // const onHandleSubmit = () => {
-  //   setIsModalOpen(false);
-  // };
 
   const onHandleExit = () => {
     setIsModalOpen(false);
