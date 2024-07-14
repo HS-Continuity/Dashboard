@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
+import { LeftOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 
 const InventoryDetail = () => {
@@ -36,8 +37,18 @@ const InventoryDetail = () => {
   ];
 
   return (
-    <Table
+    <div>
+      <Flex gap="small" justify='flex-start'> 
+        <Flex gap="small" wrap>
+        <LeftOutlined  onClick={onHandleBackClick}/>
+        </Flex>
+        <Flex gap="small" wrap>
+          <h2>입고날짜별 재고현황</h2>
+        </Flex>
+      </Flex>
+      <Table
       columns={columns}/>
+    </div>
   )
 }
 

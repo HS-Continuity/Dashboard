@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
+import { LeftOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 
 const Inventory = () => {
@@ -49,8 +50,6 @@ const Inventory = () => {
   console.log("product:", product);
   console.log("unique:", uniqueProducts);
 
-
-  
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -220,15 +219,24 @@ const Inventory = () => {
   ];
 
   return (
-    <Table 
-      dataSource={uniqueProducts} 
-      columns={columns}
-      // pagination={tableParams.pagination}
-      onChange={onHandleChange}  // 페이지 변경 이벤트
-      // scroll={{ y: 600,}}
-      onRow={onRow}
-      rowKey="productName"
-       />
+    <div>
+      <Flex gap="small" justify='flex-start'> 
+        <Flex gap="small" wrap>
+        </Flex>
+        <Flex gap="small" wrap>
+          <h2>상품별 재고현황</h2>
+        </Flex>
+      </Flex>
+      <Table 
+            dataSource={uniqueProducts} 
+            columns={columns}
+            // pagination={tableParams.pagination}
+            onChange={onHandleChange}  // 페이지 변경 이벤트
+            // scroll={{ y: 600,}}
+            onRow={onRow}
+            rowKey="productName"
+            />
+</div>
   )
 };
 
