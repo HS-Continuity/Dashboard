@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const API_ENDPOINTS = {
-  PRODUCTS: '/product',
-  TIME_SALE: '/timeSale',
-};
+// const API_ENDPOINTS = {
+//   PRODUCTS: '/product',
+//   TIME_SALE: '/timeSale',
+// };
 
 //----상품 목록 조회------------------------------------------------------
 
@@ -29,7 +29,7 @@ export const fetchEcoProductItems = async () => {
 
 // 타임세일 상품 목록 조회
 export const fetchTimeAttackItems = async () => {
-  const response = await axios.get("http://localhost:3001/timeSale");  // await: 비동기적으로 응답 기다림
+  const response = await axios.get("http://localhost:3001/product");  // await: 비동기적으로 응답 기다림
   console.log('불러온 데이터:',response.data)
   return response.data; // 모든 데이터 담은 배열
 };
@@ -86,7 +86,7 @@ export const fetchTimeSaleProductItemByItems = async (productId) => {
 // 타임어택 상품 등록
 export const addTimeAttackItems = async (newTimeAttackEntries) => {
   try {
-    const response = await axios.post(`http://localhost:3001${API_ENDPOINTS.TIME_SALE}`, newTimeAttackEntries);
+    const response = await axios.post(`http://localhost:3001/timeSale`, newTimeAttackEntries);
     return response.data;
   } catch (error) {
     console.error('Error adding time attack items:', error);
@@ -94,3 +94,13 @@ export const addTimeAttackItems = async (newTimeAttackEntries) => {
   }
 };
 
+// 재고 상세페이지 조회
+export const fetchProductItemByName = async (productName) => {
+  const response = await axios.get(`http://localhost:3001/inventory`, {
+    params : {
+      productId : productName
+    }
+  });  // await: 비동기적으로 응답 기다림
+  console.log('response.data라구요:',response.data)
+  return response.data; // 모든 데이터 담은 배열
+};
