@@ -7,7 +7,7 @@ import { useQuery, useMutation, QueryClient } from '@tanstack/react-query';
 import { Image } from 'antd';
 const { TextArea } = Input;
 
-const ProductGeneralDetail = () => {
+const ProductEcoDetail = () => {
   const navigate = useNavigate();
   const {productId} = useParams();
   const [productForm, setProductForm] = useState({}); // 각 필드별 상태 관리
@@ -17,7 +17,6 @@ const ProductGeneralDetail = () => {
     navigate(-1); // 이전 페이지로 이동
   };
 
-  // 해당 productId 상품 데이터 조회
   const { data: product, isLoading, isError, error } = useQuery({
     queryKey: ["product", productId],
     queryFn: () => fetchProductItemByItems(productId),
@@ -25,13 +24,13 @@ const ProductGeneralDetail = () => {
     staleTime: 60 * 1000,  //  1분 동안 캐시 유지
   });
   console.log(productForm)
-
+  
   // useMutation을 사용하여 상품 정보 업데이트
   const mutation = useMutation({
     mutationFn: (updatedProduct) => updateProduct(productId, updatedProduct),
     onSuccess: () => {
       alert('상품 정보가 성공적으로 수정되었습니다.');
-      navigate('/general');
+      navigate('/eco');
     },
     onError: (error) => {
       console.error('Error updating product:', error);
@@ -69,7 +68,6 @@ const ProductGeneralDetail = () => {
     },
   });
 
-  // 수정 버튼 클릭
   const onHandleUpdateClick = async () => {
     console.log('무슨아이템을가지고있니?:',productId)
     try {
@@ -101,7 +99,6 @@ const ProductGeneralDetail = () => {
     }
   };
 
-  // 삭제 버튼 클릭
   const onHandleDeleteClick = () => {
     if (window.confirm("정말로 상품을 삭제하시겠습니까?")) {
       deleteMutation.mutate();
@@ -129,7 +126,6 @@ const ProductGeneralDetail = () => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error: {error.message}</div>;
 
-
   return (
     <div>
       <Flex gap="small" justify='flex-start'> 
@@ -137,7 +133,7 @@ const ProductGeneralDetail = () => {
           <LeftOutlined  onClick={onHandleBackClick}/>
         </Flex>
         <Flex gap="small" wrap>
-          <h2>일반식품상세정보</h2>
+          <h2>친환경식품상세정보</h2>
         </Flex>
         <Flex gap="small" align='center' wrap>
           <Breadcrumb
@@ -146,10 +142,10 @@ const ProductGeneralDetail = () => {
                 title: 'Main',
               },
               {
-                title: <a href="../general">일반식품관리</a>,
+                title: <a href="../eco">친환경식품관리</a>,
               },
               {
-                title: '일반식품상세정보',
+                title: '친환경식품상세정보',
               },
             ]}
           />
@@ -314,7 +310,7 @@ const ProductGeneralDetail = () => {
         
       </Flex>
     </div>
-  );
+  )
 }
 
-export default ProductGeneralDetail
+export default ProductEcoDetail
