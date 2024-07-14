@@ -1,9 +1,10 @@
 
-import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
+import { fetchEcoProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Space, DatePicker, Table, Tag, Button, Input, message } from 'antd'
+import { Flex, Space, Table, Button, Input, message } from 'antd'
 import { SearchOutlined, HourglassOutlined } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 import Highlighter from 'react-highlight-words';
 import moment from 'moment';
 
@@ -33,28 +34,32 @@ const ProductEco = () => {
   });
 
   // ----------------------------------------------------------------------------------
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product"],
+    queryFn: () => fetchEcoProductItems()
+  });
 
-  useEffect(() => {
-    fetchProductItems()
-      .then(data => {
-        const filteredProducts = data.filter(product => product.판매타입코드 === 2)
-                                            .map(product => ({  //  필요한 데이터만 가져오기
-                                              식품ID: product.식품ID,
-                                              고객ID: product.고객ID,
-                                              식품상세카테고리ID: product.식품상세카테고리ID,
-                                              식품명: product.식품명,
-                                              판매타입코드: product.판매타입코드,
-                                              식품가격: product.식품가격,
-                                              기본할인율: product.기본할인율,
-                                              정기배송할인율: product.정기배송할인율,
-                                              페이지노출여부: product.페이지노출여부상태값,
-                                            }));
-        setProducts(filteredProducts); 
-      })
-      .catch(error => {
-        console.error('Error fetching products:', error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   fetchEcoProductItems()
+  //     .then(data => {
+  //       const filteredProducts = data.filter(product => product.판매타입코드 === 2)
+  //                                           .map(product => ({  //  필요한 데이터만 가져오기
+  //                                             식품ID: product.식품ID,
+  //                                             고객ID: product.고객ID,
+  //                                             식품상세카테고리ID: product.식품상세카테고리ID,
+  //                                             식품명: product.식품명,
+  //                                             판매타입코드: product.판매타입코드,
+  //                                             식품가격: product.식품가격,
+  //                                             기본할인율: product.기본할인율,
+  //                                             정기배송할인율: product.정기배송할인율,
+  //                                             페이지노출여부: product.페이지노출여부상태값,
+  //                                           }));
+  //       setProducts(filteredProducts); 
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching products:', error);
+  //     });
+  // }, []);
 
   // ----------------------------------------------------------------------------------
 
@@ -83,6 +88,7 @@ const ProductEco = () => {
       message.warning('타임어택을 신청할 상품을 선택하세요.');
       return;
     }
+    console.log('key값:',selectedRowKeys)
     setIsModalOpen(true);
   };
 
@@ -98,10 +104,18 @@ const ProductEco = () => {
     navigate('../create');
   }
 
+  const handleCellClick = (record) => {
+    console.log("클릭한 행의 key: ", record.productId)
+  }
+
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedRowKeys) => {
       setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
+      console.log('key값업데이트', selectedRowKeys)
+    },
+    onClick: (e) => {
+      console.log(e);
     },
   };
 
@@ -113,7 +127,7 @@ const ProductEco = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          navigate('../generalDetail'); 
+          navigate(`${record.productId}`);
         }
         setLastClickedRow(rowIndex);
         setLastClickedTime(currentTime);
@@ -213,84 +227,111 @@ const ProductEco = () => {
   const columns = [
     { 
       title: '식품ID', 
-      dataIndex: '식품ID', 
-      key: '식품ID',
-      filteredValue: filteredInfo.식품ID || null,
+      dataIndex: 'productId', 
+      key: 'productId',
+      filteredValue: filteredInfo.productId || null,
       filtered: false,
-      ...getColumnSearchProps('식품ID')
+      ...getColumnSearchProps('productId'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '고객ID', 
-      dataIndex: '고객ID', 
-      key: '고객ID',
-      filteredValue: filteredInfo.고객ID || null,
+      dataIndex: 'customerId', 
+      key: 'customerId',
+      filteredValue: filteredInfo.customerId || null,
       filtered: false,
-      ...getColumnSearchProps('고객ID')
+      ...getColumnSearchProps('customerId'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '식품상세카테고리ID', 
-      dataIndex: '식품상세카테고리ID', 
-      key: '식품상세카테고리ID',
-      filteredValue: filteredInfo.식품상세카테고리ID || null,
+      dataIndex: 'productDetailCategoryId', 
+      key: 'productDetailCategoryId',
+      filteredValue: filteredInfo.productDetailCategoryId || null,
       filtered: false,
-      ...getColumnSearchProps('식품상세카테고리ID') 
+      ...getColumnSearchProps('productDetailCategoryId') ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '식품명', 
-      dataIndex: '식품명', 
-      key: '식품명',
-      filteredValue: filteredInfo.식품명 || null,
+      dataIndex: 'productName', 
+      key: 'productName',
+      filteredValue: filteredInfo.productName || null,
       filtered: false,
-      ...getColumnSearchProps('식품명') 
+      ...getColumnSearchProps('productName') ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '판매타입코드', 
-      dataIndex: '판매타입코드', 
-      key: '판매타입코드',
-      filteredValue: filteredInfo.판매타입코드 || null,
+      dataIndex: 'saleTypeCode', 
+      key: 'saleTypeCode',
+      filteredValue: filteredInfo.saleTypeCode || null,
       filtered: false,
-      ...getColumnSearchProps('판매타입코드')  
+      ...getColumnSearchProps('saleTypeCode'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
     { 
       title: '식품가격', 
-      dataIndex: '식품가격', 
-      key: '식품가격', 
+      dataIndex: 'productPrice', 
+      key: 'productPrice', 
       render: (price) => price.toLocaleString('ko-KR', { style: 'currency', currency: 'KRW' }),
-      filteredValue: filteredInfo.식품가격 || null,
+      filteredValue: filteredInfo.productPrice || null,
       filtered: false,
-      ...getColumnSearchProps('식품가격') 
+      ...getColumnSearchProps('productPrice'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      }) 
     },
     { 
       title: '기본할인율', 
-      dataIndex: '기본할인율', 
-      key: '기본할인율', 
-      render: (discountRate) => `${discountRate}%`,
-      filteredValue: filteredInfo.기본할인율 || null,
+      dataIndex: 'defaultDiscountPrice', 
+      key: 'defaultDiscountPrice', 
+      render: (defaultDiscountPrice) => `${defaultDiscountPrice}%`,
+      filteredValue: filteredInfo.defaultDiscountPrice || null,
       filtered: false,
-      ...getColumnSearchProps('기본할인율') 
+      ...getColumnSearchProps('defaultDiscountPrice'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      }) 
     },
     { 
       title: '정기배송할인율', 
-      dataIndex: '정기배송할인율', 
-      key: '정기배송할인율', 
-      render: (discountRate) => `${discountRate}%`,
-      filteredValue: filteredInfo.정기배송할인율 || null,
+      dataIndex: 'regularDeliveryDiscountPrice', 
+      key: 'regularDeliveryDiscountPrice', 
+      render: (regularDeliveryDiscountPrice) => `${regularDeliveryDiscountPrice}%`,
+      filteredValue: filteredInfo.regularDeliveryDiscountPrice || null,
       filtered: false,
-      ...getColumnSearchProps('정기배송할인율') 
+      ...getColumnSearchProps('regularDeliveryDiscountPrice'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      }) 
     },
     { 
       title: '페이지노출여부', 
-      dataIndex: '페이지노출여부상태값', 
-      key: '페이지노출여부상태값', 
+      dataIndex: 'pageExposureStatus', 
+      key: 'pageExposureStatus', 
       //render: (visible) => (visible === 'O' ? '노출' : '미노출'), 
       filters: [
         { text: '노출', value: 'O' },
         { text: '미노출', value: 'X' },
       ],
-      filteredValue: filteredInfo.페이지노출여부상태값 || null,
+      filteredValue: filteredInfo.pageExposureStatus || null,
       filtered: false,
       width: 100,
-      onFilter: (value, record) => record.페이지노출여부상태값 === value
+      onFilter: (value, record) => record.pageExposureStatus === value,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
     },
   ];
   // --------------------------------------------------------------------------
@@ -329,20 +370,16 @@ const ProductEco = () => {
         </Flex>
         
       </Flex>
-      {products.length > 0 ? (
       <Table
       columns={columns}
       rowSelection={rowSelection}
-      dataSource={products}
+      dataSource={product}
       pagination={tableParams.pagination}
       onChange={onHandleChange}  // 페이지 변경 이벤트
       scroll={{ y: 600,}}
       onRow={onRow}
-      rowKey="식품ID"
+      rowKey="productId"
       />
-    ) : (
-      <p>Loading...</p>
-    )}
     </div>
   )
 };
