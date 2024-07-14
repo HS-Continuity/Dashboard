@@ -17,7 +17,7 @@ const ProductTimeSaleDetail = () => {
         <LeftOutlined  onClick={onHandleBackClick}/>
         </Flex>
         <Flex gap="small" wrap>
-          <h2>회원상세정보</h2>
+          <h2>타임어택상세정보</h2>
         </Flex>
       </Flex>
       

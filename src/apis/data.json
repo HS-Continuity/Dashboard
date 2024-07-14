@@ -1,26 +1,6 @@
 {
   "product": [
     {
-      "productId": 100010,
-      "saleTypeCode": 1,
-      "productDetailCategoryId": 10,
-      "customerId": 300010,
-      "productName": "상품1",
-      "productDescription": "상품1 입니다.",
-      "productMainImageName": "상품1",
-      "productPrice": 10000,
-      "defaultDiscountPrice": 9000,
-      "regularDeliveryDiscountPrice": 8000,
-      "customizedRegularDeliveryDiscountPrice": 8000,
-      "origin": "한국",
-      "certificationStatus": "O",
-      "defaultDiscountRate": 10,
-      "regularDeliveryDiscountRate": 20,
-      "customizedRegularDeliveryDiscountRate": 20,
-      "pageExposureStatus": "O",
-      "regularPurchaseSupportStatus": "O"
-    },
-    {
       "productId": 100011,
       "saleTypeCode": 1,
       "productDetailCategoryId": 10,
@@ -38,7 +18,8 @@
       "regularDeliveryDiscountRate": 20,
       "customizedRegularDeliveryDiscountRate": 20,
       "pageExposureStatus": "O",
-      "regularPurchaseSupportStatus": "O"
+      "regularPurchaseSupportStatus": "O",
+      "id": "b641"
     },
     {
       "productId": 100012,
@@ -58,7 +39,8 @@
       "regularDeliveryDiscountRate": 20,
       "customizedRegularDeliveryDiscountRate": 20,
       "pageExposureStatus": "O",
-      "regularPurchaseSupportStatus": "X"
+      "regularPurchaseSupportStatus": "X",
+      "id": "6566"
     },
     {
       "productId": 100013,
@@ -78,7 +60,8 @@
       "regularDeliveryDiscountRate": 20,
       "customizedRegularDeliveryDiscountRate": 20,
       "pageExposureStatus": "O",
-      "regularPurchaseSupportStatus": "O"
+      "regularPurchaseSupportStatus": "O",
+      "id": "21e9"
     },
     {
       "productId": 100014,
@@ -98,7 +81,8 @@
       "regularDeliveryDiscountRate": 20,
       "customizedRegularDeliveryDiscountRate": 20,
       "pageExposureStatus": "O",
-      "regularPurchaseSupportStatus": "O"
+      "regularPurchaseSupportStatus": "O",
+      "id": "ec36"
     },
     {
       "productId": 100015,
@@ -118,7 +102,8 @@
       "regularDeliveryDiscountRate": 20,
       "customizedRegularDeliveryDiscountRate": 20,
       "pageExposureStatus": "X",
-      "regularPurchaseSupportStatus": "O"
+      "regularPurchaseSupportStatus": "O",
+      "id": "4b91"
     }
   ],
   "timeAttack": [
@@ -128,7 +113,8 @@
       "additionalServiceStatusId": 500,
       "startTime": "2024-07-11 09:00:00",
       "endTime": "2024-07-11 12:00:00",
-      "discountRate": 30
+      "discountRate": 30,
+      "id": "c7f9"
     },
     {
       "timeAttackSaleId": 400011,
@@ -136,7 +122,8 @@
       "additionalServiceStatusId": 501,
       "startTime": "2024-07-15 09:00:00",
       "endTime": "2024-07-15 12:00:00",
-      "discountRate": 40
+      "discountRate": 40,
+      "id": "cc10"
     },
     {
       "timeAttackSaleId": 400012,
@@ -144,7 +131,8 @@
       "additionalServiceStatusId": 502,
       "startTime": "2024-07-12 08:00:00",
       "endTime": "2024-07-12 11:00:00",
-      "discountRate": 25
+      "discountRate": 25,
+      "id": "6a69"
     }
   ]
 }

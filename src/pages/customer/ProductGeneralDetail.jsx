@@ -1,61 +1,138 @@
-import { fetchProductItemByItems } from '../../apis'; // fetchProductItems 함수를 가져오기
-import { Flex, Tag, DatePicker, Form, Input, Dropdown, message, Breadcrumb, Space } from 'antd';
-import { LeftOutlined, DownOutlined } from '@ant-design/icons';
+import { fetchProductItemByItems, updateProduct, deleteProduct } from '../../apis';
+import { Flex, Form, Input, Button, Breadcrumb, Select } from 'antd';
+import { LeftOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, QueryClient } from '@tanstack/react-query';
 import { Image } from 'antd';
 const { TextArea } = Input;
 
 const ProductGeneralDetail = () => {
   const navigate = useNavigate();
   const {productId} = useParams();
-  //const [productItem, setProductItem] = useState([]); // 상품 데이터를 저장할 상태 변수
+  const [productForm, setProductForm] = useState({}); // 각 필드별 상태 관리
+  
 
   const onHandleBackClick = () => {
     navigate(-1); // 이전 페이지로 이동
   };
 
-  const onClickDropDown = ({ key }) => {
-    message.info(`Click on item ${key}`);
+  
+  const { data: product, isLoading, isError, error } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => fetchProductItemByItems(productId),
+    enabled: !!productId,  //  productId가 유효한 경우에만 쿼리 실행
+    staleTime: 60 * 1000,  //  1분 동안 캐시 유지
+  });
+  console.log(productForm)
+
+  // useMutation을 사용하여 상품 정보 업데이트
+  const mutation = useMutation({
+    mutationFn: (updatedProduct) => updateProduct(productId, updatedProduct),
+    onSuccess: () => {
+      alert('상품 정보가 성공적으로 수정되었습니다.');
+      navigate('/general');
+    },
+    onError: (error) => {
+      console.error('Error updating product:', error);
+      alert('상품 정보 수정에 실패했습니다. 다시 시도해주세요.');
+    }
+  });
+
+  //useMutation을 사용하여 상품 삭제
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProduct(productId),
+    onSuccess: () => {
+      alert('상품이 성공적으로 삭제되었습니다.');
+      navigate('/general'); // 삭제 후 상품 목록 페이지로 이동
+      console.log("성공productId:", productId)
+    },
+    onError: (error) => {
+      console.error('Error deleting product:', error);
+      console.log("오류productId:",productId)
+
+      // 에러 처리 세분화 (삭제 API 에러에 맞게 수정)
+      if (error.response) {
+        switch (error.response.status) {
+          case 404:
+            alert('해당 상품을 찾을 수 없습니다.');
+            break;
+          case 403: // 예시: 권한이 없는 경우
+            alert('상품 삭제 권한이 없습니다.');
+            break;
+          default:
+            alert('상품 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }
+      } else {
+        alert('상품 삭제 중 오류가 발생했습니다.');
+      }
+    },
+  });
+
+  const onHandleUpdateClick = async () => {
+    console.log('무슨아이템을가지고있니?:',productId)
+    try {
+      // productForm 데이터 유효성 검증 로직 추가
+      if (!productForm.productName || !productForm.productPrice || isNaN(productForm.productPrice)) {
+        alert('필수 항목을 모두 입력하고, 가격은 숫자로 입력해주세요.');
+        return;
+      }
+      
+      mutation.mutate({ productId, ...productForm });
+    } catch (error) {
+      console.error('Error updating product:', error);
+
+      // 에러 처리 세분화
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            alert('잘못된 요청입니다. 입력 값을 확인해주세요.');
+            break;
+          case 404:
+            alert('해당 상품을 찾을 수 없습니다.');
+            break;
+          default:
+            alert('상품 정보 수정에 실패했습니다. 다시 시도해주세요.');
+        }
+      } else {
+        alert('상품 정보 수정 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const onHandleDeleteClick = () => {
+    if (window.confirm("정말로 상품을 삭제하시겠습니까?")) {
+      deleteMutation.mutate();
+    }
+
+    //return axios.delete(`http://localhost:3006/users/1`)
   };
 
   // useEffect(() => {
-  // const getProduct = 
-  //   fetchProductItemByItems(식품ID)
-  //     .then(data => {
-  //       const filteredProducts = data.map(product => ({  //  필요한 데이터만 가져오기
-  //         식품ID: product.식품ID,
-  //         고객ID: product.고객ID,
-  //         상품가격: product.상품가격,
-  //         상품상세카페고리ID: product.상품상세카페고리ID,
-  //         판매타입코드: product.판매타입코드,
-  //         가격할인율: product.가격할인율,
-  //         맞춤회원정기배송할인율: product.맞춤회원정기배송할인율,
-  //         정기구매지원여부: product.정기구매지원여부,
-  //         정기배송할인율: product.정기배송할인율,
-  //         페이지노출여부: product.페이지노출여부,
-  //         원산지: product.원산지,
-  //       }));
-  //       setProductItem(filteredProducts); 
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching products:', error);
-  //     });
-  // , []);
+  //   if (product && product.length > 0) {
+  //     setProductForm(product[0]);
+  //   }
+  // }, [product]); // product 값이 변경될 때마다 실행
+  useEffect(() => {
+    if (product) { // product가 존재하는지 확인
+      setProductForm(product[0]); // product가 배열이 아닐 수 있으므로 바로 설정
+    }
+  }, [product]);
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product"],
-    queryFn: () => fetchProductItemByItems(productId)
-  });
-  console.log("detail product:",product)
-  console.log("productId:", productId)
+  const onHandleInputChange = (field, e) => {
+    setProductForm(prev => ({ ...prev, [field]: e.target.value }));
+  };  //  변경된 필드와 값을 받아 editedProduct 상태 업데이트하는 함수
+
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
+
 
   return (
     <div>
       <Flex gap="small" justify='flex-start'> 
         <Flex gap="small" wrap>
-        <LeftOutlined  onClick={onHandleBackClick}/>
+          <LeftOutlined  onClick={onHandleBackClick}/>
         </Flex>
         <Flex gap="small" wrap>
           <h2>일반식품상세정보</h2>
@@ -67,7 +144,7 @@ const ProductGeneralDetail = () => {
                 title: 'Main',
               },
               {
-                title: <a href="./general">일반식품관리</a>,
+                title: <a href="../general">일반식품관리</a>,
               },
               {
                 title: '일반식품상세정보',
@@ -77,7 +154,7 @@ const ProductGeneralDetail = () => {
         </Flex>
       </Flex>
       <br/>
-      <Flex  className='content' gap="5rem" >
+      <Flex  className='content' gap="5rem">
         <Flex className='imageSpace' gap="3rem">
           <Image.PreviewGroup
             items={[
@@ -96,85 +173,143 @@ const ProductGeneralDetail = () => {
           <Flex className='form1' gap="2rem">
             <Form>
               <h3>식품ID</h3>
-              <Input disabled placeholder={productId}  />
+              <Input 
+                disabled 
+                placeholder={productId}
+                onChange={onHandleInputChange}/>
             </Form>
             <Form>
               <h3>고객ID</h3>
-              <Input disabled placeholder='123'  />
+              <Input 
+                disabled 
+                placeholder={product[0].customerId}
+                onChange={onHandleInputChange}/>
             </Form>
             <Form>
               <h3>식품상세카테고리</h3>
-              <Input disabled placeholder='123456'  />
+              <Input disabled placeholder={product[0].productDetailCategoryId}
+              onChange={onHandleInputChange}/>
             </Form>
             <Form>
               <h3>판매타입코드</h3>
-              <Input disabled placeholder='123456'  />
+              <Input 
+                disabled 
+                placeholder={product[0].saleTypeCode}
+                onChange={onHandleInputChange}/>
             </Form>
           </Flex>
 
           <Flex className='form2' gap="2rem">
             <Form>
               <h3>식품명</h3>
-              <Input placeholder={product?.식품명}  />
+              <Input 
+                placeholder={product[0].productName}  
+                value={productForm.productName}
+                onChange={(e) => onHandleInputChange('productName', e)} />
             </Form>
             <Form>
               <h3>식품설명</h3>
               <TextArea 
               showCount 
               maxLength={100} 
-              placeholder="상품설명..."
-              // onChange={onTextChange}
+              placeholder={product[0].productDescription}
+              value={productForm.productDescription}
+              onChange={(e) => onHandleInputChange('productDescription', e)}
               style={{ width: '450px' }}
               />
             </Form>
             <Form>
               <h3>식품가격</h3>
-              <Input placeholder='1234'  />
+              <Input 
+                placeholder={product[0].productPrice}
+                value={productForm.productPrice}
+                onChange={(e) => onHandleInputChange('productPrice', e)}/>
             </Form>
           </Flex>
 
           <Flex className='form3' gap="2rem">
             <Form>
-              <h3>가격할인율</h3>
-              <Input placeholder='123456'  />
-            </Form>
-            <Form>
-              <h3>맞춤회원정기배송할인율</h3>
-              <Input placeholder='123456'  />
-            </Form>
-            {/* <Form>
-              <h3>정기구매지원여부</h3>
-              <Dropdown
-                menu={{
-                  items,
-                  onClickDropDown,
+              <h3>페이지노출여부</h3>
+              <Select
+                value={productForm.pageExposureStatus}
+                style={{
+                  width: 120,
                 }}
-              >
-                <a onClick={(e) => e.preventDefault()}>
-                  <Space>
-                    Hover me, Click menu item
-                    <DownOutlined />
-                  </Space>
-                </a>
-              </Dropdown>
-            </Form> */}
+                onChange={(value) => onHandleInputChange('pageExposureStatus', { target: { value } })}
+                options={[
+                  { value: 'O',  label: 'O' },
+                  { value: 'X', label: 'X' },
+                ]}
+              />
+            </Form>
             <Form>
-              <h3>정기배송할인율</h3>
-              <Input placeholder='123456'  />
+              <h3>정기구매지원여부</h3>
+              <Select
+                value={productForm.regularPurchaseSupportStatus}
+                style={{
+                  width: 120,
+                }}
+                onChange={(value) => onHandleInputChange('regularPurchaseSupportStatus', { target: { value } })}
+                options={[
+                  { value: 'O', label: 'O' },
+                  { value: 'X', label: 'X' }
+                ]}
+              />
+            </Form>
+            <Form>
+              <h3>원산지</h3>
+              <Input 
+                placeholder={product[0].origin}  
+                value={productForm.origin}
+                onChange={(e) => onHandleInputChange('origin', e)} />
             </Form>
           </Flex>
 
           <Flex className='form4' gap="2rem">
             <Form>
-              <h3>페이지노출여부</h3>
-              <Input disabled placeholder='123456'  />
+              <h3>가격할인율</h3>
+              <Input 
+                placeholder={product[0].defaultDiscountRate}
+                addonAfter="%"  
+                value={productForm.defaultDiscountRate}
+                onChange={(e) => onHandleInputChange('defaultDiscountRate', e)} />
             </Form>
             <Form>
-              <h3>원산지</h3>
-              <Input placeholder='123456'  />
+              <h3>맞춤회원정기배송할인율</h3>
+              <Input 
+                placeholder={product[0].customizedRegularDeliveryDiscountRate}
+                addonAfter="%"  
+                value={productForm.customizedRegularDeliveryDiscountRate}
+                onChange={(e) => onHandleInputChange('customizedRegularDeliveryDiscountRate', e)} />
+            </Form>
+            <Form>
+              <h3>정기배송할인율</h3>
+              <Input 
+                placeholder={product[0].regularDeliveryDiscountRate} addonAfter="%"  
+                value={productForm.regularDeliveryDiscountRate}
+                onChange={(e) => onHandleInputChange('regularDeliveryDiscountRate', e)} />
             </Form>
           </Flex>
+          <Flex className='form5' justify='flex-end' gap="middle">
+            <Button 
+              type="primary" 
+              shape="round" 
+              icon={<EditOutlined />}
+              onClick={onHandleUpdateClick}>
+                수정하기
+            </Button>
+            <Button 
+              type="primary" 
+              shape="round" 
+              icon={<DeleteOutlined />}
+              danger
+              onClick={onHandleDeleteClick}>
+                삭제하기
+            </Button>
+          </Flex>
+
         </Flex>
+        
       </Flex>
     </div>
   );
