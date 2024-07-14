@@ -1,59 +1,64 @@
+import { addTimeAttackItems } from '../../apis';
 import { useState, useEffect } from 'react';
-import { Button, Modal, Input, Form, TimePicker, message } from 'antd';
+import { Button, Modal, Input, Form, DatePicker, message } from 'antd';
 import axios from "axios";
 import moment from 'moment';
 
-const TimeAttackApplyModal = ({isModalOpen, onHandleExit, loading, selectedProductIds, setIsModalOpen, setLoading}) => {
+const TimeAttackApplyModal = ({isModalOpen, loading, selectedProductIds, setIsModalOpen, setLoading}) => {
 
   // -----------------------------------------------------------------
   //const [loading, setLoading] = useState(false);
-  const [newTimeAttackId, setNewTimeAttackId] = useState(null);
+  const [newTimeSaleId, setNewTimeSaleId] = useState(null);
   const [form] = Form.useForm();
   const [newServiceStatusIds, setNewServiceStatusIds] = useState([]);
 
+  const onHandleExit = () => {
+    setIsModalOpen(false); // 모달 상태 변경
+    form.resetFields(); // 폼 초기화 (선택 사항)
+  };
 
   useEffect(() => {
-    const fetchNewTimeAttackId = async () => {
+    const fetchNewTimeSaleId = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/timeAttack');
+        const response = await axios.get('http://localhost:3001/timeSale');
         const timeAttackData = response.data;
+        // console.log("데이터:", timeAttackData)
 
-        // 타임어택세일ID 생성
-        const lastTimeAttack = response.data[response.data.length - 1];
-        setNewTimeAttackId(lastTimeAttack ? lastTimeAttack.타임어택세일ID + 1 : 400013);
+        // 타임어택세일ID 생성 (서버에서 생성된 값을 사용하는 것이 더 안전합니다.)
+        const lastTimeAttack = timeAttackData[timeAttackData.length - 1];
+        setNewTimeSaleId(lastTimeAttack ? lastTimeAttack.timeAttackSaleId + 1 : 400013);
 
         // 부가서비스상태ID 생성
-        const usedServiceStatusIds = timeAttackData.map(item => item.부가서비스상태ID);
+        const usedServiceStatusIds = timeAttackData.map(item => item.additionalServiceStatusId);
         const availableServiceStatusIds = Array.from({ length: 201 }, (_, i) => 500 + i).filter(id => !usedServiceStatusIds.includes(id));
+        setNewServiceStatusIds(availableServiceStatusIds.slice(0, selectedProductIds.length));
       } catch (error) {
         console.error('Error fetching new time attack ID:', error);
-        setNewTimeAttackId(400013); // 기본값으로 설정
+        setNewTimeSaleId(400013); // 기본값으로 설정
         setNewServiceStatusIds(Array.from({ length: selectedProductIds.length }, (_, i) => 500 + i));
       }
     };
 
-    if (isModalOpen) {
-      fetchNewTimeAttackId();
-    }
-  }, [isModalOpen, selectedProductIds.length]);
+    fetchNewTimeSaleId();
+  }, [selectedProductIds.length]);
 
   const onFinish = async (values) => {
-    //setLoading(true);
+    setLoading(true);
 
-    const newTimeAttackEntries = selectedProductIds.map(productId => (
-      {
-        타임어택세일ID: newTimeAttackId++,
-        식품ID: productId,
-        부가서비스상태ID: newServiceStatusIds[index], // 필요에 따라 수정
-        시작시간: values.startTime.format('YYYY-MM-DD HH:mm:ss'),
-        종료시간: values.startTime.add(3, 'hours').format('YYYY-MM-DD HH:mm:ss'),
-        할인율: values.discountRate,
-      }
-    ));
+    const newTimeAttackEntries = selectedProductIds.map((productId, index) => ({
+      타임어택세일ID: newTimeSaleId++,
+      식품ID: productId,
+      부가서비스상태ID: newServiceStatusIds[index],
+      시작시간: moment(values.startTime).format('YYYY-MM-DD HH:mm:ss'),
+      종료시간: moment(values.startTime).add(3, 'hours').format('YYYY-MM-DD HH:mm:ss'),
+      할인율: values.discountRate,
+    }));
 
     try {
-      const response = await axios.post('http://localhost:3001/timeAttack', newTimeAttackEntries);
-      console.log('Time attack entries added:', response.data);
+      // 별도 파일에서 가져온 addTimeAttackItems 함수 호출
+      const response = await addTimeAttackItems(newTimeAttackEntries);
+      console.log('Time attack entries added:', response);
+
       message.success('타임어택 신청이 완료되었습니다.');
       handleOk();
     } catch (error) {
@@ -80,9 +85,6 @@ const TimeAttackApplyModal = ({isModalOpen, onHandleExit, loading, selectedProdu
         onOk={handleOk}
         onCancel={onHandleExit}
         footer={[
-          <Button key="back" onClick={onHandleExit}>
-            Return
-          </Button>,
           <Button key="submit" type="primary" loading={loading} onClick={form.submit}>
             Submit
           </Button>
@@ -100,7 +102,16 @@ const TimeAttackApplyModal = ({isModalOpen, onHandleExit, loading, selectedProdu
             name="startTime"
             rules={[{ required: true, message: '시작시간을 입력하세요' }]}>
             {/* <TimePicker value={value} onChange={onChange} /> */}
-            <TimePicker format="HH:mm" />
+            {/* <TimePicker format="HH:mm" /> */}
+            <DatePicker
+              showTime
+              size='large'
+              onChange={(value, dateString) => {
+                console.log('Selected Time: ', value);
+                console.log('Formatted Selected Time: ', dateString);
+              }}
+              // onOk={onOk}
+            />
           </Form.Item>
           <Form.Item 
             label="타임어택 할인율" 
