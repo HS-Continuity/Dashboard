@@ -146,7 +146,7 @@
       "pageExposureStatus": "X",
       "regularPurchaseSupportStatus": "O",
       "id": "4b93"
-    },
+    }
   ],
   "timeAttack": [
     {
@@ -181,6 +181,202 @@
       "endTime": "2024-07-12 11:00:00",
       "discountRate": 25,
       "id": "6a69"
+    }
+  ],
+  "address" :
+  [
+    {
+      "number": 1,
+      "member_address_id": "ADD105992",
+      "member_id": "C100001",
+      "member_name": "김하늘",
+      "address": "서울특별시 강남구 역삼동",
+      "is_default_shipping_address": "O",
+      "id": "1"
+    },
+    {
+      "number": 2,
+      "member_address_id": "ADD109176",
+      "member_id": "C100002",
+      "member_name": "이태양",
+      "address": "경기도 성남시 분당구 정자동",
+      "is_default_shipping_address": "O",
+      "id": "2"
+    },
+    {
+      "number": 3,
+      "member_address_id": "ADD108854",
+      "member_id": "C100003",
+      "member_name": "박은별",
+      "address": "부산광역시 해운대구 우동",
+      "is_default_shipping_address": "X",
+      "id": "3"
+    },
+    {
+      "number": 4,
+      "member_address_id": "ADD108463",
+      "member_id": "C100004",
+      "member_name": "최바다",
+      "address": "인천광역시 연수구 송도동",
+      "is_default_shipping_address": "X",
+      "id": "4"
+    },
+    {
+      "number": 5,
+      "member_address_id": "ADD106987",
+      "member_id": "C100005",
+      "member_name": "정구름",
+      "address": "대구광역시 수성구 범어동",
+      "is_default_shipping_address": "O",
+      "id": "5"
+    },
+    {
+      "number": 6,
+      "member_address_id": "ADD102700",
+      "member_id": "C100006",
+      "member_name": "한별이",
+      "address": "광주광역시 서구 화정동",
+      "is_default_shipping_address": "O",
+      "id": "6"
+    },
+    {
+      "number": 7,
+      "member_address_id": "ADD102237",
+      "member_id": "C100007",
+      "member_name": "강산들",
+      "address": "울산광역시 남구 삼산동",
+      "is_default_shipping_address": "O",
+      "id": "7"
+    },
+    {
+      "number": 8,
+      "member_address_id": "ADD100007",
+      "member_id": "C100008",
+      "member_name": "윤햇살",
+      "address": "울산광역시 남구 삼산동",
+      "is_default_shipping_address": "X",
+      "id": "8"
+    },
+    {
+      "number": 9,
+      "member_address_id": "ADD103724",
+      "member_id": "C100009",
+      "member_name": "서강물",
+      "address": "세종특별자치시 한솔동",
+      "is_default_shipping_address": "X",
+      "id": "9"
+    },
+    {
+      "number": 10,
+      "member_address_id": "ADD107357",
+      "member_id": "C100010",
+      "member_name": "문지혜",
+      "address": "경상남도 창원시 성산구 상남동",
+      "is_default_shipping_address": "O",
+      "id": "10"
+    }
+  ],
+  "member": 
+  [
+    {
+      "id": "1",
+      "number": 1,
+      "member_id": 100001,
+      "member_name": "김하늘",
+      "mobile_phone": "010-1234-5678",
+      "email": "qazwsxedc@gmail.com",
+      "birth_date": "1997-03-06",
+      "gender": "여"
+    },
+    {
+      "id": "2",
+      "number": 2,
+      "member_id": 100002,
+      "member_name": "이태양",
+      "mobile_phone": "010-9876-5432",
+      "email": "bnmmnbvcxz@gmail.com",
+      "birth_date": "1971-06-02",
+      "gender": "여"
+    },
+    {
+      "id": "3",
+      "number": 3,
+      "member_id": 100003,
+      "member_name": "박은별",
+      "mobile_phone": "010-2468-1357",
+      "email": "ghjklzxcv@naver.com",
+      "birth_date": "1999-12-08",
+      "gender": "여"
+    },
+    {
+      "id": "4",
+      "number": 4,
+      "member_id": 100004,
+      "member_name": "최바다",
+      "mobile_phone": "010-3692-5814",
+      "email": "mnbvcxz@naver.com",
+      "birth_date": "1988-02-23",
+      "gender": "여"
+    },
+    {
+      "id": "5",
+      "number": 5,
+      "member_id": 100005,
+      "member_name": "정구름",
+      "mobile_phone": "010-5555-1212",
+      "email": "uiopasdf@naver.com",
+      "birth_date": "1989-06-23",
+      "gender": "여"
+    },
+    {
+      "id": "6",
+      "number": 6,
+      "member_id": 100006,
+      "member_name": "한별이",
+      "mobile_phone": "010-7418-5296",
+      "email": "lkjhgfdsa@naver.com",
+      "birth_date": "1970-11-11",
+      "gender": "여"
+    },
+    {
+      "id": "7",
+      "number": 7,
+      "member_id": 100007,
+      "member_name": "강산들",
+      "mobile_phone": "010-8979-4561",
+      "email": "poiuytrewq@naver.com",
+      "birth_date": "1994-03-06",
+      "gender": "남"
+    },
+    {
+      "id": "8",
+      "number": 8,
+      "member_id": 100008,
+      "member_name": "윤햇살",
+      "mobile_phone": "010-1123-5813",
+      "email": "zxcvbnm@naver.com",
+      "birth_date": "1994-06-27",
+      "gender": "남"
+    },
+    {
+      "id": "9",
+      "number": 9,
+      "member_id": 100009,
+      "member_name": "서강물",
+      "mobile_phone": "010-9638-5214",
+      "email": "asdfghjkl@naver.com",
+      "birth_date": "1997-10-01",
+      "gender": "여"
+    },
+    {
+      "id": "10",
+      "number": 10,
+      "member_id": 100010,
+      "member_name": "문지혜",
+      "mobile_phone": "010-4567-8912",
+      "email": "qwertyuiop@gmail.com",
+      "birth_date": "1983-02-10",
+      "gender": "남"
     }
   ]
 }

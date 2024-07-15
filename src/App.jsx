@@ -63,7 +63,7 @@ function App() {
           {/* Customer routes */}
           <Route path='/member'>
             <Route path='manage' element={<MemberManage />} />
-            <Route path='manageDetail' element={<MemberManageDetail />} />
+            <Route path='manage/:member_id' element={<MemberManageDetail />} />
             <Route path='address' element={<MemberAddress />} />
             <Route path='payment' element={<MemberPayment />} />
           </Route>
@@ -80,7 +80,7 @@ function App() {
             <Route path='general' element={<OrderGeneral />} />
             <Route path='generalDetail' element={<OrderGeneralDetail />} />
             <Route path='subscription' element={<OrderSubscription />} />
-            <Route path='subscription/:subscriptionId' element={<OrderSubscriptionDetail />} />
+            <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} />
           </Route>
           <Route path='/inventory' element={<Inventory />} />
           <Route path='/inventory/:productName' element={<InventoryDetail />} />
