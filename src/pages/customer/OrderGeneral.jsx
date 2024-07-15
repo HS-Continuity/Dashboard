@@ -200,7 +200,7 @@ const OrderGeneral = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          navigate('../generalDetail', { 
+          navigate('../subscriptionDetail', { 
             state: { 
               selectedTags: record.tags,
               selectedOrderId: record.주문번호,

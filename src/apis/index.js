@@ -74,7 +74,7 @@ export const deleteProduct = async (productId) => {
 
 // 타임세일상품 상세페이지 조회
 export const fetchTimeSaleProductItemByItems = async (productId) => {
-  const response = await axios.get(`http://localhost:3001/timeSale`, {
+  const response = await axios.get(`http://localhost:3001/timeAttack`, {
     params : {
       productId : productId
     }
@@ -86,7 +86,7 @@ export const fetchTimeSaleProductItemByItems = async (productId) => {
 // 타임어택 상품 등록
 export const addTimeAttackItems = async (newTimeAttackEntries) => {
   try {
-    const response = await axios.post(`http://localhost:3001/timeSale`, newTimeAttackEntries);
+    const response = await axios.post(`http://localhost:3001/timeAttack`, newTimeAttackEntries);
     return response.data;
   } catch (error) {
     console.error('Error adding time attack items:', error);
@@ -104,3 +104,40 @@ export const fetchProductItemByName = async (productName) => {
   console.log('response.data라구요:',response.data)
   return response.data; // 모든 데이터 담은 배열
 };
+
+
+//----회원 목록 조회------------------------------------------------------
+// 회원 목록 조회
+export const fetchCustomerList = async () => {
+  const response = await axios.get("http://localhost:3001/member",{
+    params: {
+      saleTypeCode: 1
+    }}
+  );  // await: 비동기적으로 응답 기다림
+  return response.data; // 모든 데이터 담은 배열
+};
+
+// 회원 상세페이지 조회
+export const fetchCustomerListById = async (member_id) => {
+  const response = await axios.get(`http://localhost:3001/member`, {
+    params : {
+      productId : member_id
+    }
+  });  // await: 비동기적으로 응답 기다림
+  console.log('response.data라구요:',response.data)
+  return response.data; // 모든 데이터 담은 배열
+};
+
+
+// 회원 상세페이지 수정
+export const updateMember = async (member_id, updatedMember) => {
+  try {
+    const response = await axios.put(`http://localhost:3001/member/${member_id}`, updatedMember);
+    console.log('수정용 response.data라구요:',response.data)
+    return response.data;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    throw error; // 에러를 다시 던져서 호출하는 쪽에서 처리하도록 함
+  }
+};
+

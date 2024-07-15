@@ -24,7 +24,7 @@ const ProductGeneralDetail = () => {
     enabled: !!productId,  //  productId가 유효한 경우에만 쿼리 실행
     staleTime: 60 * 1000,  //  1분 동안 캐시 유지
   });
-  console.log(productForm)
+  console.log("오호:",productForm)
 
   // useMutation을 사용하여 상품 정보 업데이트
   const mutation = useMutation({
