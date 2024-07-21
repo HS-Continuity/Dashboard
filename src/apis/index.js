@@ -147,5 +147,9 @@ export const updateMember = async (member_id, updatedMember) => {
   }
 };
 
-
-//----주소지 목록 조회------------------------------------------------------
+//--------------------------------------------------------------------------------------
+// 정기 주문 조회
+export const fetchRegularDeliveryList = async () => {
+  const response = await axios.get("http://localhost:3001/regular_delivery");  // await: 비동기적으로 응답 기다림
+  return response.data; // 모든 데이터 담은 배열
+};

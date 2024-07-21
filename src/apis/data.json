@@ -634,6 +634,119 @@
       "is_simple_payment_agreed": "ACTIVE",
       "is_default_payment_card": "INACTIVE"
     }
+  ],
+
+  "regular_delivery": [
+    {
+      "regular_delivery_application_id": "R001",
+      "member_id": "M001",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 1,
+      "product_order_list": "오이, 당근",
+      "start_date": "2024-08-01",
+      "end_date": "2024-12-01",
+      "cycle": 1,
+      "regular_delivery_status": "결제완료"
+    },
+    {
+      "regular_delivery_application_id": "R002",
+      "member_id": "M002",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 6,
+      "product_order_list": "양파, 감자",
+      "start_date": "2024-09-01",
+      "end_date": "2025-01-01",
+      "cycle": 2,
+      "regular_delivery_status": "주문승인"
+    },
+    {
+      "regular_delivery_application_id": "R003",
+      "member_id": "M003",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 11,
+      "product_order_list": "토마토, 상추",
+      "start_date": "2024-10-01",
+      "end_date": "2025-02-01",
+      "cycle": 3,
+      "regular_delivery_status": "배송준비중"
+    },
+    {
+      "regular_delivery_application_id": "R004",
+      "member_id": "M004",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 16,
+      "product_order_list": "브로콜리, 호박",
+      "start_date": "2024-11-01",
+      "end_date": "2025-03-01",
+      "cycle": 4,
+      "regular_delivery_status": "배송중"
+    },
+    {
+      "regular_delivery_application_id": "R005",
+      "member_id": "M005",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 21,
+      "product_order_list": "배추, 무",
+      "start_date": "2024-12-01",
+      "end_date": "2025-04-01",
+      "cycle": 1,
+      "regular_delivery_status": "배송완료"
+    },
+    {
+      "regular_delivery_application_id": "R006",
+      "member_id": "M001",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 2,
+      "product_order_list": "사과, 배",
+      "start_date": "2024-07-15",
+      "end_date": "2024-12-15",
+      "cycle": 2,
+      "regular_delivery_status": "결제완료"
+    },
+    {
+      "regular_delivery_application_id": "R007",
+      "member_id": "M002",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 7,
+      "product_order_list": "고구마, 감자",
+      "start_date": "2024-07-15",
+      "end_date": "2025-01-15",
+      "cycle": 3,
+      "regular_delivery_status": "주문승인"
+    },
+    {
+      "regular_delivery_application_id": "R008",
+      "member_id": "M003",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 12,
+      "product_order_list": "딸기, 블루베리",
+      "start_date": "2024-07-02",
+      "end_date": "2025-02-15",
+      "cycle": 4,
+      "regular_delivery_status": "배송준비중"
+    },
+    {
+      "regular_delivery_application_id": "R009",
+      "member_id": "M004",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 17,
+      "product_order_list": "양배추, 상추",
+      "start_date": "2024-11-15",
+      "end_date": "2025-03-15",
+      "cycle": 1,
+      "regular_delivery_status": "배송중"
+    },
+    {
+      "regular_delivery_application_id": "R010",
+      "member_id": "M005",
+      "order_memo": "주문 메모입니다.",
+      "member_payment_card_id": 22,
+      "product_order_list": "애호박, 마늘",
+      "start_date": "2024-12-15",
+      "end_date": "2025-04-15",
+      "cycle": 2,
+      "regular_delivery_status": "배송완료"
+    }
   ]
   
 }
