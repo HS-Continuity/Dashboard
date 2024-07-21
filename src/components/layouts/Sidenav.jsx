@@ -54,8 +54,6 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       "/admin/review": "5",
       "/admin/statistics": "6",
       "/member/manage": "12-1",
-      "/member/address": "12-2",
-      "/member/payment": "12-3",
       "/product/general": "13-1",
       "/product/eco": "13-2",
       "/product/timesale": "13-3",
@@ -130,15 +128,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
         {
           key: "12-1",
           label: <Link to='/member/manage'>회원 관리</Link>,
-        },
-        {
-          key: "12-2",
-          label: <Link to='/member/address'>주소지 관리</Link>,
-        },
-        {
-          key: "12-3",
-          label: <Link to='/member/payment'>결제 수단 관리</Link>,
-        },
+        }
       ],
     },
     {

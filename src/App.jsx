@@ -15,8 +15,6 @@ import AdminStatistics from "./pages/admin/Statistics";
 // Customer pages
 import MemberManage from "./pages/customer/MemberManage";
 import MemberManageDetail from "./pages/customer/MemberManageDetail";
-import MemberAddress from "./pages/customer/MemberAddress";
-import MemberPayment from "./pages/customer/MemberPayment";
 import ProductGeneral from "./pages/customer/ProductGeneral";
 import ProductGeneralDetail from "./pages/customer/ProductGeneralDetail";
 import ProductEco from "./pages/customer/ProductEco";
@@ -64,8 +62,6 @@ function App() {
           <Route path='/member'>
             <Route path='manage' element={<MemberManage />} />
             <Route path='manage/:member_id' element={<MemberManageDetail />} />
-            <Route path='address' element={<MemberAddress />} />
-            <Route path='payment' element={<MemberPayment />} />
           </Route>
           <Route path='/product'>
             <Route path='general' element={<ProductGeneral />} />
