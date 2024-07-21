@@ -5,6 +5,7 @@ import { Input, Flex, Space, Table, Button } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import { useQuery } from '@tanstack/react-query';
+import './MemberManageModule.css';
 
 
 const MemberManage = () => {
@@ -15,7 +16,6 @@ const MemberManage = () => {
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [lastClickedRow, setLastClickedRow] = useState(null);
-  const [lastClickedTime, setLastClickedTime] = useState(null);
   const searchInput = useRef(null);
   const [tableParams, setTableParams] = useState({
     pagination: {
@@ -26,24 +26,18 @@ const MemberManage = () => {
 
   const navigate = useNavigate();
 
-  const { data: member, isLoading } = useQuery({
+  const { data: member } = useQuery({
     queryKey: ["member"],
     queryFn: () => fetchCustomerList()
   });
 
   const handleChange = (pagination, filters, sorter) => {
-    //console.log('Various parameters', pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
 
   const clearFilters = () => {
     setFilteredInfo({});
-  };
-
-  const clearAll = () => {
-    setFilteredInfo({});
-    setSortedInfo({});
   };
 
   const handleReset = (clearFilters) => {  //  컬럼별 리셋
@@ -64,25 +58,9 @@ const MemberManage = () => {
 
   const onRow = (record, rowIndex) => {
     return {
-      onClick: (e) => {
-        const currentTime = new Date().getTime();
-        if (
-          lastClickedRow === rowIndex &&
-          currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-        ) {
-          // navigate('../manageDetail', { 
-          //   state: { 
-          //     selectedMemberId: record.회원ID,
-          //     selectedMemberName: record.회원명,
-          //     selectedMemberGender: record.성별,
-          //     selectedMemberPhone: record.휴대전화,
-          //     selectedMemberEmail: record.이메일,
-          //   } 
-          // }); 
-          navigate(`${record.member_id}`);
-        }
+      onClick: () => {
+        navigate(`../manage/${record.member_id}`);
         setLastClickedRow(rowIndex);
-        setLastClickedTime(currentTime);
       },
     };
   };
@@ -128,19 +106,6 @@ const MemberManage = () => {
           >
             Reset
           </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button> */}
           <Button
             type="link"
             size="small"
@@ -217,36 +182,36 @@ const MemberManage = () => {
     },
     {
       title: '휴대전화',
-      dataIndex: 'mobile_phone',
-      key: 'mobile_phone',
+      dataIndex: 'member_phone_number',
+      key: 'member_phone_number',
       fixed: 'left',
-      filteredValue: filteredInfo.mobile_phone || null,
+      filteredValue: filteredInfo.member_phone_number || null,
       filtered: false,
-      ...getColumnSearchProps('mobile_phone'),
+      ...getColumnSearchProps('member_phone_number'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '이메일',
-      dataIndex: 'email',
-      key: 'email',
+      dataIndex: 'member_email',
+      key: 'member_email',
       fixed: 'left',
-      filteredValue: filteredInfo.email || null,
+      filteredValue: filteredInfo.member_email || null,
       filtered: false,
-      ...getColumnSearchProps('email'),
+      ...getColumnSearchProps('member_email'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '생년월일',
-      dataIndex: 'birth_date',
-      key: 'birth_date',
+      dataIndex: 'member_birthday',
+      key: 'member_birthday',
       fixed: 'left',
-      filteredValue: filteredInfo.birth_date || null,
+      filteredValue: filteredInfo.member_birthday || null,
       filtered: false,
-      ...getColumnSearchProps('birth_date'),
+      ...getColumnSearchProps('member_birthday'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
@@ -256,12 +221,10 @@ const MemberManage = () => {
       dataIndex: 'gender',
       key: 'gender',
       filters: [
-        { text: '남', value: '남' },
-        { text: '여', value: '여' },
+        { text: '남', value: 'MALE' },
+        { text: '여', value: 'FEMALE' },
       ],
       filteredValue: filteredInfo.gender || null,
-      // onFilter: (value, record) => record.name.includes(value),
-      // ellipsis: true,
       filtered: false,
       width: 100,
       onFilter: (value, record) => record.gender === value,
@@ -281,7 +244,6 @@ const MemberManage = () => {
       <br />
       <Flex gap="small" justify= "flex-end">
         <Button onClick={clearFilters}>Clear Filter</Button>
-        {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
       </Flex>
       <br />
       <Table

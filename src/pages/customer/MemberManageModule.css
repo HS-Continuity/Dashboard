@@ -1,0 +1,5 @@
+/* 특정 행에 마우스 오버 시 커서 모양 pointer로 */
+.ant-table-row:hover {
+  cursor: pointer;
+  background-color: #f0f0f0; /* 예시: 배경색 밝은 회색으로 변경 */
+}
