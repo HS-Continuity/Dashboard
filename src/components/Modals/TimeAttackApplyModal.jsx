@@ -46,7 +46,7 @@ const TimeAttackApplyModal = ({isModalOpen, loading, selectedProductIds, setIsMo
     setLoading(true);
 
     const newTimeAttackEntries = selectedProductIds.map((productId, index) => ({
-      타임어택세일ID: newTimeSaleId++,
+      타임어택세일ID: newTimeSaleId,
       식품ID: productId,
       부가서비스상태ID: newServiceStatusIds[index],
       시작시간: moment(values.startTime).format('YYYY-MM-DD HH:mm:ss'),
