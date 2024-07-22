@@ -1,12 +1,10 @@
-import { fetchRegularDeliveryList } from '../../apis';
+import { fetchRegularDeliveryList, fetchRegularDeliveryByDate } from '../../apis';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Flex, Space, DatePicker, Table, Tag, Button, Input,  Calendar, Badge, Drawer } from 'antd'
+import { Flex, Space, DatePicker, Table, Tag, Input,  Calendar, Badge, Drawer } from 'antd'
+import { ExclamationOutlined } from '@ant-design/icons';
 import locale from 'antd/locale/ko_KR'; // 한국어 locale 파일 import
-import { SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
-import moment from 'moment';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko'; // 한국어 locale 파일 import
 import updateLocale from 'dayjs/plugin/updateLocale';
@@ -24,19 +22,21 @@ const tagColors = {
 };
 
 
-const OrderGeneral = () => {
+const OrderSubscription = () => {
 
   const navigate = useNavigate();
   const [selectedDateRange, setSelectedDateRange] = useState([]);
   const dataRef = useRef([]);
-  const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [filteredData, setFilteredData] = useState(dataRef.current);  //  초기값은 원본 데이터(data)
+  const [sortedInfo, setSortedInfo] = useState({});
   const [selectedDate, setSelectedDate] = useState(dayjs()); // 현재 날짜로 초기화
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [panelDate, setPanelDate] = useState(dayjs()); // 현재 패널에 표시되는 날짜 상태 추가
+  const [drawerFilteredOrders , setDrawerFilteredOrders ] = useState([]);
+  const [lastClickedRow, setLastClickedRow] = useState(null);
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,  // 현재 페이지 번호
@@ -44,6 +44,7 @@ const OrderGeneral = () => {
     },
   });
 
+  // 전체 정기주문 데이터 조회
   const { data: regular_delivery, isLoading, error } = useQuery({
     queryKey: ["regular_delivery"],
     queryFn: () => fetchRegularDeliveryList(),
@@ -59,23 +60,11 @@ const OrderGeneral = () => {
   if (error) return <div>에러 발생: {error.message}</div>;
   if (!regular_delivery) return <div>데이터가 없습니다.</div>;
 
-  // status별 개수 세기
-  // 1. 빈 객체 생성하기 (태그별 개수 저장)
-  const statusCounts = {};
-  // 2. forEach 사용해서 orderStatusTags 배열 순회하기
-  orderStatusTags.forEach((tag) => {
-    // 옵셔널 체이닝(?.) 사용해서 item.tags가 존재하는 경우에만 includes(tag) 호출하기
-    // 태그가 key, 개수가 value
-    statusCounts[tag] = dataRef.current.filter((item) => item.tags?.includes(tag)).length;
-  });
-
-  const onHandleChange = (pagination, filters) => {
-    setFilteredInfo(filters);  //  필터링 정보 업데이트
+  const onHandleChange = (pagination, filters, sorter) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter);
   };
 
-  const onClearFilters = () => {  //  모든 필터 초기화 이벤트
-    setFilteredInfo({});
-  };
 
   const applyFilters = (data) => {
     if (!selectedDateRange || selectedDateRange.length === 0) {
@@ -117,8 +106,8 @@ const OrderGeneral = () => {
   };
 
   const filteredOrdersByDate = filteredData.filter(
-    (item) => dayjs(item.start_date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD') // selectedDate의 형식을 'YYYY-MM-DD'로 변환하여 비교
-  );
+    (item) => dayjs(item.start_date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD')
+  ).map((item) => ({ ...item, key: item.regular_delivery_application_id })); // 각 항목에 key 추가
 
 
   
@@ -139,8 +128,6 @@ const OrderGeneral = () => {
       return null;
     }
   
-    //console.log('Number of orders:', regular_delivery.length);
-  
     // 해당 날짜에 일치하는 데이터 필터링
     const matchingOrders = regular_delivery.filter(item => {
       const itemDate = dayjs(item.start_date);
@@ -148,38 +135,68 @@ const OrderGeneral = () => {
       //console.log('Comparing:', item.start_date, 'with', formattedDate, 'Match:', isMatch);
       return isMatch;
     });
-  
-    //console.log('Matching orders for', formattedDate, ':', matchingOrders);
-  
+
+    const getSummaryData = (matchingOrders) => {
+      const memberIds = [...new Set(matchingOrders.map((item) => item.member_id))];
+      const productList = [...new Set(matchingOrders.map((item) => item.product_order_list))];
+    
+      return {
+        memberCount: memberIds.length,
+        productCount: productList.length,
+        moreCount: matchingOrders.length - 1,
+      };
+    };
+
+    // 날짜별 데이터 요약 정보 추출
+    const summaryData = getSummaryData(matchingOrders);
+
+    // '외 n건' 문자열 생성
+    const moreCountText = summaryData.moreCount > 0 ? `외 ${summaryData.moreCount}건` : '';
+
+    
+
+
     // 일치하는 데이터의 member_id 추출 (중복 제거)
-    const memberIds = [...new Set(matchingOrders.map(item => item.member_id))];
-    const orderList = [...new Set(matchingOrders.map(item => item.product_order_list))];
+    // const memberIds = [...new Set(matchingOrders.map(item => item.member_id))];
+    // const orderList = [...new Set(matchingOrders.map(item => item.product_order_list))];
   
-    //console.log('Member IDs:', memberIds);
-  
+    
     const isToday = cellDate.isSame(dayjs(), 'day');
     return (
       <ul className="events">
-        {matchingOrders.map((order, index) => (
-          <li key={index}>
-            <Flex gap='small'>
-              <div className='eachOrderItem' color="blue">
-                {order.member_id}
-              </div>
-              <div color="geekblue">
-                {order.product_order_list}
-              </div>
-            </Flex>
-          </li>
-        ))}
-      </ul>
+      {matchingOrders.length > 0 && matchingOrders[0] !== null ? (
+        <li key={matchingOrders[0].regular_delivery_application_id}>
+          <Flex gap="small">
+            <div className="eachOrderItem">
+              {matchingOrders[0].regular_delivery_application_id}
+            </div>
+            <div className="eachOrderItem2">{moreCountText}</div>
+          </Flex>
+        </li>
+      ) : null}
+    </ul>
     );
   };
 
-  const onSelectDate = (value) => {
-    setSelectedDate(value);
-    setIsDrawerVisible(value.isSame(panelDate, 'month')); // 선택된 날짜가 현재 패널의 월에 속하는 경우에만 Drawer 열기
+  const onSelectDate = async(selectedDate) => {
+    setSelectedDate(selectedDate);
+    setIsDrawerVisible(selectedDate.isSame(panelDate, 'month')); // 선택된 날짜가 현재 패널의 월에 속하는 경우에만 Drawer 열기
+
+    try {
+      const data = await fetchRegularDeliveryByDate(selectedDate);
+      const filteredData = applyFilters(data);
+      const keyValueData = filteredData.map(item => ({
+        ...item,
+        key: item.regular_delivery_application_id // 고유 key 추가
+      }));
+      setDrawerFilteredOrders(keyValueData)
+      console.log('Key values:', keyValueData.map((item) => item.key));
+      console.log('regular_delivery_status:', keyValueData.regular_delivery_status);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
+  
 
   const onCloseDrawer = () => {
     setIsDrawerVisible(false);
@@ -198,12 +215,23 @@ const OrderGeneral = () => {
     });
   };
 
+  const onRow = (record, rowIndex) => {
+    return {
+      onClick: () => {
+        navigate(`../subscription/${record.regular_delivery_application_id}`);
+        setLastClickedRow(rowIndex);
+      },
+    };
+  };
+
   const columns = [
     {
       title: 'NO.',
       dataIndex: 'no',  // 해당 데이터가 어떤 필드에 있는지
       key: 'no',
-      fixed: 'left'
+      fixed: 'left',
+      width: 100,
+      render: (text, record, index) => index + 1,
     },
     {
       title: '정기주문ID',
@@ -212,6 +240,7 @@ const OrderGeneral = () => {
       fixed: 'left',
       filteredValue: filteredInfo.regular_delivery_application_id || null,
       filtered: false,
+      width: 135
     },
     {
       title: '회원ID',
@@ -220,6 +249,7 @@ const OrderGeneral = () => {
       fixed: 'left',
       filteredValue: filteredInfo.member_id || null,
       filtered: false,
+      width: 140
     },
     {
       title: '결제수단',
@@ -228,6 +258,7 @@ const OrderGeneral = () => {
       fixed: 'left',
       filteredValue: filteredInfo.member_payment_card_id || null,
       filtered: false,
+      width: 140
     },
     {
       title: '상품목록',
@@ -252,6 +283,7 @@ const OrderGeneral = () => {
       fixed: 'left',
       filteredValue: filteredInfo.end_date || null,
       filtered: false,
+      width: 140
     },
     {
       title: '배송주기(주 단위)',
@@ -260,6 +292,7 @@ const OrderGeneral = () => {
       fixed: 'left',
       filteredValue: filteredInfo.cycle || null,
       filtered: false,
+      width: 135
     },
     {
       title: '주문 메모',
@@ -268,26 +301,6 @@ const OrderGeneral = () => {
       fixed: 'left',
       filteredValue: filteredInfo.order_memo || null,
       filtered: false,
-    },
-    {
-      title: '출고상태',
-      dataIndex: 'regular_delivery_status',  //  밑에 데이터에서 'tags' 필드를 사용하므로
-      key: 'regular_delivery_status',
-      render: (_, {regular_delivery_status}) => (
-        <>
-          {regular_delivery_status.map((tag) => {  //  출고상태정보가 출고상태 필드에 저장되어 있으므로
-            let color = tagColors[tag] || 'default';  //  tagColors 객체에 해당 tag의 색상이 없으면 'default' 색상 사용
-            return (
-              <Tag color={color} key={tag}>
-                {tag}
-              </Tag>
-            );
-          })}
-        </>
-      ),
-      filters: orderStatusTags.map((tag) => ({ text: tag, value: tag })), // 필터 생성하기
-      filteredValue: filteredInfo.regular_delivery_status || null,  //  컬럼의 dataIndex를 키로 사용
-      onFilter: (value, record) => record.tags.includes(value),  //  선택된 태그 값(value)이 record.tag 배열에 포함되어 있는지 확인 후 필터링하기
     },
   ];
 
@@ -298,80 +311,72 @@ const OrderGeneral = () => {
           <h2>정기주문관리</h2>
         </Flex>
       </Flex>
-      <Flex gap='small' align='center' justify='space-between'>
-        <Flex gap="small" wrap>
-          <Button onClick={onClearFilters}>Clear Filter</Button>
-          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
-        </Flex>
+      {/* <Flex gap='small' align='center' justify='space-between'>
+        
         <Flex gap="small" wrap>
           <Space align="center">출고상태변경</Space>
           <StatusChangeButton 
             title={"주문승인"}
             onClick={() => {
-              // onHandleStatusChange('주문승인');
               setSelectedRowKeys([]);
             }}
           />
           <StatusChangeButton 
             title={"배송준비중"}
             onClick={() => {
-              // onHandleStatusChange('배송준비중');
               setSelectedRowKeys([]);
             }}
           />
           <StatusChangeButton 
             title={"배송중"}
             onClick={() => {
-              // onHandleStatusChange('배송중');
               setSelectedRowKeys([]);
             }}
           />
           <StatusChangeButton 
             title={"배송완료"}
             onClick={() => {
-              // onHandleStatusChange('배송완료');
               setSelectedRowKeys([]);
             }}
           />
         </Flex>
-      </Flex>
+      </Flex> */}
       <br />
-      {/* <Table
-        columns={columns}
-        //rowSelection={{}}  // 체크박스
-        rowSelection={rowSelection}
-        dataSource={filteredData}
-        pagination={tableParams.pagination}
-        onChange={onHandleChange}  // 페이지 변경 이벤트
-        scroll={{ x: 1300 }}
-        onRow={onRow}
-        rowKey="key"
-      /> */}
-      <Calendar 
+      <Calendar
         cellRender={cellRender} 
         onSelect={onSelectDate}
         value={currentMonth}
         onPanelChange={onPanelChange}
-        locale={locale}/> 
+        locale={locale}
+        panelOptions={{
+          showMonthNav: false,
+          showYearNav: false
+        }}
+      /> 
 
       <Drawer
         title={selectedDate.format('YYYY-MM-DD')}
         placement="right"
         onClose={onCloseDrawer}
         open={isDrawerVisible}
-        width={1000}
+        width={1500}
       >
-        <Table
-          columns={columns.filter((col) => col.key !== '배송시작일')} // 배송시작일 컬럼 제외
-          dataSource={filteredOrdersByDate}
-          pagination={false}
-          onRow={(record) => ({
-            onClick: () => onRowClick(record),
-          })}
-        />
+        {drawerFilteredOrders && drawerFilteredOrders.length > 0 ? (
+          <Table
+            columns={columns.filter((col) => col.key !== 'start_date')}
+            dataSource={drawerFilteredOrders}
+            onChange={onHandleChange}  // 페이지 변경 이벤트
+            rowKey="regular_delivery_application_id"
+            pagination={false}
+            onRow={onRow}
+          />
+        ) : (
+          // <ExclamationOutlined />
+          <h2>주문건이 없습니다.</h2>
+        )}
       </Drawer>
     </div>
   );
 };
 
-export default OrderGeneral;
+export default OrderSubscription;

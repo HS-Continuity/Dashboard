@@ -148,8 +148,38 @@ export const updateMember = async (member_id, updatedMember) => {
 };
 
 //--------------------------------------------------------------------------------------
+// 일반 주문 조회
+
+
+
+// 일반 주문 상세 조회
+
+
+
 // 정기 주문 조회
 export const fetchRegularDeliveryList = async () => {
   const response = await axios.get("http://localhost:3001/regular_delivery");  // await: 비동기적으로 응답 기다림
   return response.data; // 모든 데이터 담은 배열
+};
+
+// 특정 날짜의 정기 주문 조회
+export const fetchRegularDeliveryByDate = async (selectedDate) => {
+  const formattedDate = selectedDate.format('YYYY-MM-DD');
+  // const response = await axios.get(`http://localhost:3001/regular_delivery?start_date=${formattedDate}`);
+  // return response.data;
+  try {
+    const response = await axios.get(`http://localhost:3001/regular_delivery?start_date=${formattedDate}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching regular delivery by date:', error);
+    // 오류 메시지 출력 또는 로깅 처리 추가
+    return []; // 오류 발생 시 빈 배열 반환
+  }
+};
+
+// 정기 주문 상세 조회
+export const fetchRegularDeliveryById = async (member_regularDeliveryApplicationId) => {
+  const response = await axios.get(`http://localhost:3001/regular_delivery`);  // await: 비동기적으로 응답 기다림
+  const regular_delivery = response.data.find(m => m.member_regularDeliveryApplicationId === member_regularDeliveryApplicationId);
+  return regular_delivery ? regular_delivery : null; // 회원 정보가 없으면 null 반환
 };

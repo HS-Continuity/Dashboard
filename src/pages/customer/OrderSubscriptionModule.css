@@ -1,8 +1,17 @@
-/* 오늘 날짜 셀 스타일 */
-.ant-picker-cell-inner.today {
-  background-color: #f0f0f0; /* 배경색 변경 (예시) */
+.eachOrderItem {
+  color: rgb(128, 67, 67);
+  font-weight: 900;
+  font-size: large;
 }
 
-.eachOrderItem {
-  color: rgb(37, 6, 218);
+.eachOrderItem2 {
+  color: rgb(234, 24, 24);
+  font-weight: 900;
+  font-size: large;
 }
+
+.events li {
+  list-style: none;
+  font-size: 100px;
+}
+

@@ -1,3 +1,4 @@
+import { fetchRegularDeliveryById } from '../../apis';
 import { Flex, Tag, DatePicker, Form, Input, Button, Table } from 'antd';
 import moment from 'moment';
 import { LeftOutlined } from '@ant-design/icons';
@@ -49,6 +50,13 @@ const OrderSubscriptionDetail = () => {
   const [orderDay, setOrderDay] = useState();
   const navigate = useNavigate();
 
+  const { data: regular_delivery } = useQuery({
+    queryKey: ["regular_delivery", member_id],
+    queryFn: () => fetchRegularDeliveryById(member_id),
+    enabled: !!member_id,
+    staleTime: 60 * 1000
+  });
+
   useEffect(() => {
     setSelectedTags(location.state?.selectedTags || []);
     setOrderId(location.state?.selectedOrderId || '');
@@ -70,7 +78,7 @@ const OrderSubscriptionDetail = () => {
         <LeftOutlined  onClick={onHandleBackClick}/>
         </Flex>
         <Flex gap="small" wrap>
-          <h2>정기주문관리</h2>
+          <h2>정기주문상세</h2>
         </Flex>
       </Flex>
 

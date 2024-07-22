@@ -157,11 +157,11 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "14-1",
-          label: <Link to='/order/general'>일반 결제 관리</Link>,
+          label: <Link to='/order/general'>일반 주문 관리</Link>,
         },
         {
           key: "14-2",
-          label: <Link to='/order/subscription'>정기 결제 관리</Link>,
+          label: <Link to='/order/subscription'>정기 주문 관리</Link>,
         },
       ],
     },
