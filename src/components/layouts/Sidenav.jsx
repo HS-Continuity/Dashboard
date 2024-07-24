@@ -12,6 +12,7 @@ import {
   BarChartOutlined,
   CarOutlined,
   GiftOutlined,
+  TruckOutlined
 } from "@ant-design/icons";
 import { Layout, Menu, theme } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -157,11 +158,11 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "14-1",
-          label: <Link to='/order/general'>일반 결제 관리</Link>,
+          label: <Link to='/order/general'>일반 주문 관리</Link>,
         },
         {
           key: "14-2",
-          label: <Link to='/order/subscription'>정기 결제 관리</Link>,
+          label: <Link to='/order/subscription'>정기 주문 관리</Link>,
         },
       ],
     },
@@ -177,17 +178,28 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     },
     {
       key: "17",
-      icon: <CarOutlined />,
-      label: "배송",
+      icon: <TruckOutlined />,
+      label: <Link to='/solution'>출고</Link>,
       children: [
         {
           key: "17-1",
-          label: <Link to='/delivery'>배송 상태 관리</Link>,
+          label: <Link to='/shipment'>출고 상태 관리</Link>,
         },
       ],
     },
     {
       key: "18",
+      icon: <CarOutlined />,
+      label: "배송",
+      children: [
+        {
+          key: "18-1",
+          label: <Link to='/delivery'>배송 상태 관리</Link>,
+        },
+      ],
+    },
+    {
+      key: "19",
       icon: <GiftOutlined />,
       label: <Link to='/promotion'>프로모션</Link>,
     },

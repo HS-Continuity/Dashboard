@@ -1,0 +1,72 @@
+.cardTitle {
+  margin-top: 25px;
+}
+
+.orderId:disabled {
+  background-color: rgb(208, 254, 226);
+  border-color: rgb(208, 254, 226);
+  border-radius: 15px;
+  color: rgb(127, 120, 120);;
+  font-weight: 600;
+  font-size: medium;
+}
+
+.registerDate:disabled {
+  background-color: white;
+  border-color: white;
+  color: rgb(127, 120, 120);
+  font-weight: 600;
+  font-size: medium;
+}
+
+.mainCard {
+  width: 90%;
+  /* max-width: 1800px; */
+  min-width: 200px;
+  margin: 0 auto;
+  border-radius: 10px;
+  
+}
+
+.mainCard .ant-card-head {
+  height: 60px; /* 원하는 높이로 조정 */
+}
+
+.bodyOfCard {
+  display: Flex;
+  gap: 5px;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.content {
+  display: flex;
+  gap: 90px;
+}
+
+.description {
+  font-size: large;
+  font-weight: 900;
+}
+
+.inputTags:disabled {
+  font-size: medium;
+  font-weight: 500;
+  color: rgb(127, 120, 120);
+}
+
+.inputTags {
+  font-size: medium;
+  font-weight: 500;
+  color: rgb(203, 201, 201);
+}
+
+p1 {
+  font-weight: bold;
+}
+
+.btn {
+  display: flex;
+  justify-content: end;
+  gap: 15px;
+}
