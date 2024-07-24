@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Main from "./components/Layouts/Main";
+import Main from "./components/layouts/Main";
 
 // Admin pages
 import Home from "./pages/Home";
