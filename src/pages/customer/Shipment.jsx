@@ -2,7 +2,9 @@ import { Table, Flex, Space, DatePicker, Divider, Button } from 'antd'
 import { useState, useEffect } from 'react'
 import { fetchReleases, updateReleaseMemo } from '../../apis/apisOrders';
 import Swal from 'sweetalert2';
-import './ShipmentModule.css';
+import style from './Shipment.module.css';
+import StatusCard from '../../components/Cards/StatusCard';
+import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 
 const { RangePicker } = DatePicker;
 
@@ -77,7 +79,7 @@ const Shipment = () => {
     {
       title: '출고ID', 
       dataIndex: 'releaseId',
-      key: 'releaseId'
+      key: 'releaseId',
     },
     {
       title: '출고 상태', 
@@ -113,8 +115,8 @@ const Shipment = () => {
 
   return (
     <div>
-      <Flex className='fullScreen'>
-        <Flex className='header'>
+      <Flex className={style.fullScreen}>
+        <Flex className={style.header}>
           <h2>출고관리</h2>
           <div>
             <Space align="center">검색기간</Space>
@@ -125,7 +127,29 @@ const Shipment = () => {
           </div>
         </Flex>
         <Divider/>
-        <Flex className='content'>
+        
+        <Flex gap='small' align='center' justify='space-between'>
+        <Flex gap="small" wrap>
+          <Button >Clear Filter</Button>
+          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
+        </Flex>
+        <Flex gap="small" wrap>
+          <Space align="center">출고상태변경</Space>
+          <StatusChangeButton 
+            title={"주문승인"}
+          />
+          <StatusChangeButton 
+            title={"배송준비중"}
+          />
+          <StatusChangeButton 
+            title={"배송중"}
+          />
+          <StatusChangeButton 
+            title={"배송완료"}
+          />
+        </Flex>
+      </Flex>
+        <br/>
         <Table
             columns={columns}
             dataSource={releases}
@@ -134,7 +158,6 @@ const Shipment = () => {
             onChange={onHandleTableChange}
             rowKey="releaseId"
           />
-        </Flex>
       </Flex>
       
     </div>
