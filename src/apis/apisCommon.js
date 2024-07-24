@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const DB_URL = import.meta.env.VITE_DB_URL;
+const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
+const PRODUCT_DB_URL = import.meta.env.VITE_PRODUCT_DB_URL;
+const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
 const config = import.meta.env.VITE_CONFIG;
 
 // 에러 처리 공통 함수
@@ -10,11 +12,11 @@ const handleApiError = (error, customErrorMessage) => {
 };
 
 // API 호출 공통 함수
-const apiCall = async (method, url, data = null, params = null) => {
+const apiCall = async (baseURL, method, url, data = null, params = null) => {
   try {
     const response = await axios({
       method,
-      url: `${DB_URL}${url}`,
+      url: `${baseURL}${url}`,
       data,
       params,
       ...config,
@@ -27,15 +29,18 @@ const apiCall = async (method, url, data = null, params = null) => {
 };
 
 // GET 요청 함수
-export const apiGet = (url, params) => apiCall("get", url, null, params);
+export const apiGet = (baseURL, url, params) => apiCall(baseURL, "get", url, null, params);
 
 // POST 요청 함수
-export const apiPost = (url, data) => apiCall("post", url, data);
+export const apiPost = (baseURL, url, data) => apiCall(baseURL, "post", url, data);
 
 // PUT 요청 함수
-export const apiPut = (url, data) => apiCall("put", url, data);
+export const apiPut = (baseURL, url, data) => apiCall(baseURL, "put", url, data);
+
+// PATCH 요청 함수
+export const apiPatch = (baseURL, url, data) => apiCall(baseURL, "patch", url, data);
 
 // DELETE 요청 함수
-export const apiDelete = url => apiCall("delete", url);
+export const apiDelete = (baseURL, url) => apiCall(baseURL, "delete", url);
 
-export { DB_URL, config };
+export { ORDER_DB_URL, PRODUCT_DB_URL, MEMBER_DB_URL, config };

@@ -29,6 +29,7 @@ import OrderSubscriptionDetail from "./pages/customer/OrderSubscriptionDetail";
 import Inventory from "./pages/customer/Inventory";
 import InventoryDetail from "./pages/customer/InventoryDetail";
 import CustomerSolution from "./pages/customer/Solution";
+import Shipment from "./pages/customer/Shipment";
 import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
 import { useFontSizeStore } from "./stores/fontSizeStore";
@@ -81,6 +82,7 @@ function App() {
           <Route path='/inventory' element={<Inventory />} />
           <Route path='/inventory/:productName' element={<InventoryDetail />} />
           <Route path='/solution' element={<CustomerSolution />} />
+          <Route path='/shipment' element={<Shipment />} />
           <Route path='/delivery' element={<Delivery />} />
           <Route path='/promotion' element={<Promotion />} />
         </Route>

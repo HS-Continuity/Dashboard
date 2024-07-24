@@ -1,9 +1,6 @@
-import { apiGet } from './apisCommon';
-import axios from "axios";
+import { apiGet, apiPatch, ORDER_DB_URL } from './apisCommon';
 
-const DB_URL = "http://localhost:8040/api";
-
-// [ 정기 주문 조회 ]
+// [ 정기 주문 페이지 ]
 const mockOrderData = [
   {
     REGULAR_DELIVERY_APPLICATION_ID: 1000,
@@ -99,20 +96,7 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
   }
 };
 
-// [get] 주문ID로 특정 주문 조회
-// export const fetchOrderDetailsById = async (REGULAR_DELIVERY_APPLICATION_ID) => {
-//   console.log("Fetching order details for id:", REGULAR_DELIVERY_APPLICATION_ID);
-//   // 이후에 apiGet 여기서 쓰기
-//   // 지금은 mockData 사용
-//   // const response = await axios(`/api/orders/subscription/${REGULAR_DELIVERY_APPLICATION_ID}`);`);
-//   const order = mockOrderData.find(order => order.REGULAR_DELIVERY_APPLICATION_ID === REGULAR_DELIVERY_APPLICATION_ID);
-//   //console.log("Found order:", order)
-//   if (!order) {
-//     throw new Error('Order not found');
-//   }
-//   return order;
-// };
-
+// [get] 정기주문 상세 조회
 export const fetchOrderDetailsById = async (REGULAR_DELIVERY_APPLICATION_ID) => {
   console.log("Fetching order details for id:", REGULAR_DELIVERY_APPLICATION_ID);
   
@@ -126,6 +110,21 @@ export const fetchOrderDetailsById = async (REGULAR_DELIVERY_APPLICATION_ID) => 
         console.log("Found order:", order);
         resolve(order);
       }
-    }, 1000); // 1초 지연을 추가하여 비동기 동작을 시뮬레이션합니다.
+    }, 1000); // 1초 지연
   });
 };
+
+
+// [ 출고 페이지 ]
+// 1. 고객 출고 조회
+export const fetchReleases = async (customerId, releaseStatus, page, size) => {
+  const params = { customerId, releaseStatus, page, size };
+  return await apiGet(ORDER_DB_URL,`/release/list`, params);
+};
+
+// 2. 출고 메모 업데이트
+export const updateReleaseMemo = async (releaseId, memo) => {
+  const data = { orderId: releaseId, memo };
+  return await apiPatch(ORDER_DB_URL`/release/memo`, data);
+}
+
