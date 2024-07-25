@@ -10,15 +10,15 @@ const API_BASE_URL = "http://localhost:5173";
 
 //----상품 목록 조회------------------------------------------------------
 
-// 일반 상품 목록 조회
-export const fetchProductItems = async () => {
-  const response = await axios.get("http://localhost:3001/product",{
-    params: {
-      saleTypeCode: 1
-    }}
-  );  // await: 비동기적으로 응답 기다림
-  return response.data; // 모든 데이터 담은 배열
-};
+// // 일반 상품 목록 조회
+// export const fetchProductItems = async () => {
+//   const response = await axios.get("http://localhost:3001/product",{
+//     params: {
+//       saleTypeCode: 1
+//     }}
+//   );  // await: 비동기적으로 응답 기다림
+//   return response.data; // 모든 데이터 담은 배열
+// };
 
 // 친환경 상품 목록 조회
 export const fetchEcoProductItems = async () => {

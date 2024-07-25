@@ -1,4 +1,4 @@
-import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
+// import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
@@ -122,7 +122,7 @@ const ProductGeneral = () => {
           lastClickedRow === rowIndex &&
           currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
         ) {
-          navigate(`${record.productId}`);
+          //navigate(`${record.productId}`);
           // console.log(e)
 
         }
