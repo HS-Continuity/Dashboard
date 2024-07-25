@@ -1,4 +1,4 @@
-import { fetchCustomerList } from '../../apis';
+import { fetchMembers } from '../../apis/apisMembers';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Flex, Space, Table, Button } from 'antd'
@@ -26,10 +26,17 @@ const MemberManage = () => {
 
   const navigate = useNavigate();
 
-  const { data: member } = useQuery({
-    queryKey: ["member"],
-    queryFn: () => fetchCustomerList()
-  });
+  // const { data: members, isLoading, error } = useQuery({
+  //   queryKey: ["memberId", memberId],
+  //   queryFn: () => fetchMembers(memberId)
+  // });
+
+  const YourComponent = ({ memberId }) => {
+    const { data: members } = useQuery({
+      queryKey: ["memberId", memberId], // queryKey에 memberId를 포함
+      queryFn: () => fetchMembers(memberId), // fetchMembers 호출 시 memberId 전달
+    });
+  }
 
   const handleChange = (pagination, filters, sorter) => {
     setFilteredInfo(filters);
@@ -59,7 +66,7 @@ const MemberManage = () => {
   const onRow = (record, rowIndex) => {
     return {
       onClick: () => {
-        navigate(`../manage/${record.member_id}`);
+        navigate(`../manage/${record.memberId}`);
         setLastClickedRow(rowIndex);
       },
     };
@@ -151,67 +158,68 @@ const MemberManage = () => {
   const columns = [
     { 
       title: 'NO.',
-      dataIndex: 'number',  // 해당 데이터가 어떤 필드에 있는지
+      // dataIndex: 'number',  // 해당 데이터가 어떤 필드에 있는지
       key: 'number',
+      render: (text, record, index) => index + 1,
       width: 100,
       fixed: 'left',
     },
     {
       title: '회원ID',
-      dataIndex: 'member_id',
-      key: 'member_id',
+      dataIndex: 'memberId',
+      key: 'memberId',
       fixed: 'left',
-      filteredValue: filteredInfo.member_id || null,
+      filteredValue: filteredInfo.memberId || null,
       filtered: false,
-      ...getColumnSearchProps('member_id'),
+      ...getColumnSearchProps('memberId'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '회원명',
-      dataIndex: 'member_name',
-      key: 'member_name',
+      dataIndex: 'memberName',
+      key: 'memberName',
       fixed: 'left',
-      filteredValue: filteredInfo.member_name || null,
+      filteredValue: filteredInfo.memberName || null,
       filtered: false,
-      ...getColumnSearchProps('member_name'),
+      ...getColumnSearchProps('memberName'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '휴대전화',
-      dataIndex: 'member_phone_number',
-      key: 'member_phone_number',
+      dataIndex: 'memberPhoneNumber',
+      key: 'memberPhoneNumber',
       fixed: 'left',
-      filteredValue: filteredInfo.member_phone_number || null,
+      filteredValue: filteredInfo.memberPhoneNumber || null,
       filtered: false,
-      ...getColumnSearchProps('member_phone_number'),
+      ...getColumnSearchProps('memberPhoneNumber'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '이메일',
-      dataIndex: 'member_email',
-      key: 'member_email',
+      dataIndex: 'memberEmail',
+      key: 'memberEmail',
       fixed: 'left',
-      filteredValue: filteredInfo.member_email || null,
+      filteredValue: filteredInfo.memberEmail || null,
       filtered: false,
-      ...getColumnSearchProps('member_email'),
+      ...getColumnSearchProps('memberEmail'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '생년월일',
-      dataIndex: 'member_birthday',
-      key: 'member_birthday',
+      dataIndex: 'memberBirthday',
+      key: 'memberBirthday',
       fixed: 'left',
-      filteredValue: filteredInfo.member_birthday || null,
+      filteredValue: filteredInfo.memberBirthday || null,
       filtered: false,
-      ...getColumnSearchProps('member_birthday'),
+      ...getColumnSearchProps('memberBirthday'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
@@ -234,6 +242,7 @@ const MemberManage = () => {
     },
   ]; 
 
+
   return(
     <div>
       <Flex gap="small" align="center" justify="space-between">
@@ -249,12 +258,12 @@ const MemberManage = () => {
       <Table
       columns={columns}
       rowSelection={rowSelection}
-      dataSource={member}
+      dataSource={members}
       pagination={tableParams.pagination}
       onChange={handleChange}  // 페이지 변경 이벤트
       scroll={{ y: 600,}}
       onRow={onRow}
-      rowKey="member_id"
+      rowKey="memberId"
       />
     </div>
   );
