@@ -125,6 +125,6 @@ export const fetchReleases = async (customerId, releaseStatus, page, size) => {
 // 2. 출고 메모 업데이트
 export const updateReleaseMemo = async (releaseId, memo) => {
   const data = { orderId: releaseId, memo };
-  return await apiPatch(ORDER_DB_URL`/release/memo`, data);
+  return await apiPatch(ORDER_DB_URL,`/release/memo`, data);
 }
 

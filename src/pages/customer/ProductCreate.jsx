@@ -1,36 +1,150 @@
-import { Flex, Radio, Upload , message, Breadcrumb, Input, Button, Form } from 'antd';
+import { registerNormalProduct, getAllCategories, getCategoryDetails } from '../../apis/apisProducts';
+import { Flex, Radio, Upload , message, Breadcrumb, Input, Button, Form, Cascader, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import moment from 'moment';
-import { LeftOutlined } from '@ant-design/icons';
+// import moment from 'moment';
+// import { LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+
+const { Dragger } = Upload;
 
 const props = {
   beforeUpload: (file) => {
-    const isPNG = file.type === 'image/png';
-    if (!isPNG) {
-      message.error(`${file.name} is not a png file`);
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error(`You can only upload JPG/PNG file!`);
     }
-    return isPNG || Upload.LIST_IGNORE;
+    
+    return isJpgOrPng || Upload.LIST_IGNORE;
   },
+  
   onChange: (info) => {
     console.log(info.fileList);
   },
 };
 
+
 const ProductCreate = () => {
+
+  const [form] = Form.useForm();
+  const [defaultImage, setDefaultImage] = useState(null);
+  const [detailImages, setDetailImages] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState([]);
 
   const navigate = useNavigate();
   const [selectedFoodType, setSelectedFoodType] = useState('일반식품'); // 초기값 설정
+
+  // 이미지 단건 파일 업로드
+  const onHandleDefaultImageUpload = (info) => {
+    const file = info.file.originFileObj || info.file;
+    if (file instanceof File) {
+      setDefaultImage(file);
+      console.log('Default image set:', file);
+    } else {
+      console.error('Selected default image is not a File object:', file);
+    }
+  };
+
+  // 이미지 다건 파일 리스트 업로드
+  const onHandleDetailImagesUpload = ({ fileList }) => {
+    const files = fileList.map(file => file.originFileObj).filter(file => file instanceof File);
+    setDetailImages(files);
+    console.log('Detail images uploaded:', files);
+  };
+
+  const onHandleSubmit = async () => {
+    console.log("onHandleSubmit 함수가 호출되었습니다.");
+    try {
+      const values = await form.validateFields();
+      const normalProduct = {
+        customerId: values.customerId, 
+        // mainCategoryId: values.mainCategoryId,
+        // subCategoryId: values.subCategoryId,
+        mainCategoryId: selectedCategory[0],
+        subCategoryId: selectedCategory[1],
+        productName: values.productName,
+        description: values.description,
+        price: values.price,
+        origin: values.origin,
+        baseDiscountRate: values.baseDiscountRate,
+        isRegularSale: values.isRegularSale,
+        regularDiscountRate: values.regularDiscountRate,
+        personalizedDiscountRate: values.personalizedDiscountRate,
+        // isPageVisibility: 'Y',  //  기본값 설정
+        isPageVisibility: values.isPageVisibility,  //  기본값 설정
+      };
+
+      console.log('Sending normalProduct:', normalProduct);
+      console.log('Sending defaultImage:', defaultImage);
+      console.log('Sending detailImages:', detailImages);
+      
+      if (!defaultImage) {
+        message.error('기본 이미지를 업로드해주세요.');
+        return;
+      }
+
+      console.log('defaultImage:', defaultImage);
+      console.log('detailImages:', detailImages);
+    
+      const response = await registerNormalProduct(normalProduct, defaultImage, detailImages);
+      console.log(response);
+      if(response == '201') {
+        message.success('상품이 성공적으로 등록되었습니다.');
+        //navigate(`/general`);
+      }
+
+    } catch (error) {
+      message.error('상품 등록에 실패했습니다.');
+      console.error(error);
+    }
+  };
+
   const handleRadioChange = (e) => {
     setSelectedFoodType(e.target.value);
   };
 
+  // const onHandleBackClick = () => {
+  //   navigate(-1); // 이전 페이지로 이동
+  // };
 
-  const onHandleBackClick = () => {
-    navigate(-1); // 이전 페이지로 이동
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const categoriesData = await getAllCategories();
+      const categoriesWithDetails = await Promise.all(
+        categoriesData.map(async (category) => {
+          const details = await getCategoryDetails(category.productCategoryId);
+          return {
+            value: category.productCategoryId,
+            label: category.categoryName,
+            children: details.productDetailCategoryList.map(detail => ({
+              value: detail.productDetailCategoryId,
+              label: detail.categoryDetailName
+            }))
+          };
+        })
+      );
+      setCategories(categoriesWithDetails);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
   };
+
+  const onHandleCategoryChange = (value, selectedOptions) => {
+    console.log(value, selectedOptions);
+    setSelectedCategory(value);
+    // Form의 해당 필드 값을 수동으로 설정
+    form.setFieldsValue({
+      mainCategoryId: value[0],
+      subCategoryId: value[1]
+    });
+  };
+
 
   return (
     <div>
@@ -69,94 +183,106 @@ const ProductCreate = () => {
               />
             </Flex>
           </Flex>
+
           <br/>
           <br/>
-          <Flex className='content' gap='5rem'>
-          <Flex className='imageSpace' gap='3rem' vertical>
-            <Upload {...props}>
-              <Button icon={<UploadOutlined />}>식품이미지업로드</Button>
-            </Upload>
-            <Upload {...props} maxCount={5}>
-              <Button icon={<UploadOutlined />}>식품상세이미지업로드(1/5)</Button>
-            </Upload>
-          </Flex>
 
-          <Flex className='inputSpace' gap='5rem' vertical>
-            <Flex className='inputSpace1' gap='3rem'>
-              <Form>
-                <h3>고객ID</h3>
-                <Input 
-                  disabled 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>식품대분류카테고리</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>식품소분류카테고리</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-            </Flex>
+          {/* <Flex className='content' gap='5rem'> */}
+          <Form form={form} onFinish={onHandleSubmit}>
+            <Flex gap='10rem'>
+              <Flex className='imageSpace' gap='3rem' vertical>
+                <Upload  
+                  beforeUpload={() => false} 
+                  // {...props} 
+                  onChange={onHandleDefaultImageUpload}
+                >
+                  <Button icon={<UploadOutlined />}>식품이미지업로드</Button>
+                </Upload>
+                <Upload  
+                  beforeUpload={() => false} 
+                  // {...props} 
+                  maxCount={5} 
+                  multiple
+                  onChange={onHandleDetailImagesUpload}>
+                  <Button icon={<UploadOutlined />}>식품상세이미지업로드(1/5)</Button>
+                </Upload>
+              </Flex>
 
-            <Flex className='inputSpace2' gap='3rem'>
-              <Form>
-                <h3>상품명</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>상품설명</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>상품가격</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-            </Flex>
+              <Flex className='inputSpace' gap='5rem' vertical>
+                <Flex className='inputSpace1' gap='3rem'>
+                  {/* <p>고객ID</p> */}
+                  <Form.Item name="customerId" label="고객ID" rules={[{ required: true, message: '고객 ID를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Cascader
+                    style={{ width: 180, height: 40 }}
+                    options={categories}
+                    onChange={onHandleCategoryChange}
+                    placeholder="카테고리 선택"
+                  />
+                </Flex>
 
-            <Flex className='inputSpace3' gap='3rem'>
-              <Form>
-                <h3>원산지</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>가격할인율</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>정기구매지원여부</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>정기배송할인율</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-            </Flex>
+                <Flex className='inputSpace2' gap='3rem'>
+                  <Form.Item name="productName" label="상품명" rules={[{ required: true, message: '상품명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="description" label="상품설명" rules={[{ required: true, message: '상품설명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="price" label="가격" rules={[{ required: true, message: '가격을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                </Flex>
 
-            <Flex className='inputSpace4' gap='3rem'>
-              <Form>
-                <h3>맞춤회원정기배송할인율</h3>
-                <Input 
-                  disabled 
-                  placeholder='111'/>
-              </Form>
+                <Flex className='inputSpace3' gap='3rem'>
+                  <Form.Item name="origin" label="원산지" rules={[{ required: true, message: '원산지를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="baseDiscountRate" label="가격할인율" rules={[{ required: true, message: '가격할인율을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="regularDiscountRate" label="정기배송할인율" rules={[{ required: true, message: '정기배송할인율을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="personalizedDiscountRate" label="맞춤회원정기배송할인율" rules={[{ required: true, message: '맞춤회원정기배송할인율을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                </Flex>
+
+                <Flex className='inputSpace4' gap='3rem'>
+                  <Form.Item name="isRegularSale" label="정기구매지원여부" rules={[{ required: true, message: '정기구매지원여부를 선택해주세요' }]}>
+                    <Select style={{ width: 120 }}>
+                      <Select.Option value="T">O</Select.Option>
+                      <Select.Option value="F">X</Select.Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="isPageVisibility" label="페이지노출여부" rules={[{ required: true, message: '페이지노출여부를 선택해주세요' }]}>
+                    <Select style={{ width: 120 }}>
+                      <Select.Option value="T">O</Select.Option>
+                      <Select.Option value="F">X</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Flex>
+
+                <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
+                  <Button size='large' type='primary' htmlType='submit'>등록하기</Button>
+                </Flex>
+      
+              </Flex>
+              {/* <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
+                <Button size='large' type='primary' htmlType='submit'>등록하기</Button>
+              </Flex> */}
             </Flex>
-            <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
-              <Button size='large' danger>등록하기</Button>
-            </Flex>
-          </Flex>
+          </Form>
+          
+
+              
+            {/* <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
+              <Button size='large' htmlType='submit'>등록하기</Button>
+            </Flex> */}
+         
         </Flex>
-      </Flex>
-    )}
+      )}
 
     {selectedFoodType === '친환경식품' && (
         <Flex vertical>

@@ -1,4 +1,4 @@
-import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
+//import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
