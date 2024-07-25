@@ -1,4 +1,4 @@
-import { registerNormalProduct, getAllCategories, getCategoryDetails } from '../../apis/apisProducts';
+import { registerNormalProduct, getAllCategories, getCategoryDetails, registerEcoFriendlyProduct } from '../../apis/apisProducts';
 import { Flex, Radio, Upload , message, Breadcrumb, Input, Button, Form, Cascader, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 // import moment from 'moment';
@@ -30,6 +30,7 @@ const ProductCreate = () => {
   const [form] = Form.useForm();
   const [defaultImage, setDefaultImage] = useState(null);
   const [detailImages, setDetailImages] = useState([]);
+  const [certificationImage, setCertificationImage] = useState(null)
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState([]);
 
@@ -55,7 +56,15 @@ const ProductCreate = () => {
   };
 
   // 인증서 파일 업로드
-  
+  const onHandleCertificationImageUpload = (info) => {
+    const file = info.file.originFileObj || info.file;
+    if (file instanceof File) {
+      setCertificationImage(file);
+      console.log('Certification image set:', file);
+    } else {
+      console.error('Selected certification image is not a File object:', file);
+    }
+  };
 
   const onHandleSubmit = async () => {
     console.log("onHandleSubmit 함수가 호출되었습니다.");
@@ -63,8 +72,6 @@ const ProductCreate = () => {
       const values = await form.validateFields();
       const normalProduct = {
         customerId: values.customerId, 
-        // mainCategoryId: values.mainCategoryId,
-        // subCategoryId: values.subCategoryId,
         mainCategoryId: selectedCategory[0],
         subCategoryId: selectedCategory[1],
         productName: values.productName,
@@ -75,29 +82,52 @@ const ProductCreate = () => {
         isRegularSale: values.isRegularSale,
         regularDiscountRate: values.regularDiscountRate,
         personalizedDiscountRate: values.personalizedDiscountRate,
-        // isPageVisibility: 'Y',  //  기본값 설정
-        isPageVisibility: values.isPageVisibility,  //  기본값 설정
+        isPageVisibility: values.isPageVisibility,
       };
-
-      console.log('Sending normalProduct:', normalProduct);
-      console.log('Sending defaultImage:', defaultImage);
-      console.log('Sending detailImages:', detailImages);
+      const product = {
+        customerId: values.customerId, 
+        mainCategoryId: selectedCategory[0],
+        subCategoryId: selectedCategory[1],
+        productName: values.productName,
+        description: values.description,
+        price: values.price,
+        origin: values.origin,
+        baseDiscountRate: values.baseDiscountRate,
+        isRegularSale: values.isRegularSale,
+        regularDiscountRate: values.regularDiscountRate,
+        personalizedDiscountRate: values.personalizedDiscountRate,
+        isPageVisibility: values.isPageVisibility,
+      };
+  
+      if (selectedFoodType === '친환경식품') {
+        product.certification = {
+          name: values.certificationName,
+          serialNumber: values.certificationNumber
+        };
+      }
       
       if (!defaultImage) {
         message.error('기본 이미지를 업로드해주세요.');
         return;
       }
-
-      console.log('defaultImage:', defaultImage);
-      console.log('detailImages:', detailImages);
-    
-      const response = await registerNormalProduct(normalProduct, defaultImage, detailImages);
+  
+      let response;
+      if (selectedFoodType === '일반식품') {
+        response = await registerNormalProduct(normalProduct, defaultImage, detailImages);
+      } else {
+        if (!certificationImage) {
+          message.error('인증서 이미지를 업로드해주세요.');
+          return;
+        }
+        response = await registerEcoFriendlyProduct(product, defaultImage, certificationImage, detailImages);
+      }
+  
       console.log(response);
-      if(response == '201') {
+      if(response === '201') {
         message.success('상품이 성공적으로 등록되었습니다.');
         //navigate(`/general`);
       }
-
+  
     } catch (error) {
       message.error('상품 등록에 실패했습니다.');
       console.error(error);
@@ -152,12 +182,6 @@ const ProductCreate = () => {
   return (
     <div>
       <Flex gap="small" justify='flex-start'> 
-        {/* <Flex gap="small" wrap>
-          <LeftOutlined  onClick={onHandleBackClick}/>
-        </Flex>
-        <Flex gap="small" wrap>
-          <h2>식품 등록</h2>
-        </Flex> */}
         <Radio.Group onChange={handleRadioChange} value={selectedFoodType}>
           <Radio value="일반식품">일반식품</Radio>
           <Radio value="친환경식품">친환경식품</Radio>
@@ -190,20 +214,18 @@ const ProductCreate = () => {
           <br/>
           <br/>
 
-          {/* <Flex className='content' gap='5rem'> */}
+          
           <Form form={form} onFinish={onHandleSubmit}>
             <Flex gap='10rem'>
               <Flex className='imageSpace' gap='3rem' vertical>
                 <Upload  
                   beforeUpload={() => false} 
-                  // {...props} 
                   onChange={onHandleDefaultImageUpload}
                 >
                   <Button icon={<UploadOutlined />}>식품이미지업로드</Button>
                 </Upload>
                 <Upload  
                   beforeUpload={() => false} 
-                  // {...props} 
                   maxCount={5} 
                   multiple
                   onChange={onHandleDetailImagesUpload}>
@@ -213,7 +235,6 @@ const ProductCreate = () => {
 
               <Flex className='inputSpace' gap='5rem' vertical>
                 <Flex className='inputSpace1' gap='3rem'>
-                  {/* <p>고객ID</p> */}
                   <Form.Item name="customerId" label="고객ID" rules={[{ required: true, message: '고객 ID를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
                     <Input />
                   </Form.Item>
@@ -272,17 +293,9 @@ const ProductCreate = () => {
                 </Flex>
       
               </Flex>
-              {/* <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
-                <Button size='large' type='primary' htmlType='submit'>등록하기</Button>
-              </Flex> */}
             </Flex>
           </Form>
           
-
-              
-            {/* <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
-              <Button size='large' htmlType='submit'>등록하기</Button>
-            </Flex> */}
          
         </Flex>
       )}
@@ -388,18 +401,18 @@ const ProductCreate = () => {
                 </Flex>
 
                 <Flex className='inputSpace5' gap='3rem'>
-                  <Form.Item name="origin" label="인증서명" rules={[{ required: true, message: '인증서명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                  <Form.Item name="certificationName" label="인증서명" rules={[{ required: true, message: '인증서명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
                     <Input />
                   </Form.Item>
-                  <Form.Item name="origin" label="인증서번호" rules={[{ required: true, message: '인증서 번호를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                  <Form.Item name="certificationNumber" label="인증서번호" rules={[{ required: true, message: '인증서 번호를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
                     <Input />
                   </Form.Item>
                   <Upload  
-                  beforeUpload={() => false} 
-                  // {...props} 
-                  maxCount={5} 
-                  multiple
-                  onChange={onHandleDetailImagesUpload}>
+                    beforeUpload={() => false} 
+                    // {...props} 
+                    maxCount={5} 
+                    multiple
+                    onChange={onHandleCertificationImageUpload}>
                   <Button icon={<UploadOutlined />}>인증서업로드</Button>
                 </Upload>
                 </Flex>
@@ -411,7 +424,6 @@ const ProductCreate = () => {
                 </Flex>
             </Flex>
           </Form>
-         
         </Flex>
       )}
 
