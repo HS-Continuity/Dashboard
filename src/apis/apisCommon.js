@@ -3,6 +3,7 @@ import axios from "axios";
 const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
 const PRODUCT_DB_URL = import.meta.env.VITE_PRODUCT_DB_URL || "http://localhost:8020/api";
 const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
+const AUTH_DB_URL = import.meta.env.VITE_AUTH_DB_URL;
 const config = import.meta.env.VITE_CONFIG;
 
 // 에러 처리 공통 함수
@@ -43,4 +44,4 @@ export const apiPatch = (baseURL, url, data) => apiCall(baseURL, "patch", url, d
 // DELETE 요청 함수
 export const apiDelete = (baseURL, url) => apiCall(baseURL, "delete", url);
 
-export { ORDER_DB_URL, PRODUCT_DB_URL, MEMBER_DB_URL, config };
+export { ORDER_DB_URL, PRODUCT_DB_URL, MEMBER_DB_URL, AUTH_DB_URL, config };
