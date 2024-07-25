@@ -54,6 +54,9 @@ const ProductCreate = () => {
     console.log('Detail images uploaded:', files);
   };
 
+  // 인증서 파일 업로드
+  
+
   const onHandleSubmit = async () => {
     console.log("onHandleSubmit 함수가 호출되었습니다.");
     try {
@@ -284,7 +287,7 @@ const ProductCreate = () => {
         </Flex>
       )}
 
-    {selectedFoodType === '친환경식품' && (
+      {selectedFoodType === '친환경식품' && (
         <Flex vertical>
           <Flex gap="small" justify='flex-start'>
             <Flex gap="small" wrap>
@@ -308,108 +311,109 @@ const ProductCreate = () => {
           </Flex>
           <br/>
           <br/>
-          <Flex className='content' gap='5rem'>
-          <Flex className='imageSpace' gap='3rem' vertical>
-            <Upload {...props}>
-              <Button icon={<UploadOutlined />}>식품이미지업로드</Button>
-            </Upload>
-            <Upload {...props} maxCount={5}>
-              <Button icon={<UploadOutlined />}>식품상세이미지업로드(1/5)</Button>
-            </Upload>
-          </Flex>
-
-          <Flex className='inputSpace' gap='5rem' vertical>
-            <Flex className='inputSpace1' gap='3rem'>
-              <Form>
-                <h3>고객ID</h3>
-                <Input 
-                  disabled 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>식품대분류카테고리</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>식품소분류카테고리</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-            </Flex>
-
-            <Flex className='inputSpace2' gap='3rem'>
-              <Form>
-                <h3>상품명</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>상품설명</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>상품가격</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-            </Flex>
-
-            <Flex className='inputSpace3' gap='3rem'>
-              <Form>
-                <h3>원산지</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>가격할인율</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>정기구매지원여부</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>정기배송할인율</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-            </Flex>
-
-            <Flex className='inputSpace4' gap='3rem'>
-              <Form>
-                <h3>맞춤회원정기배송할인율</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>인증서명</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>인증서번호</h3>
-                <Input 
-                  placeholder='111'/>
-              </Form>
-              <Form>
-                <h3>인증서번호</h3>
-                <Upload {...props}>
-                  <Button icon={<UploadOutlined />}>인증서 파일 업로드</Button>
+          <Form form={form} onFinish={onHandleSubmit}>
+            <Flex gap='10rem'>
+              <Flex className='imageSpace' gap='3rem' vertical>
+                <Upload  
+                  beforeUpload={() => false} 
+                  // {...props} 
+                  onChange={onHandleDefaultImageUpload}
+                >
+                  <Button icon={<UploadOutlined />}>식품이미지업로드</Button>
                 </Upload>
-              </Form>
-              
+                <Upload  
+                  beforeUpload={() => false} 
+                  // {...props} 
+                  maxCount={5} 
+                  multiple
+                  onChange={onHandleDetailImagesUpload}>
+                  <Button icon={<UploadOutlined />}>식품상세이미지업로드(1/5)</Button>
+                </Upload>
+              </Flex>
+
+              <Flex className='inputSpace' gap='5rem' vertical>
+                <Flex className='inputSpace1' gap='3rem'>
+                  {/* <p>고객ID</p> */}
+                  <Form.Item name="customerId" label="고객ID" rules={[{ required: true, message: '고객 ID를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Cascader
+                    style={{ width: 180, height: 40 }}
+                    options={categories}
+                    onChange={onHandleCategoryChange}
+                    placeholder="카테고리 선택"
+                  />
+                </Flex>
+
+                <Flex className='inputSpace2' gap='3rem'>
+                  <Form.Item name="productName" label="상품명" rules={[{ required: true, message: '상품명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="description" label="상품설명" rules={[{ required: true, message: '상품설명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="price" label="가격" rules={[{ required: true, message: '가격을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                </Flex>
+
+                <Flex className='inputSpace3' gap='3rem'>
+                  <Form.Item name="origin" label="원산지" rules={[{ required: true, message: '원산지를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="baseDiscountRate" label="가격할인율" rules={[{ required: true, message: '가격할인율을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="regularDiscountRate" label="정기배송할인율" rules={[{ required: true, message: '정기배송할인율을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="personalizedDiscountRate" label="맞춤회원정기배송할인율" rules={[{ required: true, message: '맞춤회원정기배송할인율을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                </Flex>
+
+                <Flex className='inputSpace4' gap='3rem'>
+                  <Form.Item name="isRegularSale" label="정기구매지원여부" rules={[{ required: true, message: '정기구매지원여부를 선택해주세요' }]}>
+                    <Select style={{ width: 120 }}>
+                      <Select.Option value="T">O</Select.Option>
+                      <Select.Option value="F">X</Select.Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="isPageVisibility" label="페이지노출여부" rules={[{ required: true, message: '페이지노출여부를 선택해주세요' }]}>
+                    <Select style={{ width: 120 }}>
+                      <Select.Option value="T">O</Select.Option>
+                      <Select.Option value="F">X</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Flex>
+
+                <Flex className='inputSpace5' gap='3rem'>
+                  <Form.Item name="origin" label="인증서명" rules={[{ required: true, message: '인증서명을 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="origin" label="인증서번호" rules={[{ required: true, message: '인증서 번호를 입력해주세요' }]} style={{ width: 280, height: 40 }}>
+                    <Input />
+                  </Form.Item>
+                  <Upload  
+                  beforeUpload={() => false} 
+                  // {...props} 
+                  maxCount={5} 
+                  multiple
+                  onChange={onHandleDetailImagesUpload}>
+                  <Button icon={<UploadOutlined />}>인증서업로드</Button>
+                </Upload>
+                </Flex>
+
+                <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
+                  <Button size='large' type='primary' htmlType='submit'>등록하기</Button>
+                </Flex>
+      
+                </Flex>
             </Flex>
-            <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
-              <Button size='large' danger>등록하기</Button>
-            </Flex>
-          </Flex>
+          </Form>
+         
         </Flex>
-      </Flex>
-    )}
+      )}
 
 
     </div>
