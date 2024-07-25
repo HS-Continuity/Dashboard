@@ -1,6 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Main from "./components/layouts/Main";
+import "./index.css";
+import Main from "./components/Layouts/Main";
+import LoginPage from "./components/Login/LoginPage";
 
 // Admin pages
 import Home from "./pages/Home";
@@ -46,6 +48,9 @@ function App() {
   return (
     <div className='app-root' style={{ fontSize: `${fontSize}` }}>
       <Routes>
+        {/* 로그인 페이지 라우트 */}
+        <Route path="/login" element={<LoginPage />} />
+
         <Route element={<Main />}>
           <Route path='/' element={<Home />} />
 
@@ -73,7 +78,6 @@ function App() {
             {/* <Route path='timeSale' element={<ProductTimeSale />} />
             <Route path='timeSale/:productId' element={<ProductTimeSaleDetail />} /> */}
             <Route path='create' element={<ProductCreate />} />
-            <Route path='teset' element={<ImageUploadTest />} />
 
           </Route>
           <Route path='/order'>
