@@ -83,8 +83,8 @@ const OrderGeneral = () => {
           recipient: order.recipient.recipient?.toString() || '',
           orderStatus: order.orderStatusCode?.toString() || '',
           productName: !isProductInfoAvailable ? (productName || '') : '확인중',
-
-        };
+          productOrderList: order.productOrderList
+        }
       });
 
       setOrders(transformedOrders);
@@ -112,10 +112,19 @@ const OrderGeneral = () => {
     fetchOrders(pagination.current, pagination.pageSize);
   }, [pagination.current, pagination.pageSize]);
 
+  // useEffect(() => {
+  //   const filteredData = applyFilters(orders);
+  //   setFilteredData(filteredData);
+  // }, [selectedDateRange, orders])
+
   useEffect(() => {
-    const filteredData = applyFilters(orders);
-    setFilteredData(filteredData);
-  }, [selectedDateRange, orders])
+    if (selectedDateRange && selectedDateRange.length === 2) {
+      const filteredData = applyFilters(orders);
+      setFilteredData(filteredData);
+    } else {
+      setFilteredData(orders);
+    }
+  }, [selectedDateRange, orders]);
 
   useEffect(() => {
     if (!orders.length > 0) {
@@ -136,39 +145,13 @@ const OrderGeneral = () => {
     setSelectedDateRange(dates || []);  //  상태 업데이트
   }
 
-  // const onHandleStatusChange = async (newStatus) => {
-  //   try {
-
-  //     // if (selectedRowKeys.length === 0) {
-  //     //   message.warning('상태를 변경할 주문을 선택해주세요.');
-  //     //   return;
-  //     // }
-
-  //     let response;
-     
-  //     response = await updateOrderStatus(selectedRowKeys, newStatus);
-      
-
-  //     // if (response.successCode === 'UPDATE_SUCCESS') {
-  //       if (response == null) {
-  //       message.success('주문 상태가 성공적으로 변경되었습니다.');
-  //       fetchOrders(pagination.current, pagination.pageSize);  //  테이블 새로고침
-  //     } else {
-  //       message.error('주문 상태 변경에 실패했습니다.!!!!!!!');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error changing order status.');
-  //     message.error('주문 상태 변경 중 오류가 발생했습니다.');
-  //   }
-  // };
-
   const onHandleStatusChange = async (newStatus) => {
     try {
 
-      // if (selectedRowKeys.length === 0) {
-      //   message.warning('상태를 변경할 주문을 선택해주세요.');
-      //   return;
-      // }
+      if (selectedRowKeys.length === 0) {
+        message.warning('상태를 변경할 주문을 선택해주세요.');
+        return;
+      }
 
       let response;
       if (selectedRowKeys.length === 1) {
@@ -207,6 +190,8 @@ const OrderGeneral = () => {
 
   const onClearFilters = () => {  //  모든 필터 초기화 이벤트
     setFilteredInfo({});
+    setSelectedDateRange([]);
+    setFilteredData(orders);
   };
 
 
@@ -229,24 +214,25 @@ const OrderGeneral = () => {
 
   
 
-  const applyFilters = (data) => {
+  const applyFilters = (orders) => {
     if (!selectedDateRange || selectedDateRange.length === 0) {
-      return data;
+      return orders;
     } else {
-      const startDate = selectedDateRange[0].startOf('day').format('YYYY-MM-DD');
-      const endDate = selectedDateRange[1].endOf('day').format('YYYY-MM-DD');
+      const startDate = selectedDateRange[0].startOf('day');
+      const endDate = selectedDateRange[1].endOf('day');
   
-      return data.filter(item => {
-        const itemDate = moment(item.주문날짜, 'YYYY-MM-DD').startOf('day');
-        //const itemDate = moment(item.주문날짜).format('YYYY-MM-DD').startOf('day');
-        const isInRange = itemDate.isBetween(startDate, endDate, undefined, '[]');
+      return orders.filter(item => {
+       // const itemDate = moment(item.orderDateTime, 'YYYY-MM-DD').startOf('day');
+        const itemDate = moment(item.orderDateTime);
+        // const isInRange = itemDate.isBetween(startDate, endDate, null, '[]');
+        return itemDate.isBetween(startDate, endDate, null, '[]');
   
-        const searchFilter = filteredInfo.주문번호 || filteredInfo.회원ID || filteredInfo.배송지  || filteredInfo.수령인;
-        const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
-          searchFilter[key].includes(item[key])
-        );
+        // const searchFilter = filteredInfo.주문번호 || filteredInfo.회원ID || filteredInfo.배송지  || filteredInfo.수령인;
+        // const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
+        //   searchFilter[key].includes(item[key])
+        // );
   
-        return isInRange && isSearchMatch;
+        // return isInRange && isSearchMatch;
       });
     }
   }
@@ -287,19 +273,21 @@ const OrderGeneral = () => {
   //   setFilteredData(applyFilters(datas)); // datas 변경 시 filteredData 업데이트
   // }, [datas, selectedDateRange]); // datas와 selectedDateRange에 의존하도록 변경
 
-  const onRow = (record, rowIndex) => {
+  const onRow = (record) => {
     return {
-      onClick: (e) => {
-        navigate('../subscriptionDetail', { 
-          // state: { 
-          //   selectedTags: record.tags,
-          //   selectedOrderId: record.주문번호,
-          //   selectedOrderDate: record.배송시작일,
-          // } 
+      onClick: () => {
+        console.log("Clicked record:", record);
+        console.log("ProductOrderList:", record.productOrderList);
+
+        navigate('../general/${orderDetailId}', { 
+          state: { 
+            orderDetail: record,
+            productOrderList: record.productOrderList
+          } 
         }); 
-          console.log(e)
+        console.log("onRow:", record.productOrderList)
         
-        setLastClickedRow(rowIndex);
+        //setLastClickedRow(rowIndex);
       },
     };
   };
@@ -409,7 +397,7 @@ const OrderGeneral = () => {
       render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,  //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
       width: '5%',
       fixed: 'left',
-      width: '5%',
+      //width: '5%',
       //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
@@ -577,9 +565,11 @@ const OrderGeneral = () => {
       {orders.length > 0 ? (
       <Table
         columns={columns}
-        dataSource={orders}
+        // dataSource={orders}
+        dataSource={filteredData.length > 0 ? filteredData : orders}
         pagination={pagination}
         rowSelection={rowSelection}
+        onRow={onRow}
         loading={loading}
         onChange={onHandleTableChange}
         scroll={{ x: 1300 }}
