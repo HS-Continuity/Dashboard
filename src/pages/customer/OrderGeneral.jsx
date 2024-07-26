@@ -1,4 +1,4 @@
-import { fetchCustomerOrders, updateOrderStatus } from '../../apis/apisOrders';
+import { fetchCustomerOrders, updateOrderStatus, updateBulkOrderStatus } from '../../apis/apisOrders';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input, message } from 'antd'
@@ -22,10 +22,10 @@ const OrderGeneral = () => {
 
   const [dateRange, setDateRange] = useState([]);
   const [filteredInfo, setFilteredInfo] = useState({});
+  const [filteredData, setFilteredData] = useState([]);
 
   const navigate = useNavigate();
   const [lastClickedRow, setLastClickedRow] = useState(null);
-  const [lastClickedTime, setLastClickedTime] = useState(null);
   const [selectedDateRange, setSelectedDateRange] = useState([]);
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
   const [searchedColumn, setSearchedColumn] = useState('');
@@ -66,11 +66,6 @@ const OrderGeneral = () => {
           }
 
           // 서버 연결 상태 확인
-          // if (productOrderList.some(product =>   //  상품 목록 중 하나라도...
-          //   !product.availableMemberInformation || !product.availableProductInformation
-          // )) {
-          //   isServerUnstable = true;
-          // }
           isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
           isProductInfoAvailable = productOrderList.every(product => product.availableProductInformation);
           
@@ -81,16 +76,12 @@ const OrderGeneral = () => {
         }
       
         return {
-          //key: order.orderDetailId?.toString() || '',
           orderDetailId: order.orderDetailId?.toString() || '',
-          // memberId: order.memberInfo.memberId?.toString() || '',
           memberId: !isMemberInfoAvailable ? (order.memberInfo?.memberId?.toString() || '') : '로딩중',
-
           orderDateTime: order.orderDateTime?.toString() || '',
           deliveryAddress: order.recipient.recipientAddress?.toString() || '',
           recipient: order.recipient.recipient?.toString() || '',
           orderStatus: order.orderStatusCode?.toString() || '',
-          // productName: productName?.toString() || '',
           productName: !isProductInfoAvailable ? (productName || '') : '확인중',
 
         };
@@ -104,12 +95,6 @@ const OrderGeneral = () => {
         pageSize: pageSize,
         total: response.totalElements,
       });
-
-      // if (isServerUnstable) {
-      //   message.warning('일부 주문에서 서버 연결이 불안정합니다');
-      // } else {
-      //   message.success('주문 데이터를 성공적으로 불러왔습니다.');
-      // }
 
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -126,6 +111,11 @@ const OrderGeneral = () => {
   useEffect(() => {
     fetchOrders(pagination.current, pagination.pageSize);
   }, [pagination.current, pagination.pageSize]);
+
+  useEffect(() => {
+    const filteredData = applyFilters(orders);
+    setFilteredData(filteredData);
+  }, [selectedDateRange, orders])
 
   useEffect(() => {
     if (!orders.length > 0) {
@@ -146,27 +136,55 @@ const OrderGeneral = () => {
     setSelectedDateRange(dates || []);  //  상태 업데이트
   }
 
+  // const onHandleStatusChange = async (newStatus) => {
+  //   try {
+
+  //     // if (selectedRowKeys.length === 0) {
+  //     //   message.warning('상태를 변경할 주문을 선택해주세요.');
+  //     //   return;
+  //     // }
+
+  //     let response;
+     
+  //     response = await updateOrderStatus(selectedRowKeys, newStatus);
+      
+
+  //     // if (response.successCode === 'UPDATE_SUCCESS') {
+  //       if (response == null) {
+  //       message.success('주문 상태가 성공적으로 변경되었습니다.');
+  //       fetchOrders(pagination.current, pagination.pageSize);  //  테이블 새로고침
+  //     } else {
+  //       message.error('주문 상태 변경에 실패했습니다.!!!!!!!');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error changing order status.');
+  //     message.error('주문 상태 변경 중 오류가 발생했습니다.');
+  //   }
+  // };
+
   const onHandleStatusChange = async (newStatus) => {
     try {
-      if (selectedRowKeys.length === 0) {
-        message.warning('상태를 변경할 주문을 선택해주세요.');
-        return;
-      }
+
+      // if (selectedRowKeys.length === 0) {
+      //   message.warning('상태를 변경할 주문을 선택해주세요.');
+      //   return;
+      // }
 
       let response;
-      if (selectedRowKeys.length >= 1) {
-        response = await updateOrderStatus(selectedRowKeys, newStatus);
+      if (selectedRowKeys.length === 1) {
+        response = await updateOrderStatus(selectedRowKeys[0], newStatus);
+      } else {
+        response = await updateBulkOrderStatus(selectedRowKeys, newStatus);
       }
 
-      // if (response.successCode === 'UPDATE_SUCCESS') {
-        if (response === '200') {
+      if (response == null) {
         message.success('주문 상태가 성공적으로 변경되었습니다.');
-        fetchOrders(pagination.current, pagination.pageSize);  //  테이블 새로고침
+        fetchOrders(pagination.current, pagination.pageSize);
       } else {
         message.error('주문 상태 변경에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Error changing order status.');
+      console.error('Error changing order status:', error);
       message.error('주문 상태 변경 중 오류가 발생했습니다.');
     }
   };
@@ -192,15 +210,15 @@ const OrderGeneral = () => {
   };
 
 
-  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
+  // const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
+  //   confirm();
+  //   setSearchText(selectedKeys[0]);
+  //   setSearchedColumn(dataIndex);
+  // };
 
-  const onHandleChange = (pagination, filters) => {
-    setFilteredInfo(filters);  //  필터링 정보 업데이트
-  };
+  // const onHandleChange = (pagination, filters) => {
+  //   setFilteredInfo(filters);  //  필터링 정보 업데이트
+  // };
 
   
 
@@ -211,26 +229,28 @@ const OrderGeneral = () => {
 
   
 
-  // const applyFilters = (data) => {
-  //   if (!selectedDateRange || selectedDateRange.length === 0) {
-  //     return data;
-  //   } else {
-  //     const startDate = selectedDateRange[0].startOf('day').format('YYYY-MM-DD');
-  //     const endDate = selectedDateRange[1].endOf('day').format('YYYY-MM-DD');
+  const applyFilters = (data) => {
+    if (!selectedDateRange || selectedDateRange.length === 0) {
+      return data;
+    } else {
+      const startDate = selectedDateRange[0].startOf('day').format('YYYY-MM-DD');
+      const endDate = selectedDateRange[1].endOf('day').format('YYYY-MM-DD');
   
-  //     return data.filter(item => {
-  //       const itemDate = moment(item.배송시작일, 'YYYY-MM-DD').startOf('day');
-  //       const isInRange = itemDate.isBetween(startDate, endDate, undefined, '[]');
+      return data.filter(item => {
+        const itemDate = moment(item.주문날짜, 'YYYY-MM-DD').startOf('day');
+        //const itemDate = moment(item.주문날짜).format('YYYY-MM-DD').startOf('day');
+        const isInRange = itemDate.isBetween(startDate, endDate, undefined, '[]');
   
-  //       const searchFilter = filteredInfo.주문번호 || filteredInfo.주문날짜 || filteredInfo.수령인 || filteredInfo.배송지;
-  //       const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
-  //         searchFilter[key].includes(item[key])
-  //       );
+        const searchFilter = filteredInfo.주문번호 || filteredInfo.회원ID || filteredInfo.배송지  || filteredInfo.수령인;
+        const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
+          searchFilter[key].includes(item[key])
+        );
   
-  //       return isInRange && isSearchMatch;
-  //     });
-  //   }
-  // }
+        return isInRange && isSearchMatch;
+      });
+    }
+  }
+
   // const onHandleStatusChange = (newStatus) => {
   //   // 1. 깊은 복사
   //   const updatedData = JSON.parse(JSON.stringify(datasRef.current)); 
@@ -257,17 +277,11 @@ const OrderGeneral = () => {
       console.log('selectedRowKeys: ', selectedRowKeys);
       console.log('selectedRows: ', selectedRows)
 
-      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
+      setSelectedRowKeys([...selectedRowKeys]);  // 선택한 행의 key 값 업데이트
     },
   };
 
 
-  // useEffect(() => {
-  //   const storedData = JSON.parse(localStorage.getItem('OrderGeneralData')) || data; // localStorage에서 불러오기
-  //   datasRef.current = storedData;
-  //   setDatas(storedData);
-  //   setFilteredData(applyFilters(datas));
-  // }, []);
 
   // useEffect(() => {
   //   setFilteredData(applyFilters(datas)); // datas 변경 시 filteredData 업데이트
@@ -324,8 +338,8 @@ const OrderGeneral = () => {
             Search
           </Button>
           <Button
-            // onClick={() => clearFilters && onHandleReset(clearFilters)}
-            onClick={() => clearFilters }
+            onClick={() => clearFilters && onHandleReset(clearFilters)}
+            // onClick={() => clearFilters }
             size="small"
             style={{
               width: 90,
@@ -436,7 +450,7 @@ const OrderGeneral = () => {
         if (text === 'null' || !text) {
           return 'null';
         }  
-        return moment(text).format('YYYY-MM-DD HH-mm')
+        return moment(text).format('YYYY-MM-DD HH:mm')
       },
     },
     {

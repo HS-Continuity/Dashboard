@@ -153,15 +153,31 @@ export const fetchCustomerOrders = async(customerId, orderStatus, page = 0, size
 };
 
 
-// ----------- 일반 주문 - 상태변경 요청 ----------- 
-export const updateOrderStatus = async (orderIds, newStatus) => {
+// ----------- 일반 주문 - 단건 주문 상태변경 요청 ----------- 
+export const updateOrderStatus = async (orderId, newStatus) => {
   try {
-    const response = await(ORDER_DB_URL, `/order/product/status`, {
-      orderId: orderIds,
+    const response = await apiPatch(ORDER_DB_URL, `/order/status`, {
+      orderId: orderId[0],
       orderStatusCode: newStatus
     });
     return response;
   } catch (error) {
+    console.log(typeof(orderId));
+    console.log('Error updating order status: ', error);
+    throw error;
+  }
+};
+
+// ----------- 일반 주문 - 다건 주문 상태변경 요청 ----------- 
+export const updateBulkOrderStatus = async (orderIds, newStatus) => {
+  try {
+    const response = await apiPatch(ORDER_DB_URL, `/order/bulk-status`, {
+      orderIds,
+      orderStatusCode: newStatus
+    });
+    return response;
+  } catch (error) {
+    console.log(typeof(orderIds));
     console.log('Error updating order status: ', error);
     throw error;
   }
