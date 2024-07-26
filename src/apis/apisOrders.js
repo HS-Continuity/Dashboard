@@ -128,3 +128,41 @@ export const updateReleaseMemo = async (releaseId, memo) => {
   return await apiPatch(ORDER_DB_URL,`/release/memo`, data);
 }
 
+
+
+
+
+
+// ----------- 일반 주문 조회 ----------- 
+export const fetchCustomerOrders = async(customerId, orderStatus, page = 0, size = 10) => {
+  try {
+    const params = {
+      customerId,
+      orderStatus,
+      page,
+      size
+    };
+    const response = await apiGet(ORDER_DB_URL, `/order/customer-service`,  params);
+    console.log("어떤 데이터를 보내나요?: ", response)
+    return response;
+  
+  } catch (error) {
+    console.error('Error fetching customer orders:', error);
+    throw error;
+  }
+};
+
+
+// ----------- 일반 주문 - 상태변경 요청 ----------- 
+export const updateOrderStatus = async (orderIds, newStatus) => {
+  try {
+    const response = await(ORDER_DB_URL, `/order/product/status`, {
+      orderId: orderIds,
+      orderStatusCode: newStatus
+    });
+    return response;
+  } catch (error) {
+    console.log('Error updating order status: ', error);
+    throw error;
+  }
+};
