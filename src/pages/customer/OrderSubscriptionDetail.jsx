@@ -1,4 +1,4 @@
-//import { fetchOrderDetailsById } from '../../apis/apisOrders';
+import { fetchRegularOrderDetails } from '../../apis/apisOrders';
 import { Flex, Card, DatePicker, Form, Input, ConfigProvider, Divider, Button, Table } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
