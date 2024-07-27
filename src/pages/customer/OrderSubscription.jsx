@@ -1,56 +1,120 @@
 import { fetchRegularOrderCountsBetweenMonth } from '../../apis/apisOrders';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Flex, ConfigProvider, DatePicker, Table, Tag, Input,  Calendar, Card, Drawer } from 'antd'
-import { Row, Col } from 'antd';
-import { ExclamationOutlined } from '@ant-design/icons';
+//import { useQuery } from '@tanstack/react-query';
+import { Flex, ConfigProvider, Table, Badge,  Calendar, message, Drawer } from 'antd'
+//import { ExclamationOutlined } from '@ant-design/icons';
 import locale from 'antd/locale/ko_KR'; // 한국어 locale 파일 import
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko'; // 한국어 locale 파일 import
-import updateLocale from 'dayjs/plugin/updateLocale';
-import StatusCard from '../../components/Cards/StatusCard';
-import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
+// import updateLocale from 'dayjs/plugin/updateLocale';
+// import StatusCard from '../../components/Cards/StatusCard';
+// import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import './OrderSubscriptionModule.css';
 
-const orderStatusTags = ['결제완료', '주문승인', '배송준비중','배송중', '배송완료'];
-const tagColors = {
-  '결제완료': 'green',
-  '주문승인': 'blue',
-  '배송준비중': 'orange',
-  '배송중': 'purple',
-  '배송완료': 'cyan',
-};
+// const orderStatusTags = ['결제완료', '주문승인', '배송준비중','배송중', '배송완료'];
+// const tagColors = {
+//   '결제완료': 'green',
+//   '주문승인': 'blue',
+//   '배송준비중': 'orange',
+//   '배송중': 'purple',
+//   '배송완료': 'cyan',
+// };
 
 
 const OrderSubscription = () => {
+
+  const [currentMonth, setCurrentMonth] = useState(dayjs());
+  const [monthlyOrderCounts, setMonthlyOrderCounts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [selectedDate, setSelectedDate] = useState(dayjs()); // 현재 날짜로 초기화
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [selectedDateOrders, setSelectedDateOrders] = useState([]);
   const [panelDate, setPanelDate] = useState(dayjs()); // 현재 패널 날짜 상태 추가
   const [selectedRowKeys, setSelectedRowKeys] = useState();
-  const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,  // 현재 페이지 번호
-      pageSize: 20,  //  페이지당 항목 수
-    },
-  });
+  // const [tableParams, setTableParams] = useState({
+  //   pagination: {
+  //     current: 1,  // 현재 페이지 번호
+  //     pageSize: 20,  //  페이지당 항목 수
+  //   },
+  // });
 
 
-  const { data: monthlyOrderCounts, isLoading, error } = useQuery({
-    queryKey: ['monthlyOrderCounts', currentMonth.format('YYYY-MM')],
-    queryFn: () => fetchRegularOrderCountsBetweenMonth(
-      currentMonth.startOf('month').format('YYYY-MM-DD'),
-      currentMonth.endOf('month').format('YYYY-MM-DD')
-    ),
-  });
+  // const { data: monthlyOrderCounts, isLoading, error } = useQuery({
+  //   queryKey: ['monthlyOrderCounts', currentMonth.format('YYYY-MM')],
+  //   queryFn: () => fetchRegularOrderCountsBetweenMonth(
+  //     currentMonth.startOf('month').format('YYYY-MM-DD'),
+  //     currentMonth.endOf('month').format('YYYY-MM-DD')
+  //   ),
+  // });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  const fetchMonthlyOrders = async () => {
+    setLoading(true);
+    try {
+      //const customerId = 1;  // 실제 사용시 로그인한 고객의 ID를 사용해야 함!!
+      const response = await fetchRegularOrderCountsBetweenMonth(
+        currentMonth.startOf('month'),
+        currentMonth.endOf('month'),
+        //customerId
+      );
+      setMonthlyOrderCounts(response);
+    } catch (error) {
+      console.error('Failed to fetch monthly orders:', error);
+      message.error('주문 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMonthlyOrders();
+  }, [currentMonth]);
+
+  const cellRender = (current) => {
+    if (!monthlyOrderCounts) return null;
+
+    // const cellDate = value.format('YYYY-MM-DD');
+    const ordersForDate = monthlyOrderCounts.filter(order => 
+      dayjs(order.START_DATE).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
+    );
+
+    if (ordersForDate.length === 0) return null;
+
+    const firstOrder = ordersForDate[0];
+    const content = ordersForDate.length > 1
+      ? `${firstOrder.REGULAR_DELIVERY_APPLICATION_ID} 외 ${ordersForDate.length - 1}건`
+      : firstOrder.REGULAR_DELIVERY_APPLICATION_ID;
+
+
+    // return (
+    //   <ul className="events">
+    //     {ordersForDate.map(order => (
+    //       <li key={order.RECIPIENT}>
+    //         {order.RECIPIENT}
+    //       </li>
+    //     ))}
+    //   </ul>
+    // );
+
+    return (
+      <ul className="events">
+        <li>
+          <Badge status="processing" text={content} />
+        </li>
+      </ul>
+    );
+  };
+
+  const onPanelChange = (value) => {
+    setCurrentMonth(value);
+    //setPanelDate(value); // 패널 날짜를 업데이트
+  };
+
+  if (loading) return <p>Loading...</p>;
+  // if (error) return <p>Error: {error.message}</p>;
 
 
 
@@ -62,36 +126,6 @@ const OrderSubscription = () => {
     },
   };
 
-
-  const cellRender = (value) => {
-    if (!monthlyOrderCounts) return null;
-
-    const cellDate = value.format('YYYY-MM-DD');
-    const ordersForDate = monthlyOrderCounts.filter(order => 
-      dayjs(order.START_DATE).format('YYYY-MM-DD') === cellDate
-    );
-    if (ordersForDate.length === 0) return null;
-
-    return (
-      <ul className="events">
-        {ordersForDate.map(order => (
-          <li key={order.RECIPIENT}>
-            {order.RECIPIENT}
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
-
-
-
-
-
-  const onPanelChange = (value) => {
-    setCurrentMonth(value);
-    setPanelDate(value); // 패널 날짜를 업데이트
-  };
 
   const onSelectDate = (selectedDate) => {
     // 선택된 날짜가 현재 표시된 달에 속하는지 확인
@@ -132,7 +166,9 @@ const OrderSubscription = () => {
   const onRow = (record) => {
     return {
       onClick: () => {
-        navigate(`../subscription/${record.REGULAR_DELIVERY_APPLICATION_ID}`);
+        navigate(`/subscription/${record.REGULAR_DELIVERY_APPLICATION_ID}`, {
+          state: { orderData: record }
+        });
         //setLastClickedRow(rowIndex);
       },
     };
@@ -187,16 +223,17 @@ const OrderSubscription = () => {
       theme={{
         token: {
           // Seed Token
-          colorPrimary: '#4F5902',  // today cell color
+          colorPrimary: '#F29325',  // today cell color
           borderRadius: 2,
 
           // Alias Token
-          colorBgContainer: '#D9D4CC', // calendar bg color
+          colorBgContainer: '#F4E2DE', // calendar bg color
           fontSizeSM: 12
           
 
         },
       }}
+      locale={locale}
     >
       <Calendar
         cellRender={cellRender}
@@ -204,6 +241,7 @@ const OrderSubscription = () => {
         value={currentMonth}
         onPanelChange={onPanelChange}
         locale={locale}
+        mode="month"
         //style={{ height: '100%' }}
       />
     </ConfigProvider>
@@ -218,7 +256,7 @@ const OrderSubscription = () => {
         {selectedDateOrders.length > 0 ? (
           <Table
             //columns={columns.filter((col) => col.key !== 'start_date')}
-            columns={columns}
+            columns={columns.filter((col) => col.key !== 'start_date')}
             dataSource={selectedDateOrders}
             //onChange={onHandleChange}
             rowKey="REGULAR_DELIVERY_APPLICATION_ID"

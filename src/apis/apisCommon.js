@@ -15,14 +15,19 @@ const handleApiError = (error, customErrorMessage) => {
 // API 호출 공통 함수
 const apiCall = async (baseURL, method, url, data = null, params = null) => {
   try {
+    const defaultConfig = {
+      withCredentials: true,
+    };
+
     const response = await axios({
       method,
       url: `${baseURL}${url}`,
       data,
       params,
-      ...config,
+      ...defaultConfig,
     });
-    console.log(response.data.result);
+    // console.log(response);
+    // console.log("콘솔:",response.data.result);
     return response.data.result;
   } catch (error) {
     handleApiError(error, `API call failed: ${method} ${url}`);
