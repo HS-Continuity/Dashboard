@@ -37,6 +37,10 @@ const ProductCreate = () => {
   const navigate = useNavigate();
   const [selectedFoodType, setSelectedFoodType] = useState('일반식품'); // 초기값 설정
 
+  // const onClickSubmit = () => {
+  //   navigate(-1); // 이전 페이지로 이동
+  // };
+
   // 이미지 단건 파일 업로드
   const onHandleDefaultImageUpload = (info) => {
     const file = info.file.originFileObj || info.file;
@@ -123,9 +127,10 @@ const ProductCreate = () => {
       }
   
       console.log(response);
-      if(response === '201') {
+      if(response === null) {
         message.success('상품이 성공적으로 등록되었습니다.');
-        //navigate(`/general`);
+        // navigate(-1);
+        navigate('/product/general');
       }
   
     } catch (error) {
@@ -289,7 +294,10 @@ const ProductCreate = () => {
                 </Flex>
 
                 <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
-                  <Button size='large' type='primary' htmlType='submit'>등록하기</Button>
+                  <Button 
+                    size='large' 
+                    type='primary' 
+                    htmlType='submit'>등록하기</Button>
                 </Flex>
       
               </Flex>
@@ -418,7 +426,10 @@ const ProductCreate = () => {
                 </Flex>
 
                 <Flex className='inputSpace5' gap='3rem' justify='flex-end'>
-                  <Button size='large' type='primary' htmlType='submit'>등록하기</Button>
+                  <Button 
+                    size='large' 
+                    type='primary' 
+                    htmlType='submit'>등록하기</Button>
                 </Flex>
       
                 </Flex>
