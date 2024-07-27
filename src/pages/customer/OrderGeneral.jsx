@@ -20,19 +20,19 @@ const OrderGeneral = () => {
     total: 0,
   });
 
-  const [dateRange, setDateRange] = useState([]);
+  //const [dateRange, setDateRange] = useState([]);
   const [filteredInfo, setFilteredInfo] = useState({});
   const [filteredData, setFilteredData] = useState([]);
 
   const navigate = useNavigate();
-  const [lastClickedRow, setLastClickedRow] = useState(null);
+  //const [lastClickedRow, setLastClickedRow] = useState(null);
   const [selectedDateRange, setSelectedDateRange] = useState([]);
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
-  const [searchedColumn, setSearchedColumn] = useState('');
+ // const [searchedColumn, setSearchedColumn] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [isServerUnstable, setIsServerUnstable] = useState(false);
 
-  const [selectedRows, setSelectedRows] = useState([]);
+  //const [selectedRows, setSelectedRows] = useState([]);
 
   // status별 개수 세기
   // 1. 빈 객체 생성하기 (태그별 개수 저장)

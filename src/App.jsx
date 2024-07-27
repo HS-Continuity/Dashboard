@@ -84,7 +84,7 @@ function App() {
             <Route path='general' element={<OrderGeneral />} />
             <Route path='general/:orderDetailId' element={<OrderGeneralDetail />} />
             <Route path='subscription' element={<OrderSubscription />} />
-            <Route path='subscription/:id' element={<OrderSubscriptionDetail />} />
+            <Route path='subscription/:regularOrderId' element={<OrderSubscriptionDetail />} />
           </Route>
           <Route path='/inventory' element={<Inventory />} />
           <Route path='/inventory/:productName' element={<InventoryDetail />} />
