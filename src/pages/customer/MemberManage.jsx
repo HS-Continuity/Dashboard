@@ -1,7 +1,7 @@
-import { fetchMembers } from '../../apis/apisMembers';
-import { useRef, useState } from 'react';
+import { fetchStoreMembers, fetchMemberAddresses, fetchMemberPaymentCards } from '../../apis/apisMembers';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input, Flex, Space, Table, Button } from 'antd'
+import { Input, Flex, Space, Table, Button, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import { useQuery } from '@tanstack/react-query';
@@ -17,30 +17,77 @@ const MemberManage = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [lastClickedRow, setLastClickedRow] = useState(null);
   const searchInput = useRef(null);
-  const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,  // 현재 페이지 번호
-      pageSize: 50,  //  페이지당 항목 수
-    },
-  });
 
   const navigate = useNavigate();
 
-  // const { data: members, isLoading, error } = useQuery({
-  //   queryKey: ["memberId", memberId],
-  //   queryFn: () => fetchMembers(memberId)
-  // });
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  const YourComponent = ({ memberId }) => {
-    const { data: members } = useQuery({
-      queryKey: ["memberId", memberId], // queryKey에 memberId를 포함
-      queryFn: () => fetchMembers(memberId), // fetchMembers 호출 시 memberId 전달
-    });
-  }
 
-  const handleChange = (pagination, filters, sorter) => {
+  // const YourComponent = ({ memberId }) => {
+  //   const { data: members } = useQuery({
+  //     queryKey: ["memberId", memberId], // queryKey에 memberId를 포함
+  //     queryFn: () => fetchMembers(memberId), // fetchMembers 호출 시 memberId 전달
+  //   });
+  // }
+
+
+  const fetchMembers = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const customerId = 1;  //  추후에 로그인하고 수정
+      const response = await fetchStoreMembers(customerId, page -1, pageSize);
+      console.log('받아온 데이터: ', response)
+
+      // setPagination({
+      //   ...pagination,
+      //   current: page,
+      //   pageSize: pageSize,
+      //   total: response.totalElements,
+      // }); 
+      if (response && response.content) {
+        console.log('설정할 멤버 데이터: ', response.content)
+        setMembers(response.content);
+        setPagination({
+          ...pagination,
+          current: page,
+          pageSize: pageSize,
+          total: response.totalElements,
+        });
+      } else {
+        console.log('회원 데이터가 없거나 형식이 올바르지 않습니다: ', response)
+        message.error('회원 데이터 형식이 올바르지 않습니다.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch members:', error);
+      message.error('회원 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log('현재 members 상태:', members);
+  }, [members]);
+
+  useEffect(() => {
+    fetchMembers(pagination.current, pagination.pageSize);
+  }, []);
+
+  // useEffect(() => {
+  //   fetchMembers(pagination.current, pagination.pageSize);
+  // }, [pagination.current, pagination.pageSize]);
+
+
+  const onHandleTableChange = (pagination, filters, sorter) => {
     setFilteredInfo(filters);
-    setSortedInfo(sorter);
+    // setSortedInfo(sorter);
+    fetchMembers(pagination.current, pagination.pageSize);
   };
 
   const clearFilters = () => {
@@ -52,8 +99,10 @@ const MemberManage = () => {
     setSearchText('');
   };
 
+  /// !!!!!!!!!!!!!!!!!!!!!!!
   const handleCellClick = (record) => {
     console.log("클릭한 행의 key: ", record.member_id)
+    setSelectedRowKeys(record.member_id)
   }
 
   const rowSelection = {
@@ -63,11 +112,17 @@ const MemberManage = () => {
     },
   };
 
-  const onRow = (record, rowIndex) => {
+  const onRow = (record) => {
     return {
       onClick: () => {
-        navigate(`../manage/${record.memberId}`);
-        setLastClickedRow(rowIndex);
+        // navigate(`../manage/${record.memberId}`, {state: record});
+        if (record && record.memberId) {
+          console.log('Navigating to detail page with data:', record);
+          navigate(`../manage/${record.memberId}`, { state: record });
+        } else {
+          console.error('Invalid record:', record);
+          message.error('회원 정보를 불러올 수 없습니다.');
+        }
       },
     };
   };
@@ -159,8 +214,8 @@ const MemberManage = () => {
     { 
       title: 'NO.',
       // dataIndex: 'number',  // 해당 데이터가 어떤 필드에 있는지
-      key: 'number',
-      render: (text, record, index) => index + 1,
+      key: 'index',
+      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
       width: 100,
       fixed: 'left',
     },
@@ -259,11 +314,15 @@ const MemberManage = () => {
       columns={columns}
       rowSelection={rowSelection}
       dataSource={members}
-      pagination={tableParams.pagination}
-      onChange={handleChange}  // 페이지 변경 이벤트
+      loading={loading}
+      pagination={pagination}
+      onChange={onHandleTableChange}  // 페이지 변경 이벤트
       scroll={{ y: 600,}}
       onRow={onRow}
       rowKey="memberId"
+      locale={{
+        emptyText: '데이터가 없습니다',
+      }}
       />
     </div>
   );
