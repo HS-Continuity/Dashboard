@@ -33,7 +33,6 @@ import InventoryDetail from "./pages/customer/InventoryDetail";
 import CustomerSolution from "./pages/customer/Solution";
 import Shipment from "./pages/customer/Shipment";
 import Delivery from "./pages/customer/Delivery";
-import ImageUploadTest from "./pages/customer/ImageUploadTest";
 import Promotion from "./pages/customer/Promotion";
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";

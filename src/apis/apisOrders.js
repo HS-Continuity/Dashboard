@@ -103,19 +103,6 @@ export const fetchRegularOrderDetails = async (regularOrderId) => {
 // };
 
 
-// [ 출고 페이지 ]
-// 1. 고객 출고 조회
-export const fetchReleases = async (customerId, releaseStatus, page, size) => {
-  const params = { customerId, releaseStatus, page, size };
-  return await apiGet(ORDER_DB_URL,`/release/list`, params);
-};
-
-// 2. 출고 메모 업데이트
-export const updateReleaseMemo = async (releaseId, memo) => {
-  const data = { orderId: releaseId, memo };
-  return await apiPatch(ORDER_DB_URL,`/release/memo`, data);
-}
-
 
 
 
