@@ -4,7 +4,7 @@ import moment from 'moment';
 import { LeftOutlined, EditOutlined, DeleteOutlined, UserOutlined, HomeOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { useQuery, useMutation, QueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import './MemberManageDetailModule.css';
 
@@ -98,9 +98,12 @@ const MemberManageDetail = () => {
     if (paymentCardsLoading) return <div>결제 수단 정보를 불러오는 중...</div>;
     if (!paymentCards) return <div>결제 수단 정보가 없습니다.</div>;
 
-    const sortedCards = [...paymentCards].sort((a, b) => 
-      b.isDefaultPaymentCard.localeCompare(a.isDefaultPaymentCard)
-    );
+    const sortedCards = [...paymentCards].sort((a, b) => {
+      if (a.isDefaultPaymentCard === 'ACTIVE') return -1; // 'ACTIVE'인 항목을 앞으로
+      if (b.isDefaultPaymentCard === 'ACTIVE') return 1; // 'ACTIVE'인 항목을 앞으로
+      return 0; // 나머지 항목은 순서 유지
+    });
+  
 
     return (
       <List
