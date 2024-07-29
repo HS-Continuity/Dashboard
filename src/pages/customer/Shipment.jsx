@@ -22,7 +22,7 @@ const Shipment = () => {
     total: 0,
   });
   
-  const [joinForm, setJoinForm] = useState([{}]);
+  const [joinForm, setJoinForm] = useState({});
   const [filteredInfo, setFilteredInfo] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [combinedPackagingKeys, setCombinedPackagingKeys] = useState([]);
@@ -193,7 +193,9 @@ const Shipment = () => {
           value={selectedKeys[0]}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: 'block' }}
+          style={{ 
+            marginBottom: 8, 
+            display: 'block' }}
         />
         <Space>
           <Button
@@ -208,7 +210,9 @@ const Shipment = () => {
           <Button onClick={() => onHandleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
-          <Button type="link" size="small" onClick={close}>
+          <Button type="link" size="small" onClick={() => {
+              close();
+            }}>
             close
           </Button>
         </Space>
@@ -235,6 +239,11 @@ const Shipment = () => {
     
       return stringItemValue.includes(stringFilterValue);
     },
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
   });
 
   const onHandleTableChange = (newPagination, filters) => {
@@ -245,6 +254,7 @@ const Shipment = () => {
       orderStatus: filters.orderStatus ? filters.orderStatus[0] : null
     }));
   };
+  // console.log('joinForm: ', joinForm)
 
   const onHandleRangePickerChange = (dates) => {
     setDateRange(dates);

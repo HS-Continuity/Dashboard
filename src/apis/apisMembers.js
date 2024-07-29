@@ -2,23 +2,36 @@ import { apiGet, MEMBER_DB_URL } from './apisCommon';
 
 // [ 회원 조회 페이지 ]
 // ----------- 회원 목록 조회 ----------- 
-export const fetchStoreMembers = async (customerId, startPage = 0, pageSize = 10) => {
-  try {
-    const params ={
-      //customerId,
-      startPage,
-      pageSize
-    };
 
-    const response = await apiGet(MEMBER_DB_URL, `/member-store/list/${customerId}`,params);
-  
-    console.log('어떤 데이터를 보내나요?: ', response);
+export const fetchStoreMembers = async (params) => {
+  if (!params.customerId) {
+    throw new Error('customerId is required');
+  }
+
+  const { customerId, ...queryParams } = params;
+
+  const queryString = Object.entries(queryParams)
+    .filter(([key, value]) => 
+      value !== undefined && 
+      value !== null && 
+      value !== '' && 
+      typeof value !== 'object'
+    )
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+
+  console.log('Query string:', queryString);
+
+  try {
+    const response = await apiGet(MEMBER_DB_URL, `/member-store/list/${customerId}?${queryString}`);
+    console.log('Server response:', response);
     return response;
   } catch (error) {
-    console.error('Error fetching customer members:', error);
+    console.error('Error fetching store members:', error);
     throw error;
   }
 };
+
 
 // ----------- 회원 배송지 목록 조회 -----------
 export const fetchMemberAddresses = async (memberId, isDefault = false) => {
