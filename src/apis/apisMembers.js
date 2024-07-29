@@ -9,11 +9,9 @@ export const fetchStoreMembers = async (customerId, startPage = 0, pageSize = 10
       startPage,
       pageSize
     };
-    console.log('요청 파라미터:', { customerId, ...params });
 
     const response = await apiGet(MEMBER_DB_URL, `/member-store/list/${customerId}`,params);
-    
-    console.log('전체 서버 응답:', response);
+  
     console.log('어떤 데이터를 보내나요?: ', response);
     return response;
   } catch (error) {
@@ -24,11 +22,13 @@ export const fetchStoreMembers = async (customerId, startPage = 0, pageSize = 10
 
 // ----------- 회원 배송지 목록 조회 -----------
 export const fetchMemberAddresses = async (memberId, isDefault = false) => {
+  console.log('서버가 받은 데이터: ', memberId)
   try {
     const response = await apiGet(MEMBER_DB_URL, `/member-address/list`, {
       memberId,
       isDefault
     });
+    console.log('보내는 데이터: ', response)
     return response;
   } catch (error) {
     console.error('Error fetching member addresses:', error);
