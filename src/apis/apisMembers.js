@@ -3,32 +3,6 @@ import { apiGet, MEMBER_DB_URL } from './apisCommon';
 // [ 회원 조회 페이지 ]
 // ----------- 회원 목록 조회 ----------- 
 
-// export const fetchStoreMembers = async (params) => {
-//   if (!params.customerId) {
-//     throw new Error('customerId is required');
-//   }
-//   const { customerId, ...queryParams } = params;
-//   const queryString = Object.entries(queryParams)
-//     .filter(([_, value]) => value !== undefined && value !== null && value !== '')
-//     .map(([key, value]) => {
-//       // Date 객체를 YYYY-MM-DD 형식의 문자열로 변환
-//       if (value instanceof Date) {
-//         return `${encodeURIComponent(key)}=${encodeURIComponent(value.toISOString().split('T')[0])}`;
-//       }
-//       return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-//     })
-//     .join('&');
-//   console.log('Query string:', queryString);
-//   try {
-//     const response = await apiGet(MEMBER_DB_URL, `/member-store/list/${customerId}?${queryString}`);
-//     console.log('Server response:', response);
-//     return response;
-//   } catch (error) {
-//     console.error('Error fetching store members:', error);
-//     throw error;
-//   }
-// };
-
 export const fetchStoreMembers = async (params) => {
   if (!params.customerId) {
     throw new Error('customerId is required');

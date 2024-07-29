@@ -98,23 +98,6 @@ const MemberManage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   console.log('현재 members 상태:', members);
-  // }, [members]);
-
-  // useEffect(() => {
-  //   Members(pagination.current, pagination.pageSize);
-  // }, []);
-
-  // useEffect(() => {
-  //   Members(pagination.current, pagination.pageSize);
-  // }, [pagination.current, pagination.pageSize]);
-
-
-  // const onHandleTableChange = (pagination, filters) => {
-  //   setFilteredInfo(filters);
-  //   fetchMembers(pagination.current, pagination.pageSize);
-  // };
   const onHandleTableChange = (pagination, filters, sorter) => {
     setFilteredInfo(filters);
     // console.log(filteredInfo)
