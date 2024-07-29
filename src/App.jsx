@@ -32,8 +32,8 @@ import Inventory from "./pages/customer/Inventory";
 import InventoryDetail from "./pages/customer/InventoryDetail";
 import CustomerSolution from "./pages/customer/Solution";
 import Shipment from "./pages/customer/Shipment";
+import ShipmentDetail from "./pages/customer/ShipmentDetail";
 import Delivery from "./pages/customer/Delivery";
-import ImageUploadTest from "./pages/customer/ImageUploadTest";
 import Promotion from "./pages/customer/Promotion";
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";
@@ -90,6 +90,7 @@ function App() {
           <Route path='/inventory/:productName' element={<InventoryDetail />} />
           <Route path='/solution' element={<CustomerSolution />} />
           <Route path='/shipment' element={<Shipment />} />
+          <Route path='shipment/:orderDetailId' element={<ShipmentDetail />} />
           <Route path='/delivery' element={<Delivery />} />
           <Route path='/promotion' element={<Promotion />} />
         </Route>
