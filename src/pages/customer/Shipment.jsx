@@ -356,7 +356,7 @@ const Shipment = () => {
       if (result.isConfirmed) {
         requestCombinedPackaging(combinedPackagingInfo.orderIds)
           .then(() => {
-            message.success(합포장 신청이 완료되었습니다.');
+            message.success('합포장 신청이 완료되었습니다.');
             fetchShipments(); // 테이블 데이터 새로고침
             setSelectedRowKeys([]);
           })
