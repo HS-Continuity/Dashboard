@@ -1,8 +1,8 @@
-import { updateReleaseMemo, updateReleaseHoldReason } from '../../apis/apisShipments';
+import { updateDeliveryDate, updateReleaseMemo, updateReleaseHoldReason } from '../../apis/apisShipments';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Form, Input, Button, Table, Typography, Row, Col, message, Tag } from 'antd';
+import { Flex, Form, Input, Button, Table, Typography, Row, Col, message, Tag, DatePicker } from 'antd';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import { LeftOutlined } from '@ant-design/icons';
@@ -16,6 +16,8 @@ const ShipmentDetail = () => {
   const [memo, setMemo] = useState(shipmentDetail?.memo || '');
   const [holdReason, setHoldReason] = useState(shipmentDetail?.holdReason || '');
   const [isHoldReasonEnabled, setIsHoldReasonEnabled] = useState(false);
+  const [startDeliveryDate, setStartDeliveryDate] = useState(shipmentDetail?.startDeliveryDate ? moment(shipmentDetail.startDeliveryDate) : null);
+
 
   const navigate = useNavigate();
 
@@ -95,6 +97,22 @@ const ShipmentDetail = () => {
     navigate(-1); // 이전 페이지로 이동
   };
 
+  const onHandleDateChange = async (date, dateString) => {
+    if (!shipmentDetail?.orderId) {
+      message.error('주문 정보가 없습니다.');
+      return;
+    }
+
+    try {
+      await updateDeliveryDate(shipmentDetail.orderId, dateString);
+      setStartDeliveryDate(date);
+      message.success('배송시작일이 설정되었습니다.');
+    } catch (error) {
+      console.error('Error updating delivery date:', error);
+      message.error('배송시작일 설정에 실패했습니다.');
+    }
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       AWAITING_RELEASE: 'green',
@@ -150,51 +168,60 @@ const ShipmentDetail = () => {
           pagination={false}
           style={{ marginBottom: '20px' }}
         />
-        <br/>     
+        <br/>   
+        <Row gutter={16}>
+          <Col span={6}>
+            <Form.Item label="배송시작일">
+              {/* <Input value={shipmentDetail?.startDeliveryDate ? moment(shipmentDetail.startDeliveryDate).format('YYYY-MM-DD') : '미정'} disabled /> */}
+              <DatePicker 
+                value={startDeliveryDate}
+                onChange={onHandleDateChange}
+                style={{ width: '100%' }}
+                format="YYYY-MM-DD"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item label="배송지">
+              <Input value={shipmentDetail?.recipientAddress || '배송지 정보 없음'} disabled />
+            </Form.Item>
+          </Col>
+        </Row>  
         <Row gutter={16}>
           <Col span={12}>
-            {/* <Form.Item label="주문메모">
-              <TextArea
-                rows={4}
-                value={memo}
-                onChange={(e) => setMemo(e.target.value)}
-              />
-              <Button onClick={onMemoSubmit} style={{ marginTop: '10px' }}>등록</Button>
-            </Form.Item> */}
             <Form.Item label="주문메모">
               {memo ? (
-                <TextArea rows={4} value={memo} readOnly />
+                <>
+                  <TextArea rows={4} value={memo} onChange={(e) => setMemo(e.target.value)} />
+                  <Button type="primary" onClick={onMemoSubmit} style={{ marginTop: '10px' }}>수정</Button>
+                </>
               ) : (
-                <Button onClick={onMemoSubmit}>출고 메모 등록</Button>
+                <Button onClick={onMemoSubmit} style={{ marginTop: '10px' }}>출고 메모 등록</Button>
               )}
             </Form.Item>
           </Col>
           <Col span={12}>
-            {/* <Form.Item label="보류사유">
-              <TextArea
-                rows={4}
-                value={memo}
-                onChange={(e) => setHoldReason(e.target.value)}
-                disabled={!isHoldReasonEnabled}
-              />
-              <Button onClick={onHoldReasonSubmit} style={{ marginTop: '10px' }}>등록</Button>
-            </Form.Item> */}
             <Form.Item label="보류사유">
-              {shipmentDetail?.orderStatus === "HOLD_RELEASE" ? (
-                holdReason ? (
-                  <TextArea rows={4} value={holdReason} readOnly />
-                ) : (
-                  <Button onClick={onHoldReasonSubmit}>출고 보류 사유 등록</Button>
-                )
+              {shipmentDetail?.orderStatus === "HOLD_RELEASE" && holdReason ? (
+                <>
+                  <TextArea rows={4} value={holdReason} onChange={(e) => setHoldReason(e.target.value)} />
+                  <Button type="primary" onClick={onHoldReasonSubmit} style={{ marginTop: '10px' }}>수정</Button>
+                </>
               ) : (
-                <div>
-                  <TextArea rows={4} value="출고 보류 상태가 아닙니다." readOnly disabled />
-                  <Button disabled style={{ marginTop: '10px' }}>출고 보류 사유 등록</Button>
-                </div>
+                shipmentDetail?.orderStatus === "HOLD_RELEASE" ? (
+                  <Button onClick={onHoldReasonSubmit} style={{ marginTop: '10px' }}>출고 보류 사유 등록</Button>
+                ) : (
+                  <div>
+                    <TextArea rows={4} value="출고 보류 상태가 아닙니다." readOnly disabled />
+                    <Button disabled style={{ marginTop: '10px' }}>출고 보류 사유 등록</Button>
+                  </div>
+                )
               )}
             </Form.Item>
           </Col>
         </Row>
+
+        
       </Form>
     </div>
   );

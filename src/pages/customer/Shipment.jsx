@@ -1,4 +1,4 @@
-import { fetchReleases, updateDeliveryDate, updateReleaseMemo, updateReleaseHoldReason, updateReleaseStatus, updateBulkReleaseStatus, requestCombinedPackaging} from '../../apis/apisShipments';
+import { fetchReleases, updateReleaseStatus, updateBulkReleaseStatus, requestCombinedPackaging, fetchReleaseStatusCounts} from '../../apis/apisShipments';
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from 'antd';
@@ -21,16 +21,20 @@ const Shipment = () => {
     pageSize: 10,
     total: 0,
   });
+  
   const [joinForm, setJoinForm] = useState([{}]);
   const [filteredInfo, setFilteredInfo] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [combinedPackagingKeys, setCombinedPackagingKeys] = useState([]);
+  const [statusCount, setStatusCount] = useState({});
+  const [dateRange, setDateRange] = useState([]);
   const searchInput = useRef(null);
   const tableRef = useRef();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchShipments();
+    fetchStatusCounts();
   }, [pagination.current, pagination.pageSize, joinForm])
 
   const rowSelection = {
@@ -64,6 +68,7 @@ const Shipment = () => {
         customerId: 1,
         page: pagination.current - 1,
         size: pagination.pageSize,
+        ...joinForm
       };
       
       Object.entries(joinForm).forEach(([key, value]) => {
@@ -141,6 +146,26 @@ const Shipment = () => {
     }
   };
 
+  const fetchStatusCounts = async () => {
+    try {
+      const customerId = 1;
+      const response = await fetchReleaseStatusCounts(customerId);
+      if (response) {
+        console.log('Status counts response:', response);
+        const counts = {};
+        response.forEach(item => {
+          counts[item.statusName] = item.count;
+        });
+        setStatusCount(counts);
+      } else {
+        console.error('No response received for status counts.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch status counts:', error);
+      message.error('상태별 개수를 불러오는데 실패했습니다.');
+    }
+  };
+
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setJoinForm(prev => ({
@@ -149,17 +174,10 @@ const Shipment = () => {
     }));
   };
 
-  // const onHandleReset = (dataIndex) => {
-  //   setJoinForm(prev => {
-  //     const newForm = { ...prev };
-  //     delete newForm[dataIndex];
-  //     return newForm;
-  //   });
-  // };
-
   const onHandleReset = () => {
     setJoinForm({});
     setFilteredInfo({});
+    setDateRange([]);
     if (tableRef.current) {
       tableRef.current.clearFilters();
     }
@@ -228,70 +246,23 @@ const Shipment = () => {
     }));
   };
 
-  const onHandleDateChange = async (date, dateString, record) => {
-    try {
-      await updateDeliveryDate(record.orderId, dateString);
-      message.success('배송시작일이 설정되었습니다.');
-      fetchShipments();
-    } catch (error) {
-      message.error('배송시작일 설정에 실패했습니다.');
-    }
-  };
-
-  const onHandleMemoClick = async (record) => {
-    const { value: memo } = await Swal.fire({
-      title: '출고메모',
-      input: 'textarea',
-      inputLabel: '출고메모를 입력하세요',
-      inputPlaceholder: '출고메모를 입력하세요...',
-      inputAttributes: {
-        'aria-label': '출고메모를 입력하세요'
-      },
-      showCancelButton: true,
-      confirmButtonText: '등록하기',
-      cancelButtonText: '취소'
-    });
-
-    if (memo) {
-      try {
-        console.log('Sending memo for orderId: ', record.orderId)
-        const response = await updateReleaseMemo(record.orderId, memo);
-        //console.log('Server response: ', response);
-        if (response.successCode === null) {
-          message.success('출고메모가 등록되었습니다.');
-          fetchShipments();
-        }
-      } catch (error) {
-        message.error('출고메모 등록에 실패했습니다.');
-      }
-    }
-  };
-
-  const onHandleHoldReasonClick = async (record) => {
-    const { value: memo } = await Swal.fire({
-      title: '출고보류',
-      input: 'textarea',
-      inputLabel: '출고 보류 사유를 입력하세요',
-      inputPlaceholder: '출고 보류 사유를 입력하세요...',
-      inputAttributes: {
-        'aria-label': '출고 보류 사유를 입력하세요'
-      },
-      showCancelButton: true,
-      confirmButtonText: '등록하기',
-      cancelButtonText: '취소'
-    });
-
-    if (memo) {
-      try {
-        const response = await updateReleaseHoldReason(record.orderId, memo);
-        //console.log('Server response: ', response);
-        if(response.successCode === null) {
-          message.success('출고보류 사유가 등록되었습니다.');
-        fetchShipments();
-        }
-      } catch (error) {
-        message.error('출고보류 사유 등록에 실패했습니다.');
-      }
+  const onHandleRangePickerChange = (dates) => {
+    setDateRange(dates);
+    if (dates && dates[0] && dates[1]) {
+      const startDate = dates[0].format('YYYY-MM-DD');
+      const endDate = dates[1].format('YYYY-MM-DD');
+      setJoinForm(prev => ({
+        ...prev,
+        startDate,
+        endDate
+      }));
+    } else {
+      setJoinForm(prev => {
+        const newForm = { ...prev };
+        delete newForm.startDate;
+        delete newForm.endDate;
+        return newForm;
+      });
     }
   };
 
@@ -407,36 +378,23 @@ const Shipment = () => {
     }
   }, [isServerUnstable]);
 
-
-
-  // const onClearFilters = () => {
-  //   setFilteredInfo({});
-  // };
-
-  // const handleReset = (clearFilters) => {  // 컬럼별 리셋
-  //   clearFilters();
-  //   setSearchText('');
-  // }
-
-  // const onHandCellClick = (record) => {
-  //   console.log("클릭한 행의 key: ", record.member_id);
-  //   setSelectedRowKeys(record.member_id);
-  // }
-
   const onRow = (record) => {
     return {
-      onClick: () => {
-        if (record && record.orderId) {
-          console.log('Navigation to detail page with data: ', record);
-          navigate('${orderId}', {
-            state: {
-              shipmentDetail: record,
-              productOrderList: record.productOrderList
-            }
-          })
-        } else {
-          console.error('Invalid record: ', record);
-          message.error('회원 정보를 불러올 수 없습니다.');
+      onClick: (event) => {
+        const target = event.target;
+        if (target.tagName === 'TD' && target.cellIndex !== columns.findIndex(col => col.dataIndex === 'startDeliveryDate')) {
+          if (record && record.orderId) {
+            console.log('Navigation to detail page with data: ', record);
+            navigate('${orderId}', {
+              state: {
+                shipmentDetail: record,
+                productOrderList: record.productOrderList
+              }
+            });
+          } else {
+            console.error('Invalid record: ', record);
+            message.error('회원 정보를 불러올 수 없습니다.');
+          }
         }
       }
     };
@@ -476,15 +434,6 @@ const Shipment = () => {
       title: '배송시작일',
       dataIndex: 'startDeliveryDate',
       key: 'startDeliveryDate',
-      render: (text, record) => (
-        text ? (
-          <span>{moment(text).format('YYYY-MM-DD')}</span>
-        ) : (
-          <DatePicker 
-            onChange={(date, dateString) => onHandleDateChange(date, dateString, record)}
-          />
-        )
-      ),
       filteredValue: joinForm.startDeliveryDate ? [joinForm.startDeliveryDate] : null,
       ...getColumnSearchProps('startDeliveryDate'),
     },
@@ -495,38 +444,6 @@ const Shipment = () => {
       filteredValue: joinForm.productName ? [joinForm.productName] : null,
       ...getColumnSearchProps('productName'),
     },
-    // {
-    //   title: '배송지',
-    //   dataIndex: 'recipientAddress',
-    //   key: 'recipientAddress',
-    //   filteredValue: joinForm.recipientAddress ? [joinForm.recipientAddress] : null,
-
-    //   ...getColumnSearchProps('recipientAddress'),
-    // },
-    // {
-    //   title: '출고메모',
-    //   dataIndex: 'memo',
-    //   key: 'memo',
-    //   render: (text, record) => (
-    //     <Button onClick={() => onHandleMemoClick(record)}>
-    //       {text ? (text.length > 15 ? `${text.slice(0, 15)}...` : text) : '메모 입력'}
-    //     </Button>
-    //   ),
-    //   filteredValue: joinForm.memo ? [joinForm.memo] : null,
-    //   ...getColumnSearchProps('memo'),
-    // },
-    // {
-    //   title: '출고보류사유',
-    //   dataIndex: 'memo',
-    //   key: 'memo',
-    //   render: (text, record) => (
-    //     <Button onClick={() => onHandleHoldReasonClick(record)}>
-    //       {text ? (text.length > 15 ? `${text.slice(0, 15)}...` : text) : '사유 입력'}
-    //     </Button>
-    //   ),
-    //   filteredValue: joinForm.memo ? [joinForm.memo] : null,
-    //   ...getColumnSearchProps('memo'),
-    // },
     {
       title: '출고상태', 
       dataIndex: 'orderStatus',
@@ -568,7 +485,7 @@ const Shipment = () => {
     return texts[status] || status;
   };
 
-  const statusTags = ['출고대기', '출고보류', '출고완료', '합포장완료'];
+  //const statusTags = ['출고대기', '출고보류', '출고완료', '합포장완료'];
 
   return (
     <div>
@@ -581,15 +498,15 @@ const Shipment = () => {
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
           <RangePicker 
-            // value={selectedDateRange}
-            // onChange={onHandleRangePickerChange}
-            allowClear />
+            value={dateRange}
+            onChange={onHandleRangePickerChange}
+            allowClear
+          />
         </Flex>
         <Flex gap="small" wrap>
-          {statusTags.map((tag) => (
-            // <StatusCard key={tag} title={tag} count={statusCounts[tag]} />
-            <StatusCard key={tag} title={tag}/>
-          ))}
+        {statusCount && Object.keys(statusCount).map((tag) => (
+          <StatusCard key={tag} title={getStatusText(tag)} count={statusCount[tag]} />
+        ))}
         </Flex>
       </Flex>
       <br />
