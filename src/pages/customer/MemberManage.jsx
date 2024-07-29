@@ -10,16 +10,16 @@ import './MemberManageModule.css';
 
 const MemberManage = () => {
 
+
+  //const [isServerUnstable, setIsServerUnstable] = useState(false);
+    
+  const [joinForm, setJoinForm] = useState({});
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-  const [filteredInfo, setFilteredInfo] = useState({});
-  const [sortedInfo, setSortedInfo] = useState({});
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
-  const [lastClickedRow, setLastClickedRow] = useState(null);
   const searchInput = useRef(null);
-
-  const navigate = useNavigate();
-
+  const tableRef = useRef();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -28,41 +28,68 @@ const MemberManage = () => {
     total: 0,
   });
 
+  const navigate = useNavigate();
 
-  // const YourComponent = ({ memberId }) => {
-  //   const { data: members } = useQuery({
-  //     queryKey: ["memberId", memberId], // queryKey에 memberId를 포함
-  //     queryFn: () => fetchMembers(memberId), // fetchMembers 호출 시 memberId 전달
-  //   });
-  // }
+  useEffect(() => {
+    fetchMembers();
+  }, [pagination.current, pagination.pageSize, joinForm])
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setSelectedRowKeys(selectedRowKeys);
+    }
+  }
 
-  const fetchMembers = async (page = 1, pageSize = 10) => {
+  const fetchMembers = async () => {
     setLoading(true);
     try {
-      const customerId = 1;  //  추후에 로그인하고 수정
-      const response = await fetchStoreMembers(customerId, page -1, pageSize);
-      console.log('받아온 데이터: ', response)
+      const params = {
+        customerId: 1,
+        ...joinForm,
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+        // ...joinForm
+      };
+      
+      Object.entries(joinForm).forEach(([key, value]) => {
+        if (value != null && value !== '') {
+          if (value instanceof Date) {
+            params[key] = value.toISOString().split('T')[0]; // YYYY-MM-DD 형식으로 변환
+          } else if (Array.isArray(value)) {
+            params[key] = value.join(','); // 배열을 쉼표로 구분된 문자열로 변환
+          } else {
+            params[key] = value;
+          }
+        }
+      });
 
-      // setPagination({
-      //   ...pagination,
-      //   current: page,
-      //   pageSize: pageSize,
-      //   total: response.totalElements,
-      // }); 
-      if (response && response.content) {
-        console.log('설정할 멤버 데이터: ', response.content)
-        setMembers(response.content);
-        setPagination({
-          ...pagination,
-          current: page,
-          pageSize: pageSize,
-          total: response.totalElements,
-        });
-      } else {
-        console.log('회원 데이터가 없거나 형식이 올바르지 않습니다: ', response)
-        message.error('회원 데이터 형식이 올바르지 않습니다.');
-      }
+      console.log('Sending params:', params);
+
+      const response = await fetchStoreMembers(params);
+
+      console.log('받아온 회원 데이터: ', response);
+
+      //let isServerUnstable = false;
+
+      const transformedMembers = response.content.map(member => {
+        return {
+          // orderId: order.orderId.toString() || '',
+          memberId: member.memberId.toString() || '',
+          memberName: member.memberName,
+          memberPhoneNumber: member.memberPhoneNumber,
+          memberEmail: member.memberEmail,
+          memberBirthday: member.memberBirthday,
+          gender: member.gender
+        }
+      });
+
+      setMembers(transformedMembers);
+      setPagination({
+        ...pagination,
+        total: response.totalElements,
+      })
+
     } catch (error) {
       console.error('Failed to fetch members:', error);
       message.error('회원 데이터를 불러오는데 실패했습니다.');
@@ -71,27 +98,44 @@ const MemberManage = () => {
     }
   };
 
-  useEffect(() => {
-    console.log('현재 members 상태:', members);
-  }, [members]);
-
-  useEffect(() => {
-    fetchMembers(pagination.current, pagination.pageSize);
-  }, []);
+  // useEffect(() => {
+  //   console.log('현재 members 상태:', members);
+  // }, [members]);
 
   // useEffect(() => {
-  //   fetchMembers(pagination.current, pagination.pageSize);
+  //   Members(pagination.current, pagination.pageSize);
+  // }, []);
+
+  // useEffect(() => {
+  //   Members(pagination.current, pagination.pageSize);
   // }, [pagination.current, pagination.pageSize]);
 
 
+  // const onHandleTableChange = (pagination, filters) => {
+  //   setFilteredInfo(filters);
+  //   fetchMembers(pagination.current, pagination.pageSize);
+  // };
   const onHandleTableChange = (pagination, filters, sorter) => {
     setFilteredInfo(filters);
-    // setSortedInfo(sorter);
+    // console.log(filteredInfo)
+    // console.log(filters)
+    const newJoinForm = {};
+    Object.keys(filters).forEach(key => {
+      if (filters[key] && filters[key].length > 0) {
+        newJoinForm[key] = filters[key][0];
+      }
+      setJoinForm(newJoinForm);
+    });
+    // setJoinForm(newJoinForm);
+  
     fetchMembers(pagination.current, pagination.pageSize);
   };
+  console.log('joinForm: ', joinForm)
 
   const clearFilters = () => {
     setFilteredInfo({});
+    setJoinForm({});
+    fetchMembers();
   };
 
   const handleReset = (clearFilters) => {  //  컬럼별 리셋
@@ -105,12 +149,7 @@ const MemberManage = () => {
     setSelectedRowKeys(record.member_id)
   }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys) => {
-      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
-    },
-  };
+ 
 
   const onRow = (record) => {
     return {
@@ -306,7 +345,7 @@ const MemberManage = () => {
         </Flex>
       </Flex>
       <br />
-      <Flex gap="small" justify= "flex-end">
+      <Flex gap="small" justify= "flex-start">
         <Button onClick={clearFilters}>Clear Filter</Button>
       </Flex>
       <br />
