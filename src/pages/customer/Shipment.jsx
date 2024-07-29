@@ -312,7 +312,7 @@ const Shipment = () => {
 
   const onHandleCombinedPackaging = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('합배송할 주문을 선택해주세요.');
+      message.warning('합포장할 주문을 선택해주세요.');
       return;
     }
 
@@ -323,7 +323,7 @@ const Shipment = () => {
       release.memberId === arr[0].memberId &&
       release.startDeliveryDate === arr[0].startDeliveryDate &&
       release.recipientAddress === arr[0].recipientAddress &&
-      release.orderStatus === 'AWAITING_RELEASE'  // 출고대기 상태인 주문만 합배송 가능
+      release.orderStatus === 'AWAITING_RELEASE'  // 출고대기 상태인 주문만 합포장 가능
     );
 
     if (!isValid) {
@@ -340,7 +340,7 @@ const Shipment = () => {
     };
 
     Swal.fire({
-      title: '합배송 신청',
+      title: '합포장 신청',
       html: `
         <div style="text-align: right; margin-bottom: 10px;">배송비: ${combinedPackagingInfo.deliveryFee}원</div>
         <div style="text-align: left; margin-bottom: 10px;">
@@ -356,13 +356,13 @@ const Shipment = () => {
       if (result.isConfirmed) {
         requestCombinedPackaging(combinedPackagingInfo.orderIds)
           .then(() => {
-            message.success('합배송 신청이 완료되었습니다.');
+            message.success(합포장 신청이 완료되었습니다.');
             fetchShipments(); // 테이블 데이터 새로고침
             setSelectedRowKeys([]);
           })
           .catch((error) => {
-            console.error('합배송 신청 실패:', error);
-            message.error('합배송 신청에 실패했습니다.');
+            console.error('합포장 신청 실패:', error);
+            message.error('합포장 신청에 실패했습니다.');
           });
       }
     });
@@ -529,7 +529,7 @@ const Shipment = () => {
             onClick={() => onHandleStatusChange('HOLD_RELEASE')}
           />
           <StatusChangeButton 
-            title={"합배송완료"}
+            title={"합포장완료"}
             onClick={() => onHandleStatusChange('COMBINED_PACKAGING_COMPLETED')}
           />
         </Flex>
@@ -547,7 +547,7 @@ const Shipment = () => {
         onRow={onRow}
       />
       </Flex>
-      <Button onClick={onHandleCombinedPackaging}>합배송 요청</Button>
+      <Button onClick={onHandleCombinedPackaging}>합포장 요청</Button>
       
     </div>
   )
