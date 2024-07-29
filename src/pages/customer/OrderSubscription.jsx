@@ -35,21 +35,6 @@ const OrderSubscription = () => {
   const [selectedDateOrders, setSelectedDateOrders] = useState([]);
   const [panelDate, setPanelDate] = useState(dayjs()); // 현재 패널 날짜 상태 추가
   const [selectedRowKeys, setSelectedRowKeys] = useState();
-  // const [tableParams, setTableParams] = useState({
-  //   pagination: {
-  //     current: 1,  // 현재 페이지 번호
-  //     pageSize: 20,  //  페이지당 항목 수
-  //   },
-  // });
-
-
-  // const { data: monthlyOrderCounts, isLoading, error } = useQuery({
-  //   queryKey: ['monthlyOrderCounts', currentMonth.format('YYYY-MM')],
-  //   queryFn: () => fetchRegularOrderCountsBetweenMonth(
-  //     currentMonth.startOf('month').format('YYYY-MM-DD'),
-  //     currentMonth.endOf('month').format('YYYY-MM-DD')
-  //   ),
-  // });
 
   const fetchMonthlyOrders = async () => {
     setLoading(true);
@@ -58,8 +43,8 @@ const OrderSubscription = () => {
       const response = await fetchRegularOrderCountsBetweenMonth(
         currentMonth.startOf('month'),
         currentMonth.endOf('month'),
-        //customerId
       );
+      console.log('받아온 데이터: ', response)
       setMonthlyOrderCounts(response);
     } catch (error) {
       console.error('Failed to fetch monthly orders:', error);
@@ -76,29 +61,19 @@ const OrderSubscription = () => {
   const cellRender = (current) => {
     if (!monthlyOrderCounts) return null;
 
-    // const cellDate = value.format('YYYY-MM-DD');
     const ordersForDate = monthlyOrderCounts.filter(order => 
-      dayjs(order.START_DATE).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
+      // dayjs(order.START_DATE).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
+      dayjs(order.date).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
     );
 
     if (ordersForDate.length === 0) return null;
 
     const firstOrder = ordersForDate[0];
     const content = ordersForDate.length > 1
-      ? `${firstOrder.REGULAR_DELIVERY_APPLICATION_ID} 외 ${ordersForDate.length - 1}건`
-      : firstOrder.REGULAR_DELIVERY_APPLICATION_ID;
+      ? `${firstOrder.productName} 상품건 외 ${ordersForDate.length - 1}건`
+      : firstOrder.productName;
 
-
-    // return (
-    //   <ul className="events">
-    //     {ordersForDate.map(order => (
-    //       <li key={order.RECIPIENT}>
-    //         {order.RECIPIENT}
-    //       </li>
-    //     ))}
-    //   </ul>
-    // );
-
+  
     return (
       <ul className="events">
         <li>
@@ -133,7 +108,7 @@ const OrderSubscription = () => {
       setSelectedDate(selectedDate);
       
       const ordersForDate = monthlyOrderCounts.filter(
-        order => dayjs(order.START_DATE).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD')
+        order => dayjs(order.date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD')
       );
       setSelectedDateOrders(ordersForDate);
       setIsDrawerVisible(true);
@@ -150,18 +125,18 @@ const OrderSubscription = () => {
     setIsDrawerVisible(false);
   };
 
-  // const onRowClick = (record) => {
-  //   navigate ('../subscriptionDetail', {
-  //     state: {
-  //       selectedTags: record.regular_delivery_status,
-  //       selectedOrderId: record.regular_delivery_application_id,
-  //       selectedOrderStartDate: record.start_date,
-  //       selectedOrderEndDate: record.end_date,
-  //       selectedOrderCycle: record.cycle,
-  //       selectedOrderMemo: record.order_memo
-  //     },
-  //   });
-  // };
+  const onRowClick = (record) => {
+    navigate ('../subscriptionDetail', {
+      state: {
+        selectedTags: record.regular_delivery_status,
+        selectedOrderId: record.regular_delivery_application_id,
+        selectedOrderStartDate: record.start_date,
+        selectedOrderEndDate: record.end_date,
+        selectedOrderCycle: record.cycle,
+        selectedOrderMemo: record.order_memo
+      },
+    });
+  };
 
   const onRow = (record) => {
     return {
@@ -185,28 +160,28 @@ const OrderSubscription = () => {
     },
     {
       title: '정기주문ID',
-      dataIndex: 'REGULAR_DELIVERY_APPLICATION_ID',
-      key: 'REGULAR_DELIVERY_APPLICATION_ID',
+      dataIndex: 'orderApplicationId',
+      key: 'orderApplicationId',
       fixed: 'left',
-      filteredValue: filteredInfo.REGULAR_DELIVERY_APPLICATION_ID || null,
+      filteredValue: filteredInfo.orderApplicationId || null,
       filtered: false,
       width: 135
     },
     {
       title: '대표상품명',
-      dataIndex: 'MAIN_PRODUCT_ID',
-      key: 'MAIN_PRODUCT_ID',
+      dataIndex: 'productName',
+      key: 'productName',
       fixed: 'left',
-      filteredValue: filteredInfo.MAIN_PRODUCT_ID || null,
+      filteredValue: filteredInfo.productName || null,
       filtered: false,
       width: 140
     },
     {
       title: '주문건수',
-      dataIndex: 'ORDERED_PRODUCT_COUNT',
-      key: 'ORDERED_PRODUCT_COUNT',
+      dataIndex: 'productCount',
+      key: 'productCount',
       fixed: 'left',
-      filteredValue: filteredInfo.ORDERED_PRODUCT_COUNT || null,
+      filteredValue: filteredInfo.productCount || null,
       filtered: false,
       width: 140
     }
@@ -251,7 +226,7 @@ const OrderSubscription = () => {
         placement="right"
         onClose={onCloseDrawer}
         open={isDrawerVisible}
-        width={800}
+        width={900}
       >
         {selectedDateOrders.length > 0 ? (
           <Table
@@ -259,10 +234,11 @@ const OrderSubscription = () => {
             columns={columns.filter((col) => col.key !== 'start_date')}
             dataSource={selectedDateOrders}
             //onChange={onHandleChange}
-            rowKey="REGULAR_DELIVERY_APPLICATION_ID"
+            rowKey="orderApplicationId"
             pagination={false}
             onRow={onRow}
             rowSelection={rowSelection}
+            onRowClick={onRowClick}
           />
         ) : (
           <h2>주문건이 없습니다.</h2>

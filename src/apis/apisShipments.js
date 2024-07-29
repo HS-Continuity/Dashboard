@@ -31,7 +31,7 @@ export const updateReleaseStatus = async (orderId, releaseStatusCode) => {
   return await apiPatch(ORDER_DB_URL, `/release/status`, { orderId, releaseStatusCode })
 }
 
-// 출고 상태 일괄 변경
+// 출고 상태 상태 일괄 변경
 export const updateBulkReleaseStatus = async (orderIds, releaseStatusCode) => {
   return await apiPatch(ORDER_DB_URL, `/release/bulk-status`, { orderIds, releaseStatusCode })
 }

@@ -1,5 +1,5 @@
-import { fetchCustomerOrders, updateOrderStatus, updateBulkOrderStatus } from '../../apis/apisOrders';
-import { useEffect, useState } from 'react';
+import { fetchCustomerOrders, updateOrderStatus, updateBulkOrderStatus,subscribeToOrderStatusUpdates } from '../../apis/apisOrders';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
@@ -11,6 +11,7 @@ const { RangePicker } = DatePicker;
 
 const OrderGeneral = () => {
 
+  const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -19,70 +20,141 @@ const OrderGeneral = () => {
     total: 0,
   });
 
-  //const [dateRange, setDateRange] = useState([]);
+  const [joinForm, setJoinForm] = useState({});
   const [filteredInfo, setFilteredInfo] = useState({});
-  const [filteredData, setFilteredData] = useState([]);
-
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [statusCount, setStatusCount] = useState({});
+  const [dateRange, setDateRange] = useState([]);
+  const searchInput = useRef(null);
+  const tableRef = useRef();
   const navigate = useNavigate();
-  //const [lastClickedRow, setLastClickedRow] = useState(null);
-  const [selectedDateRange, setSelectedDateRange] = useState([]);
-  const [searchText, setSearchText] = useState('');  //  검색 정보 저장
- // const [searchedColumn, setSearchedColumn] = useState('');
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
-  const [isServerUnstable, setIsServerUnstable] = useState(false);
+  const eventSourceRef = useRef(null);
 
-  //const [selectedRows, setSelectedRows] = useState([]);
+  // useEffect(() => {
+  //   fetchOrders();
+    
+  //   // SSE 구독 설정(*)
+  //   const customerId = 1;  // 실제 사용 시 로그인한 사용자의 ID 사용하기!!
+  //   eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
+  //   eventSourceRef.current.onopen = () => {
+  //     console.log('SSE connection opened');
+  //   };
+  //   //console.log(eventSourceRef.current);
 
-  // status별 개수 세기
-  // 1. 빈 객체 생성하기 (태그별 개수 저장)
-  // const statusCounts = {};
-  // // 2. forEach 사용해서 orderStatusTags 배열 순회하기
-  // orderStatusTags.forEach((tag) => {
-  //   // 옵셔널 체이닝(?.) 사용해서 item.tags가 존재하는 경우에만 includes(tag) 호출하기
-  //   // 태그가 key, 개수가 value
-  //   // statusCounts[tag] = datasRef.current.filter((item) => item.tags?.includes(tag)).length;
-  // });
+  
 
 
-  const fetchOrders = async (page = 1, pageSize = 10) => {
+  //   eventSourceRef.current.onmessage = (event) => {  // onmessage 들어올 때마다 '띠링'하는 알림 소리 붙이기!!
+  //     console.log('12334421');
+  //     const data = JSON.parse(event.data);
+      
+  //     setStatusCount(data);
+      
+  //     console.log(data);
+  //   };
+
+  //   eventSourceRef.current.onerror = (error) => {
+  //     console.error('SSE Error: ', error);
+  //     console.log('2133312332131321');
+  //     eventSourceRef.current.close();
+  //   };
+
+  //   return () => {
+  //     if (eventSourceRef.current) {
+  //       eventSourceRef.current.close();
+  //     }
+  //   };
+  // }, [pagination.current, pagination.pageSize, joinForm]);
+
+  useEffect(() => {
+    fetchOrders();
+    
+    const customerId = 1;
+    eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
+  
+    eventSourceRef.current.onopen = () => {
+      console.log('SSE connection opened');
+    };
+  
+    eventSourceRef.current.onmessage = (event) => {
+      console.log('Received SSE message:', event);
+      const data = JSON.parse(event.data);
+      console.log('Parsed SSE data:', data);
+      setStatusCount(data); // 받은 데이터를 그대로 상태로 설정
+    };
+  
+    eventSourceRef.current.onerror = (error) => {
+      console.error('SSE Error: ', error);
+      eventSourceRef.current.close();
+    };
+  
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []); // 의존성 배열을 비워 컴포넌트 마운트 시 한 번만 실행되도록 함
+
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setSelectedRowKeys(selectedRowKeys);
+    }
+  }
+
+  const fetchOrders = async () => {
     setLoading(true);
     try {
-      const customerId = 1;  // 실제 사용시 로그인한 고객의 ID를 사용해야 함!!
-      const response = await fetchCustomerOrders(customerId, null, page - 1, pageSize);
+      const params = {
+        customerId: 1,
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+        ...joinForm
+      };
 
+      Object.entries(joinForm).forEach(([key, value]) => {
+        if (value != null && value !== '') {
+          if (value instanceof Date) {
+            params[key] = value.toISOString().split('T')[0]; // YYYY-MM-DD 형식으로 변환
+          } else if (Array.isArray(value)) {
+            params[key] = value.join(','); // 배열을 쉼표로 구분된 문자열로 변환
+          } else {
+            params[key] = value;
+          }
+        }
+      });
+
+      console.log('Sending params:', params);
+      console.log('Fetching with params:', params);
+      
+      const response = await fetchCustomerOrders(params);
+      console.log('받아온 주문 데이터: ', response);
+      
       let isServerUnstable = false;
       
       const transformedOrders = response.content.map(order => {
-        const productOrderList = order.productOrderList?.productOrderList || 'null';
-        let productName = '';
-        let isMemberInfoAvailable = true;
-        let isProductInfoAvailable = true;
-        
-        if (productOrderList && productOrderList.length > 0) {
-          productName = `${productOrderList[0].name}`;
-          if (productOrderList.length > 1) {
-            productName += ` 외 ${productOrderList.length - 1}건`;
-          }
 
-          // 서버 연결 상태 확인
-          isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
-          isProductInfoAvailable = productOrderList.every(product => product.availableProductInformation);
+
+        //   // 서버 연결 상태 확인
+        //   isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
+        //   isProductInfoAvailable = productOrderList.every(product => product.availableProductInformation);
           
-          if (!isMemberInfoAvailable || !isProductInfoAvailable) {
-            isServerUnstable = true;
-          }
+        //   if (!isMemberInfoAvailable || !isProductInfoAvailable) {
+        //     isServerUnstable = true;
+        //   }
 
-        }
+        // }
+      
       
         return {
           orderDetailId: order.orderDetailId?.toString() || '',
-          memberId: !isMemberInfoAvailable ? (order.memberInfo?.memberId?.toString() || '') : '로딩중',
+          memberId: order.memberInfo?.memberId?.toString() || '',
           orderDateTime: order.orderDateTime?.toString() || '',
-          deliveryAddress: order.recipient.recipientAddress?.toString() || '',
-          recipient: order.recipient.recipient?.toString() || '',
+          deliveryAddress: order.recipient?.recipientAddress?.toString() || '',
+          recipient: order.recipient?.recipient?.toString() || '',
           orderStatus: order.orderStatusCode?.toString() || '',
-          productName: !isProductInfoAvailable ? (productName || '') : '확인중',
-          productOrderList: order.productOrderList
+          //productName: order.productOrderList?.length > 0 ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` : '',
         }
       });
 
@@ -90,43 +162,186 @@ const OrderGeneral = () => {
       setIsServerUnstable(isServerUnstable);
       setPagination({
         ...pagination,
-        current: page,
-        pageSize: pageSize,
         total: response.totalElements,
-      });
-
+      })
+      
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      //console.error('Failed to fetch orders:', error);
       message.error('주문 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // useEffect(() => {
-  //   fetchOrders();
-  // }, []);
+  // const fetchStatusCounts = async () => {
+  //   try {
+  //     const customerId = 1;
+  //     const response = await fetchOrderStatusCounts(customerId);
+  //     if (response) {
+  //       console.log('Status counts response:', response);
+  //       const counts = {};
+  //       response.forEach(item => {
+  //         counts[item.statusName] = item.count;
+  //       });
+  //       setStatusCount(counts);
+  //     } else {
+  //       console.error('No response received for status counts.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch status counts:', error);
+  //     message.error('상태별 개수를 불러오는데 실패했습니다.');
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchOrders(pagination.current, pagination.pageSize);
-  }, [pagination.current, pagination.pageSize]);
+  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setJoinForm(prev => ({
+      ...prev,
+      [dataIndex]: selectedKeys[0] ? [selectedKeys[0]] : null
+    }));
+  };
 
-  // useEffect(() => {
-  //   const filteredData = applyFilters(orders);
-  //   setFilteredData(filteredData);
-  // }, [selectedDateRange, orders])
-
-  useEffect(() => {
-    if (selectedDateRange && selectedDateRange.length === 2) {
-      const filteredData = applyFilters(orders);
-      setFilteredData(filteredData);
-    } else {
-      setFilteredData(orders);
+  const onHandleReset = () => {
+    setJoinForm({});
+    setFilteredInfo({});
+    setDateRange([]);
+    if (tableRef.current) {
+      tableRef.current.clearFilters();
     }
-  }, [selectedDateRange, orders]);
+    fetchOrders();
+  }
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ 
+            marginBottom: 8, 
+            display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => onHandleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+          <Button type="link" size="small" onClick={() => {
+              close();
+            }}>
+            close
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      if (record[dataIndex] == null) return false;
+      
+      const itemValue = record[dataIndex];
+      const filterValue = value;
+    
+      // 날짜 처리
+      if (itemValue instanceof Date) {
+        const dateValue = itemValue.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+        return dateValue.includes(filterValue);
+      }
+    
+      // 그 외의 경우
+      const stringItemValue = String(itemValue).toLowerCase();
+      const stringFilterValue = String(filterValue).toLowerCase();
+    
+      return stringItemValue.includes(stringFilterValue);
+    },
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
+  const onHandleTableChange = (newPagination, filters) => {
+    setPagination(newPagination);
+    setFilteredInfo(filters);
+    setJoinForm(prev => ({
+      ...prev,
+      orderStatus: filters.orderStatus ? filters.orderStatus[0] : null
+    }));
+  };
+
+  const onHandleRangePickerChange = (dates) => {
+    setDateRange(dates);
+    if (dates && dates[0] && dates[1]) {
+      const startDate = dates[0].format('YYYY-MM-DD');
+      const endDate = dates[1].format('YYYY-MM-DD');
+      setJoinForm(prev => ({
+        ...prev,
+        startDate: startDate,
+        endDate: endDate
+      }));
+    } else {
+      setJoinForm(prev => {
+        const newForm = { ...prev };
+        delete newForm.startDate;
+        delete newForm.endDate;
+        return newForm;
+      });
+    }
+  };
+
+  const onHandleStatusChange = async (status) => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('변경할 항목을 선택해주세요.');
+      return;
+    }
+    console.log("변경할 status: ", orders.orderStatus);
+  
+    const selectedReleases = orders.filter(release => selectedRowKeys.includes(release.orderId));
+    
+    const isValidStatus = selectedReleases.every(order => {
+      console.log('현재 status: ', order.orderStatus);
+      if (status === 'PREPARING_PRODUCT' && order.orderStatus !== 'PAYMENT_COMPLETED') {
+        return false;
+      }
+      if (status === 'AWAITING_RELEASE' && order.orderStatus !== 'PREPARING_PRODUCT') {
+        return false;
+      }
+      return true;
+    });
+  
+    if (!isValidStatus) {
+      message.error(`해당 주문건의 주문 상태는 ${status} 상태로 변경할 수 없습니다.`);
+      return;
+    }
+  
+    try {
+      if (selectedRowKeys.length === 1) {
+        await updateOrderStatus(selectedRowKeys[0], status);
+      } else {
+        await updateBulkOrderStatus(selectedRowKeys, status);
+      }
+      message.success('주문 상태가 성공적으로 변경되었습니다.');
+      fetchOrders();
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error('주문 상태 변경 실패:', error);
+      message.error('주문 상태 변경에 실패했습니다.');
+    }
+  };
 
   useEffect(() => {
-    if (!orders.length > 0) {
+    if (!fetchOrders.length > 0) {
       if (isServerUnstable) {
         message.warning('일부 주문에서 서버 연결이 불안정합니다.');
       } else {
@@ -135,258 +350,18 @@ const OrderGeneral = () => {
     }
   }, [isServerUnstable]);
 
-  const onHandleTableChange = (pagination, filters, sorter) => {
-    fetchOrders(pagination.current, pagination.pageSize);
-    setFilteredInfo(filters);
-  };
-
-  const onHandleRangePickerChange = (dates) => {
-    setSelectedDateRange(dates || []);  //  상태 업데이트
-  }
-
-  const onHandleStatusChange = async (newStatus) => {
-    try {
-
-      if (selectedRowKeys.length === 0) {
-        message.warning('상태를 변경할 주문을 선택해주세요.');
-        return;
-      }
-
-      let response;
-      if (selectedRowKeys.length === 1) {
-        response = await updateOrderStatus(selectedRowKeys[0], newStatus);
-      } else {
-        response = await updateBulkOrderStatus(selectedRowKeys, newStatus);
-      }
-
-      if (response == null) {
-        message.success('주문 상태가 성공적으로 변경되었습니다.');
-        fetchOrders(pagination.current, pagination.pageSize);
-      } else {
-        message.error('주문 상태 변경에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error changing order status:', error);
-      message.error('주문 상태 변경 중 오류가 발생했습니다.');
-    }
-  };
-
-  const onClickStatusChangeBtn = (title) => {
-    let newStatus;
-    switch (title) {
-      case '주문승인' :
-        newStatus = 'PREPARING_PRODUCT';
-        break;
-      case '출고대기' :
-        newStatus = 'AWAITING_RELEASE';
-        break;
-      default:
-        message.error("존재하지 않는 상태 변경 요청입니다.");
-        return;
-    }
-    onHandleStatusChange(newStatus);
-  }
-
-  const onClearFilters = () => {  //  모든 필터 초기화 이벤트
-    setFilteredInfo({});
-    setSelectedDateRange([]);
-    setFilteredData(orders);
-  };
-
-
-  // const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
-  //   confirm();
-  //   setSearchText(selectedKeys[0]);
-  //   setSearchedColumn(dataIndex);
-  // };
-
-  // const onHandleChange = (pagination, filters) => {
-  //   setFilteredInfo(filters);  //  필터링 정보 업데이트
-  // };
-
-  
-
-  const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
-    clearFilters();
-    setSearchText('');
-  };
-
-  
-
-  const applyFilters = (orders) => {
-    if (!selectedDateRange || selectedDateRange.length === 0) {
-      return orders;
-    } else {
-      const startDate = selectedDateRange[0].startOf('day');
-      const endDate = selectedDateRange[1].endOf('day');
-  
-      return orders.filter(item => {
-       // const itemDate = moment(item.orderDateTime, 'YYYY-MM-DD').startOf('day');
-        const itemDate = moment(item.orderDateTime);
-        // const isInRange = itemDate.isBetween(startDate, endDate, null, '[]');
-        return itemDate.isBetween(startDate, endDate, null, '[]');
-  
-        // const searchFilter = filteredInfo.주문번호 || filteredInfo.회원ID || filteredInfo.배송지  || filteredInfo.수령인;
-        // const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
-        //   searchFilter[key].includes(item[key])
-        // );
-  
-        // return isInRange && isSearchMatch;
-      });
-    }
-  }
-
-  // const onHandleStatusChange = (newStatus) => {
-  //   // 1. 깊은 복사
-  //   const updatedData = JSON.parse(JSON.stringify(datasRef.current)); 
-
-  //   // 2. tags 값 변경
-  //   updatedData.forEach(item => {
-  //     if (selectedRowKeys.includes(item.key)) {
-  //       item.tags = [newStatus]; 
-  //     }
-  //   });
-
-  //   // // 3. 상태 업데이트 및 localStorage 저장
-  //   // datasRef.current = updatedData;
-  //   // setDatas(updatedData);
-  //   // setFilteredData(applyFilters(updatedData));
-  //   // localStorage.setItem('OrderGeneralData', JSON.stringify(updatedData)); 
-  //   // setSelectedRowKeys([]);
-  // }
-
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log('selectedRowKeys: ', selectedRowKeys);
-      console.log('selectedRows: ', selectedRows)
-
-      setSelectedRowKeys([...selectedRowKeys]);  // 선택한 행의 key 값 업데이트
-    },
-  };
-
-
-
-  // useEffect(() => {
-  //   setFilteredData(applyFilters(datas)); // datas 변경 시 filteredData 업데이트
-  // }, [datas, selectedDateRange]); // datas와 selectedDateRange에 의존하도록 변경
-
   const onRow = (record) => {
     return {
       onClick: () => {
         console.log("Clicked record:", record);
-        console.log("ProductOrderList:", record.productOrderList);
-
         navigate('../general/${orderDetailId}', { 
           state: { 
             orderDetail: record,
-            productOrderList: record.productOrderList
           } 
         }); 
-        console.log("onRow:", record.productOrderList)
-        
-        //setLastClickedRow(rowIndex);
       },
     };
   };
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-      
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          //ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0] || ''}  // 빈 문자열도 처리
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => confirm()}  //  Enter 입력 시 필터링 적용
-          style={{
-            marginBottom: 8,
-            display: 'block',
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            // ???
-            onClick={() => confirm()}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && onHandleReset(clearFilters)}
-            // onClick={() => clearFilters }
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? '#1677ff' : undefined,
-        }}
-        key='{orderDateTime}'
-      />
-    ),
-    // onFilter: (value, record) => {
-    //   setFilteredData(datasRef.current.filter(item => {
-    //     if (dataIndex === "tags") {
-    //       return item.tags.includes(value);
-    //     } else {
-    //       return item[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
-    //     }
-    //   }));
-    // },
-    onFilter: (value, record) =>
-      record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : '',
-
-    // onFilterDropdownOpenChange: (visible) => {
-    //   if (visible) {
-    //     setTimeout(() => searchInput.current?.select(), 100);
-    //   }
-    // },
-
-    // render: (text) =>
-    //   searchedColumn === dataIndex ? (
-    //     <Highlighter
-    //       highlightStyle={{
-    //         backgroundColor: '#ffc069',
-    //         padding: 0,
-    //       }}
-    //       searchWords={[searchText]}
-    //       autoEscape
-    //       textToHighlight={text ? text.toString() : ''}
-    //     />
-    //   ) : (
-    //     text
-    //   ),
-    });
 
 
   const columns = [
@@ -400,11 +375,11 @@ const OrderGeneral = () => {
       //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
-      title: '주문번호',
+      title: '주문ID',
       dataIndex: 'orderDetailId',
       key: 'orderDetailId',
       fixed: 'left',
-      filteredValue: filteredInfo.orderDetailId || null,
+      filteredValue: joinForm.orderId ? [joinForm.orderId] : null,
       filtered: false,
       ...getColumnSearchProps('orderDetailId'),
       width: '15%',
@@ -416,7 +391,7 @@ const OrderGeneral = () => {
       dataIndex: 'memberId',
       key: 'memberId',
       fixed: 'left',
-      filteredValue: filteredInfo.memberId || null,
+      filteredValue: joinForm.memberId ? [joinForm.memberId] : null,
       filtered: false,
       ...getColumnSearchProps('memberId'),
       width: '15%',
@@ -429,7 +404,7 @@ const OrderGeneral = () => {
       dataIndex: 'orderDateTime',
       key: 'orderDateTime',
       fixed: 'left',
-      filteredValue: filteredInfo.orderDateTime || null,
+      filteredValue: joinForm.orderDateTime ? [joinForm.orderDateTime] : null,
       filtered: false,
       ...getColumnSearchProps('orderDateTime'),
       width: '20%',
@@ -445,7 +420,7 @@ const OrderGeneral = () => {
       dataIndex: 'deliveryAddress',
       key: 'deliveryAddress',
       fixed: 'left',
-      filteredValue: filteredInfo.deliveryAddress || null,
+      filteredValue: joinForm.deliveryAddress ? [joinForm.deliveryAddress] : null,
       filtered: false,
       ...getColumnSearchProps('deliveryAddress'),
       width: '20%',
@@ -456,24 +431,24 @@ const OrderGeneral = () => {
       dataIndex: 'recipient',
       key: 'recipient',
       fixed: 'left',
-      filteredValue: filteredInfo.recipient || null,
+      filteredValue: joinForm.recipient ? [joinForm.recipient] : null,
       filtered: false,
       ...getColumnSearchProps('recipient'),
       width: '10%',
       render: (text) => text || 'null',
     },
-    {
-      title: '주문상품',
-      dataIndex: 'productName',
-      key: 'productName',
-      fixed: 'left',
-      filteredValue: filteredInfo.productName || null,
-      filtered: false,
-      ...getColumnSearchProps('productName'),
-      width: '10%',
-      // render: (text) => text || 'null',
-      // render: (text) => text === '확인중' ? <span style={{ color: 'orange' }}>확인중</span> : (text || 'null'),
-    },
+    // {
+    //   title: '주문상품',
+    //   dataIndex: 'productName',
+    //   key: 'productName',
+    //   fixed: 'left',
+    //   filteredValue: filteredInfo.productName || null,
+    //   filtered: false,
+    //   ...getColumnSearchProps('productName'),
+    //   width: '10%',
+    //   // render: (text) => text || 'null',
+    //   // render: (text) => text === '확인중' ? <span style={{ color: 'orange' }}>확인중</span> : (text || 'null'),
+    // },
     {
       title: '주문 상태',
       dataIndex: 'orderStatus',
@@ -481,12 +456,12 @@ const OrderGeneral = () => {
       filters: [
         { text: '결제완료', value: 'PAYMENT_COMPLETED' },
         // { text: '주문승인', value: 'ORDER_APPROVED' },
-        { text: '상품준비중', value: 'PAYMENT_COMPLETED' },
+        { text: '상품준비중', value: 'PREPARING_PRODUCT' },
         // { text: '배송중', value: 'IN_DELIVERY' },
         // { text: '배송완료', value: 'DELIVERY_COMPLETED' },
         { text: '출고대기중', value: 'AWAITING_RELEASE' },
       ],
-      filteredValue: filteredInfo.orderStatus || null,
+      filteredValue: joinForm.orderStatus ? [joinForm.orderStatus] : null,
       onFilter: (value, record) => record.orderStatus === value,
       render: (status) => (
         <Tag color={getStatusColor(status)}>
@@ -518,7 +493,7 @@ const OrderGeneral = () => {
     return texts[status] || status;
   };
 
-  const statusTags = ['결제완료', '상품준비중', '출고대기중'];
+  //const statusTags = ['결제완료', '상품준비중', '출고대기중'];
 
   return (
     <div>
@@ -531,52 +506,57 @@ const OrderGeneral = () => {
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
           <RangePicker 
-            value={selectedDateRange}
+            value={dateRange}
             onChange={onHandleRangePickerChange}
             allowClear />
         </Flex>
         <Flex gap="small" wrap>
-          {statusTags.map((tag) => (
-            // <StatusCard key={tag} title={tag} count={statusCounts[tag]} />
-            <StatusCard key={tag} title={tag}/>
+          {Array.isArray(statusCount) && statusCount.map((item) => (
+            <StatusCard 
+              key={item.statusName}
+              title={getStatusText(item.statusName)}
+              count={item.count}
+            />
           ))}
         </Flex>
+        {/* <Flex gap="small" wrap>
+          {Object.entries(statusCount).map(([status, item]) => (
+            <StatusCard 
+              key={status} 
+              title={getStatusText(item.statusName)} 
+              count={item.count} 
+            />
+          ))}
+        </Flex> */}
       </Flex>
       <br />
       <Flex gap='small' align='center' justify='space-between'>
         <Flex gap="small" wrap>
-          <Button onClick={onClearFilters}>Clear Filter</Button>
-          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
+          <Button onClick={onHandleReset}>Clear Filter</Button>
         </Flex>
         <Flex gap="small" wrap>
-          <Space align="center">출고상태변경</Space>
+          <Space align="center">주문상태변경</Space>
           <StatusChangeButton 
             title={"주문승인"}
-            onClick={() => onClickStatusChangeBtn('주문승인')}
+            onClick={() => onHandleStatusChange('주문승인')}
           />
           <StatusChangeButton 
             title={"출고대기"}
-            onClick={() => onClickStatusChangeBtn('출고대기')}
+            onClick={() => onHandleStatusChange('출고대기')}
           />
         </Flex>
       </Flex>
       <br />
-      {orders.length > 0 ? (
       <Table
         columns={columns}
-        // dataSource={orders}
-        dataSource={filteredData.length > 0 ? filteredData : orders}
+        dataSource={orders}
+        rowKey="orderDetailId"
         pagination={pagination}
-        rowSelection={rowSelection}
-        onRow={onRow}
         loading={loading}
         onChange={onHandleTableChange}
-        scroll={{ x: 1300 }}
-        rowKey="orderDetailId"
+        rowSelection={rowSelection}
+        onRow={onRow}
       />
-    ) : (
-      <div>No orders found</div>
-    )}
     </div>
   );
 };
