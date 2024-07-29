@@ -12,8 +12,6 @@ const { RangePicker } = DatePicker;
 
 const Shipment = () => {
   const [isServerUnstable, setIsServerUnstable] = useState(false);
-
-  //const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
   const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -25,7 +23,6 @@ const Shipment = () => {
   const [joinForm, setJoinForm] = useState({});
   const [filteredInfo, setFilteredInfo] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [combinedPackagingKeys, setCombinedPackagingKeys] = useState([]);
   const [statusCount, setStatusCount] = useState({});
   const [dateRange, setDateRange] = useState([]);
   const searchInput = useRef(null);
@@ -47,23 +44,6 @@ const Shipment = () => {
   const fetchShipments = async () => {
     setLoading(true);
     try {
-      // const params = {
-      //   // customerId: getCurrentUserId(), // 현재 로그인한 사용자의 ID를 가져오는 함수
-      //   customerId: 1,
-      //   page: pagination.current - 1,
-      //   size: pagination.pageSize,
-      //   orderStatus: joinForm.orderStatus,
-      //   orderId: joinForm.orderId,
-      //   startDeliveryDate: joinForm.startDeliveryDate,
-      //   recipient: joinForm.recipient,
-      //   recipientPhoneNumber: joinForm.recipientPhoneNumber,
-      //   recipientAddress: joinForm.recipientAddress,
-      //   memberId: joinForm.memberId,
-      //   memberName: joinForm.memberName,
-      //   memberPhoneNumber: joinForm.memberPhoneNumber,
-      //   startDate: joinForm.startDate,
-      //   endDate: joinForm.endDate
-      // }
       const params = {
         customerId: 1,
         page: pagination.current - 1,
@@ -84,10 +64,11 @@ const Shipment = () => {
       });
 
       console.log('Sending params:', params);
-
+      console.log('Fetching with params:', params);
+      
       const response = await fetchReleases(params);
 
-      console.log('받아오는 출고데이터: ', response)
+      // console.log('받아오는 출고데이터: ', response)
 
       let isServerUnstable = false;
 
@@ -145,7 +126,7 @@ const Shipment = () => {
       setLoading(false);
     }
   };
-
+  
   const fetchStatusCounts = async () => {
     try {
       const customerId = 1;
@@ -254,7 +235,6 @@ const Shipment = () => {
       orderStatus: filters.orderStatus ? filters.orderStatus[0] : null
     }));
   };
-  // console.log('joinForm: ', joinForm)
 
   const onHandleRangePickerChange = (dates) => {
     setDateRange(dates);
@@ -263,8 +243,8 @@ const Shipment = () => {
       const endDate = dates[1].format('YYYY-MM-DD');
       setJoinForm(prev => ({
         ...prev,
-        startDate,
-        endDate
+        startDate: startDate,
+        endDate: endDate
       }));
     } else {
       setJoinForm(prev => {
@@ -284,7 +264,6 @@ const Shipment = () => {
     console.log("변경할 status: ", releases.orderStatus);
   
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
-    //console.log('Selected releases:', selectedReleases);
     
     const isValidStatus = selectedReleases.every(release => {
       console.log('현재 status: ', release.orderStatus);
@@ -495,8 +474,6 @@ const Shipment = () => {
     return texts[status] || status;
   };
 
-  //const statusTags = ['출고대기', '출고보류', '출고완료', '합포장완료'];
-
   return (
     <div>
       <Flex gap="small" align="center" justify="space-between">
@@ -548,7 +525,6 @@ const Shipment = () => {
       <Table
         columns={columns}
         dataSource={releases}
-        //ref={tableRef}
         rowKey="orderId"
         pagination={pagination}
         loading={loading}
