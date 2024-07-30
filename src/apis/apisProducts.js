@@ -158,3 +158,15 @@ export const fetchEcoProductItems = async (params) => {
   const response = await apiGet(PRODUCT_DB_URL, `/management/product/list?${queryString}`);
   return response;
 }
+
+// ----------- 일반 식품 상세 조회 ----------- 
+export const fetchProductDetail = async (productId) => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/management/product/${productId}/details`);
+    console.log('보내는 식품 상세 데이터: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching product detail:', error);
+    throw error;
+  }
+};

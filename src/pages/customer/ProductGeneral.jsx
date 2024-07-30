@@ -235,6 +235,14 @@ const ProductGeneral = () => {
     fetchProducts(); // 필터 변경 시 데이터를 다시 불러옵니다
   };
 
+  const onRow = (record) => {
+    return {
+      onClick: () => {
+        navigate(`/product/general/${record.productId}`)
+      }
+    };
+  };
+
   
 
   // const selectedProducts = products.filter(product => selectedRowKeys.includes(product.orderId))
@@ -442,7 +450,7 @@ const ProductGeneral = () => {
       onChange={onHandleTableChange}  // 페이지 변경 이벤트
       scroll={{ y: 600,}}
       rowSelection={rowSelection}
-      //onRow={onRow}
+      onRow={onRow}
       rowKey="productId"
       />
     </div>
