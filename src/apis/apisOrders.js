@@ -1,55 +1,39 @@
+import { EventSourcePolyfill } from 'event-source-polyfill';
 import { apiGet, apiPatch, ORDER_DB_URL } from './apisCommon';
+import 'event-source-polyfill';
 
 // [ 일반 주문 페이지 ]
 // ----------- 일반 주문 조회 ----------- 
-export const fetchCustomerOrders = async(customerId, orderStatus, page = 0, size = 10) => {
-  try {
-    const params = {
-      customerId,
-      orderStatus,
-      page,
-      size
-    };
-    const response = await apiGet(ORDER_DB_URL, `/order/customer-service`,  params);
-    console.log("어떤 데이터를 보내나요?: ", response)
-    return response;
-  
-  } catch (error) {
-    console.error('Error fetching customer orders:', error);
-    throw error;
-  }
+export const fetchCustomerOrders = async (params) => {
+  const queryString = Object.entries(params)
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  console.log('Query string:', queryString);
+  console.log('params: ', params)
+  const response = await apiGet(ORDER_DB_URL, `/order/customer-service?${queryString}`)
+  return response;
+}
+
+// ----------- 일반 주문 상태 변경 ----------- 
+export const updateOrderStatus = async (orderId, orderStatusCode) => {
+  return await apiPatch(ORDER_DB_URL, `/order/status`, { orderId, orderStatusCode })
+}
+
+// ----------- 일반 주문 상태 일괄 변경 ----------- 
+export const updateBulkOrderStatus = async (orderIds, orderStatusCode) => {
+  return await apiPatch(ORDER_DB_URL, `/order/bulk-status`, { orderIds, orderStatusCode })
 };
 
+// ----------- 일반 주문 상태별 개수 실시간 조회 ----------- 
+export const subscribeToOrderStatusUpdates = (customerId) => {
+  const url = `${ORDER_DB_URL}/order-notification/${customerId}/subscription`;
+  console.log('Connecting to SSE URL:', url);
+  return new EventSourcePolyfill(url, {
+    withCredentials:true
+  });
+}
 
-// ----------- 일반 주문 - 단건 주문 상태변경 요청 ----------- 
-export const updateOrderStatus = async (orderId, newStatus) => {
-  try {
-    const response = await apiPatch(ORDER_DB_URL, `/order/status`, {
-      orderId: orderId[0],
-      orderStatusCode: newStatus
-    });
-    return response;
-  } catch (error) {
-    console.log(typeof(orderId));
-    console.log('Error updating order status: ', error);
-    throw error;
-  }
-};
-
-// ----------- 일반 주문 - 다건 주문 상태변경 요청 ----------- 
-export const updateBulkOrderStatus = async (orderIds, newStatus) => {
-  try {
-    const response = await apiPatch(ORDER_DB_URL, `/order/bulk-status`, {
-      orderIds,
-      orderStatusCode: newStatus
-    });
-    return response;
-  } catch (error) {
-    console.log(typeof(orderIds));
-    console.log('Error updating order status: ', error);
-    throw error;
-  }
-};
 
 
 // [ 정기 주문 페이지 ]
@@ -60,10 +44,9 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
     const params = {
       startDate: startDate.format('YYYY-MM-DD'),
       endDate: endDate.format('YYYY-MM-DD'),
-      //customerId: customerId
     };
     console.log('Sending params:', params);  // 파라미터 로깅
-    const response = await apiGet(ORDER_DB_URL, `/regular-order/count`, params);
+    const response = await apiGet(ORDER_DB_URL, `/regular-order/monthly`, params);
     console.log('어떤 데이터를 보내나요?: ', response);
     return response;
   } catch (error) {
@@ -72,35 +55,38 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
   }
 };
 
-// ----------- 정기 주문 상세 조회 ----------- 
-export const fetchRegularOrderDetails = async (regularOrderId) => {
+// ----------- 정기 주문 일별 조회 ----------- 
+export const fetchRegularOrderCountByDate = async (date, size, page) => {
   try {
-    const response = await apiGet(ORDER_DB_URL, `/regular-order/${regularOrderId}/detail`);
-    // return response;
-    return response.result;
+    const params = {
+      date,
+      size, 
+      page
+    }
+    console.log('일별 조회 서버에서 보내는 params: ', params)
+    const response = await apiGet(ORDER_DB_URL, `/regular-order/daily`, params)
+    console.log('일별 조회 때 어떤 데이터를 보내나요? :', response)
+    return response
   } catch (error) {
-    console.error('Error fetching regular order details:', error);
-    throw error;
+    console.error('Error fetching regular order counts: ', error);
+    throw error
   }
-};
+}
 
-// [get] 정기주문 상세 조회
-// export const fetchOrderDetailsById = async (REGULAR_DELIVERY_APPLICATION_ID) => {
-//   console.log("Fetching order details for id:", REGULAR_DELIVERY_APPLICATION_ID);
-  
-//   return new Promise((resolve, reject) => {
-//     setTimeout(() => {
-//       const order = mockOrderData.find(order => order.REGULAR_DELIVERY_APPLICATION_ID === parseInt(REGULAR_DELIVERY_APPLICATION_ID));
-      
-//       if (!order) {
-//         reject(new Error('Order not found'));
-//       } else {
-//         console.log("Found order:", order);
-//         resolve(order);
-//       }
-//     }, 1000); // 1초 지연
-//   });
+// // ----------- 정기 주문 상세 조회 ----------- 
+// export const fetchRegularOrderDetails = async (regularOrderId) => {
+//   try {
+//     const response = await apiGet(ORDER_DB_URL, `/regular-order/${regularOrderId}/detail`);
+//     // return response;
+//     console.log('정기주문 상세 보내는 데이터: ', response)
+//     return response.result;
+//   } catch (error) {
+//     console.error('Error fetching regular order details:', error);
+//     throw error;
+//   }
 // };
+
+
 
 
 
