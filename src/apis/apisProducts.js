@@ -148,3 +148,13 @@ export const fetchProductItems = async (params) => {
   return response;
 }
 
+// ----------- 친환경 식품 조회 ----------- 
+export const fetchEcoProductItems = async (params) => {
+  const queryString = Object.entries({ ...params, isEcoFriend: 'ACTIVE' })
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  console.log('Query string:', queryString);
+  const response = await apiGet(PRODUCT_DB_URL, `/management/product/list?${queryString}`);
+  return response;
+}
