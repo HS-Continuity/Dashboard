@@ -159,7 +159,7 @@ export const fetchEcoProductItems = async (params) => {
   return response;
 }
 
-// ----------- 일반 식품 상세 조회 ----------- 
+// ----------- 식품 상세 조회 ----------- 
 export const fetchProductDetail = async (productId) => {
   try {
     const response = await apiGet(PRODUCT_DB_URL, `/management/product/${productId}/details`);
@@ -167,6 +167,20 @@ export const fetchProductDetail = async (productId) => {
     return response;
   } catch (error) {
     console.error('Error fetching product detail:', error);
+    throw error;
+  }
+};
+
+// ----------- 친환경 식품 인증서 조회 ----------- 
+// apisProducts.js
+
+export const fetchProductCertification = async (productId) => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/product-image/certification/${productId}`);
+    console.log('인증서 보내기: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching product certification:', error);
     throw error;
   }
 };

@@ -62,7 +62,7 @@ const ProductGeneral = () => {
   useEffect(() => {
     fetchProducts();
     
-  }, [pagination.current, pagination.pageSize, joinForm])
+  }, [])
 
   const rowSelection = {
     selectedRowKeys,
@@ -71,13 +71,13 @@ const ProductGeneral = () => {
     }
   }
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page = pagination.current, pageSize = pagination.pageSize, form = joinForm) => {
     setLoading(true);
     try {
       const params = {
-        startPage: pagination.current - 1,
-        pageSize: pagination.pageSize,
-        ...joinForm
+        startPage: page - 1,
+        pageSize: pageSize,
+        ...form
       };
 
       Object.entries(joinForm).forEach(([key, value]) => {
@@ -122,10 +122,12 @@ const ProductGeneral = () => {
 
       setProducts(transformedProducts);
       console.log('찐막 데이터: ',products)
-      setPagination({
-        ...pagination,
+      setPagination(prev => ({
+        ...prev,
+        current: page,
+        pageSize: pageSize,
         total: response.totalElements,
-      })
+      }));
 
     } catch (error) {
       message.error('식품 데이터를 불러오는데 실패했습니다.');
@@ -232,7 +234,9 @@ const ProductGeneral = () => {
     });
   
     setJoinForm(newJoinForm);
-    fetchProducts(); // 필터 변경 시 데이터를 다시 불러옵니다
+    if (newPagination.current !== pagination.current || newPagination.pageSize !== pagination.pageSize) {
+      fetchProducts(newPagination.current, newPagination.pageSize, newJoinForm);
+    }
   };
 
   const onRow = (record) => {
