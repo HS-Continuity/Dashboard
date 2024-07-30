@@ -21,7 +21,6 @@ import './OrderSubscriptionModule.css';
 //   '배송완료': 'cyan',
 // };
 
-
 const OrderSubscription = () => {
 
   const [currentMonth, setCurrentMonth] = useState(dayjs());
@@ -193,15 +192,6 @@ const OrderSubscription = () => {
       filtered: false,
       width: 140
     },
-    // {
-    //   title: '주문건수',
-    //   dataIndex: 'reservationCount',
-    //   key: 'reservationCount',
-    //   fixed: 'left',
-    //   filteredValue: filteredInfo.reservationCount || null,
-    //   filtered: false,
-    //   width: 140
-    // }
   ];
 
   return (
