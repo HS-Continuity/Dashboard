@@ -134,3 +134,76 @@ export const registerEcoFriendlyProduct = async (product, defaultImage, certific
     throw error;
   }
 }
+
+
+// ----------- 일반 식품 조회 ----------- 
+export const fetchProductItems = async (params) => {
+  const queryString = Object.entries(params)
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  console.log('Query string:', queryString);
+  console.log('params: ', params)
+  const response = await apiGet(PRODUCT_DB_URL, `/management/product/list?${queryString}`)
+  return response;
+}
+
+// ----------- 친환경 식품 조회 ----------- 
+export const fetchEcoProductItems = async (params) => {
+  const queryString = Object.entries({ ...params, isEcoFriend: 'ACTIVE' })
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  console.log('Query string:', queryString);
+  const response = await apiGet(PRODUCT_DB_URL, `/management/product/list?${queryString}`);
+  return response;
+}
+
+// ----------- 타임세일 식품 조회 ----------- 
+export const fetchTimeSaleList = async () => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/time-sale/list`);
+    console.log('타임세일 보내는 데이터: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching timesale list:', error);
+    throw error;
+  }
+};
+
+// ----------- 식품 상세 조회 ----------- 
+export const fetchProductDetail = async (productId) => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/management/product/${productId}/details`);
+    console.log('보내는 식품 상세 데이터: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching product detail:', error);
+    throw error;
+  }
+};
+
+// ----------- 타임세일 식품 상세 조회 ----------- 
+export const fetchTimeSaleDetail = async (timesaleId) => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/time-sale/${timesaleId}`);
+    console.log('타임세일 보내는 데이터: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching timesale detail:', error);
+    throw error;
+  }
+};
+
+
+// ----------- 친환경 식품 인증서 조회 ----------- 
+export const fetchProductCertification = async (productId) => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/product-image/certification/${productId}`);
+    console.log('인증서 보내기: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching product certification:', error);
+    throw error;
+  }
+};

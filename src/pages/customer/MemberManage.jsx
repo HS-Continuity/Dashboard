@@ -88,7 +88,7 @@ const MemberManage = () => {
       setPagination({
         ...pagination,
         total: response.totalElements,
-      })
+      });
 
     } catch (error) {
       console.error('Failed to fetch members:', error);

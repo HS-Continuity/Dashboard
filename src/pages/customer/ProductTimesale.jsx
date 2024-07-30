@@ -1,7 +1,7 @@
-import { fetchTimeAttackItems } from '../../apis'; // fetchProductItems 함수를 가져오기
+import { fetchTimeSaleList } from '../../apis/apisProducts';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Space, Table, Button, Input } from 'antd'
+import { Flex, Space, Tag, Table, Button, Input, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import Highlighter from 'react-highlight-words';
@@ -12,51 +12,100 @@ import StatusCard from '../../components/Cards/StatusCard';
 
 const ProductTimeSale = () => {
   
-  const navigate = useNavigate();
-  const [lastClickedRow, setLastClickedRow] = useState(null);
-  const [lastClickedTime, setLastClickedTime] = useState(null);
-  const [searchText, setSearchText] = useState('');  //  검색 정보 저장
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const searchInput = useRef(null);
+  const [isServerUnstable, setIsServerUnstable] = useState(false);
+  const [timeSaleProducts, setTimeSaleProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
-  const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
-  const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,  // 현재 페이지 번호
-      pageSize: 20,  //  페이지당 항목 수
+  const [joinForm, setJoinForm] = useState({});
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [statusCount, setStatusCount] = useState({});
+  const [dateRange, setDateRange] = useState([]);
+  const searchInput = useRef(null);
+  const tableRef = useRef();
+  const navigate = useNavigate();
+
+  const [state, setState] = useState({
+    isModalOpen: false,
+    selectedRowKeys: [],
+    filteredInfo: {},
+    tableParams: {
+      pagination: {
+        current: 1,
+        pageSize: 20,
+      },
     },
   });
 
-  // ----------------------------------------------------------------------------------
+  useEffect(() => {
+    fetchTimeSales();
+    
+  }, [])
 
-  const { data: timeAttack, isLoading } = useQuery({
-    queryKey: ["timeAttack"],
-    queryFn: () => fetchTimeAttackItems()
-  });
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys) => {
+      setSelectedRowKeys(selectedRowKeys);
+    }
+  }
 
-  if (isLoading) {
-    return <div>Loading...</div>; // or a more sophisticated loading indicator
-}
+  const fetchTimeSales = async (page = pagination.current, pageSize = pagination.pageSize, form = joinForm) => {
+    setLoading(true);
+    try {
+      const params = {
+        page: page - 1,
+        pageSize: pageSize,
+        ...form
+      };
 
-  // console.log(timeAttack)
-  
-  // -----------------------------------------------------------------------
+      console.log('Sending params:', params);
 
-  
-  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
+      const response = await fetchTimeSaleList();
+      console.log('받아온 데이터: ', response)
+
+      const transformedTimeSales = response.map(item => {
+        return {
+          discountRate: item.discountRate,
+          endDateTime: moment(item.endDateTime).format('YYYY-MM-DD HH:mm'),
+          price: item.price,
+          productId: item.productId,
+          productName: item.productName,
+          serviceStatus: item.serviceStatus,
+          startDateTime: moment(item.startDateTime).format('YYYY-MM-DD HH:mm'),
+          timesaleId: item.timesaleId
+        }
+      });
+
+      setTimeSaleProducts(transformedTimeSales);
+      setPagination({
+        ...pagination,
+        total: response.totalElements
+      });
+
+      // 상태별 개수 계산
+      const counts = transformedTimeSales.reduce((acc, item) => {
+        acc[item.serviceStatus] = (acc[item.serviceStatus] || 0) + 1;
+        return acc;
+      }, {});
+      setStatusCount(counts);
+
+    } catch (error) {
+      message.error('타임세일 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(true);
+    }
   };
-
-  const onHandleChange = (pagination, filters) => {
-    setFilteredInfo(filters);  //  필터링 정보 업데이트
-  };
-
-  const onClearFilters = () => {  //  모든 필터 초기화 이벤트
+  
+  const clearFilters = () => {
     setFilteredInfo({});
+    fetchTimeSales();
   };
 
   const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
@@ -65,37 +114,24 @@ const ProductTimeSale = () => {
   };
 
   const handleCellClick = (record) => {
-    console.log("클릭한 행의 key: ", record.productId)
+    console.log("클릭한 행의 key: ", record.timesaleId)
+    setSelectedRowKeys(record.productId)
   }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys) => {
-      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
-      console.log('key값업데이트', selectedRowKeys)
-    },
-    onClick: (e) => {
-      console.log(e);
-    },
-  };
-
-  const onRow = (record, rowIndex) => {
+  const onRow = (record) => {
     return {
-      onClick: (e) => {
-        const currentTime = new Date().getTime();
-        if (
-          lastClickedRow === rowIndex &&
-          currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-        ) {
-          navigate(`${record.productId}`); 
-        }
-        setLastClickedRow(rowIndex);
-        setLastClickedTime(currentTime);
-      },
+      onClick: () => {
+        // if (record && record.timesaleId) {
+          navigate(`/product/timesale/${record.timesaleId}`);
+          console.log('주소: ', record.timesaleId)
+        // } else {
+        //   console.error('Invalid record: ', record);
+        //   message.error('타임세일 정보를 불러올 수 없습니다.');
+        // }
+      }
     };
   };
   
-
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       
@@ -184,15 +220,20 @@ const ProductTimeSale = () => {
       ),
   });
 
-  // -------------------------------------------------------------------------
+  const onHandleTableChange = (newPagination, filters) => {
+    setPagination(newPagination);
+    setFilteredInfo(filters);
+  }
+
+  // // -------------------------------------------------------------------------
   const columns = [
     { 
-      title: '타임어택세일ID', 
-      dataIndex: 'timeAttackSaleId', 
-      key: 'timeAttackSaleId',
-      filteredValue: filteredInfo.timeAttackSaleId || null,
+      title: '타임세일식품ID', 
+      dataIndex: 'timesaleId', 
+      key: 'timesaleId',
+      filteredValue: filteredInfo.timesaleId || null,
       filtered: false,
-      ...getColumnSearchProps('timeAttackSaleId'),
+      ...getColumnSearchProps('timesaleId'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
@@ -209,45 +250,56 @@ const ProductTimeSale = () => {
       })
     },
     { 
-      title: '할인율', 
+      title: '식품명', 
+      dataIndex: 'productName', 
+      key: 'productId',
+      filteredValue: filteredInfo.productName || null,
+      filtered: false,
+      ...getColumnSearchProps('productName'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
+    },
+    { 
+      title: '타임세일시작', 
+      dataIndex: 'startDateTime', 
+      key: 'startDateTime',
+      filteredValue: filteredInfo.startDateTime || null,
+      filtered: false,
+      ...getColumnSearchProps('startDateTime') ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
+    },
+    { 
+      title: '타임세일종료', 
+      dataIndex: 'endDateTime', 
+      key: 'endDateTime',
+      filteredValue: filteredInfo.endDateTime || null,
+      filtered: false,
+      ...getColumnSearchProps('endDateTime')  ,
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
+    },
+    { 
+      title: '타임세일 할인율', 
       dataIndex: 'discountRate', 
       key: 'discountRate',
       render: (discountRate) => `${discountRate}%`,
       filteredValue: filteredInfo.discountRate || null,
       filtered: false,
-      ...getColumnSearchProps('discountRate') ,
-      onCell: (record) => ({
-        onClick: () => handleCellClick(record),
-      })
-    },
-    { 
-      title: '시작시간', 
-      dataIndex: 'startTime', 
-      key: 'startTime',
-      filteredValue: filteredInfo.startTime || null,
-      filtered: false,
-      ...getColumnSearchProps('startTime') ,
-      onCell: (record) => ({
-        onClick: () => handleCellClick(record),
-      })
-    },
-    { 
-      title: '종료시간', 
-      dataIndex: 'endTime', 
-      key: 'endTime',
-      filteredValue: filteredInfo.endTime || null,
-      filtered: false,
-      ...getColumnSearchProps('endTime')  ,
+      ...getColumnSearchProps('discountRate'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
       })
     },
     {
       title: '마감여부',
-      dataIndex: 'endTime', // 종료시간이 기준
+      dataIndex: 'endDateTime', // 종료시간이 기준
       key: '마감여부',
-      render: (endTime) => {
-        const endTimeMoment = moment(endTime);
+      render: (endDateTime) => {
+        const endTimeMoment = moment(endDateTime);
         const currentTime = moment();
         return endTimeMoment.isBefore(currentTime) ? 'O' : 'X'; // 마감 여부 표시
       },
@@ -255,17 +307,59 @@ const ProductTimeSale = () => {
         { text: '마감', value: 'O' },
         { text: '진행중', value: 'X' },
       ],
-      filteredValue: filteredInfo.마감여부 || null,
+      filteredValue: filteredInfo.endDateTime || null,
       onFilter: (value, record) => {
-        const endTimeMoment = moment(record.endTime);
+        const endTimeMoment = moment(record.endDateTime);
         const currentTime = moment();
-        return endTimeMoment.isBefore(currentTime) === (value === 'O'); // 마감 여부 필터링
+        return (endTimeMoment.isBefore(currentTime) ? 'O' : 'X') === value; // 마감 여부 필터링
       },
       onCell: (record) => ({
         onClick: () => handleCellClick(record), // 셀 클릭 이벤트 처리
       }),
     },
+    { 
+      title: '서비스 상태', 
+      dataIndex: 'serviceStatus', 
+      key: 'serviceStatus', 
+      //render: (visible) => (visible === 'O' ? '노출' : '미노출'), 
+      filters: [
+        { text: '승인대기', value: 'PENDING' },
+        { text: '승인', value: 'APPROVE' },
+        { text: '진행중', value: 'IN_PROGRESS' },
+        { text: '마감', value: 'ENDED_EVENT' },
+        { text: '취소', value: 'CANCELED' },
+      ],
+      filteredValue: filteredInfo.serviceStatus || null,
+      onFilter: (value, record) => record.serviceStatus === value,
+      render: (status) => (
+        <Tag color={getTagColor(status)}>
+          {getTagText(status)}
+        </Tag>
+      ),
+    },
   ];
+
+  const getTagColor = (status) => {
+    const colors = {
+      PENDING: 'cyan',
+      APPROVE: 'orange',
+      IN_PROGRESS: 'blue',
+      ENDED_EVENT: 'green',
+      CANCELED: 'gray'
+    };
+    return colors[status] || 'default';
+  };
+
+  const getTagText = (status) => {
+    const texts = {
+      PENDING: '승인대기',
+      APPROVE: '승인',
+      IN_PROGRESS: '진행중',
+      ENDED_EVENT: '마감',
+      CANCELED: '취소'
+    };
+    return texts[status] || status;
+  };
   // --------------------------------------------------------------------------
 
   // const tableData = timeAttack || []; 
@@ -279,23 +373,26 @@ const ProductTimeSale = () => {
       </Flex>
       <Flex gap='small' align="center" justify='space-between'>
         <Flex gap="small" wrap>
-          <Button onClick={onClearFilters}>Clear Filter</Button>
+          <Button onClick={clearFilters}>Clear Filter</Button>
         </Flex>
         <Flex gap="small" wrap>
-          <StatusCard title="진행중" />
-          <StatusCard title="마감" />
+          <StatusCard title="승인대기" count={statusCount['PENDING'] || 0} />
+          <StatusCard title="승인" count={statusCount['APPROVE'] || 0} />
+          <StatusCard title="진행중" count={statusCount['IN_PROGRESS'] || 0} />
+          <StatusCard title="마감" count={statusCount['ENDED_EVENT'] || 0} />
+          <StatusCard title="취소" count={statusCount['CANCELED'] || 0} />
         </Flex>
       </Flex>
 
       <Table
       columns={columns}
       rowSelection={rowSelection}
-      dataSource={timeAttack}
-      pagination={tableParams.pagination}
-      onChange={onHandleChange}  // 페이지 변경 이벤트
+      dataSource={timeSaleProducts}
+      pagination={pagination}
+      onChange={onHandleTableChange}
       scroll={{ y: 600,}}
       onRow={onRow}
-      rowKey="timeAttackSaleId"
+      rowKey="productId"
       />
     </div>
   );
