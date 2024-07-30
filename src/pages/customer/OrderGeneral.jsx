@@ -67,7 +67,7 @@ const OrderGeneral = () => {
   // }, [pagination.current, pagination.pageSize, joinForm]);
 
   useEffect(() => {
-    fetchOrders();
+    // fetchOrders();
     
     const customerId = 1;
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
@@ -94,6 +94,10 @@ const OrderGeneral = () => {
       }
     };
   }, []); // 의존성 배열을 비워 컴포넌트 마운트 시 한 번만 실행되도록 함
+
+  useEffect(() => {
+    fetchOrders();
+  }, [pagination.current, pagination.pageSize, joinForm])
 
 
   const rowSelection = {
@@ -162,6 +166,8 @@ const OrderGeneral = () => {
       setIsServerUnstable(isServerUnstable);
       setPagination({
         ...pagination,
+        current: response.number + 1,
+        pageSize: response.size,
         total: response.totalElements,
       })
       
@@ -305,16 +311,28 @@ const OrderGeneral = () => {
       message.warning('변경할 항목을 선택해주세요.');
       return;
     }
-    console.log("변경할 status: ", orders.orderStatus);
-  
-    const selectedReleases = orders.filter(release => selectedRowKeys.includes(release.orderId));
+
+    // selectedRowKeys 를 orderId로 가지고 있는 데이터를 찾아서 그 데이터의 status 값을 가지고 오면 됨
+    // 1. 선택된 주문들의 정보를 가져옵니다.
+    const selectedOrders = orders.filter(order => selectedRowKeys.includes(order.orderDetailId));
+
+    // 2. 선택된 주문들의 현재 상태를 가져옵니다.
+    const currentStatuses = selectedOrders.map(order => order.orderStatus);
+
+    console.log('선택된 주문들:', selectedOrders);
+    console.log('현재 상태들:', currentStatuses);
+
+    // console.log('내가 누른 상태 변경 버튼: ', status)
+    // console.log('선택한 행의 key값: ', selectedRowKeys)
+    // console.log("변경할 status: ", orders.selectedRowKeys.orderId);
+   
     
-    const isValidStatus = selectedReleases.every(order => {
+    const isValidStatus = selectedOrders.every(order => {
       console.log('현재 status: ', order.orderStatus);
-      if (status === 'PREPARING_PRODUCT' && order.orderStatus !== 'PAYMENT_COMPLETED') {
+      if (status == 'PREPARING_PRODUCT' && order.orderStatus !== 'PAYMENT_COMPLETED') {
         return false;
       }
-      if (status === 'AWAITING_RELEASE' && order.orderStatus !== 'PREPARING_PRODUCT') {
+      if (status == 'AWAITING_RELEASE' && order.orderStatus !== 'PREPARING_PRODUCT') {
         return false;
       }
       return true;
@@ -537,12 +555,12 @@ const OrderGeneral = () => {
         <Flex gap="small" wrap>
           <Space align="center">주문상태변경</Space>
           <StatusChangeButton 
-            title={"주문승인"}
-            onClick={() => onHandleStatusChange('주문승인')}
+            title={"상품준비중"}
+            onClick={() => onHandleStatusChange('PREPARING_PRODUCT')}
           />
           <StatusChangeButton 
             title={"출고대기"}
-            onClick={() => onHandleStatusChange('출고대기')}
+            onClick={() => onHandleStatusChange('AWAITING_RELEASE')}
           />
         </Flex>
       </Flex>
