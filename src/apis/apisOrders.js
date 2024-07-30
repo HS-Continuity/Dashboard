@@ -10,6 +10,7 @@ export const fetchCustomerOrders = async (params) => {
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
     .join('&');
   console.log('Query string:', queryString);
+  console.log('params: ', params)
   const response = await apiGet(ORDER_DB_URL, `/order/customer-service?${queryString}`)
   return response;
 }

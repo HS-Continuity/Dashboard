@@ -66,7 +66,7 @@ const OrderGeneral = () => {
         title: 'Notification',
         text: '새로운 주문이 들어왔습니다',
         icon: 'info',
-        timer: 3000, // 2 seconds
+        timer: 2000, // 2 seconds
         showConfirmButton: false,
       });
     };
@@ -145,7 +145,7 @@ const OrderGeneral = () => {
           orderDateTime: order.orderDateTime?.toString() || '',
           deliveryAddress: order.recipient?.recipientAddress?.toString() || '',
           recipient: order.recipient?.recipient?.toString() || '',
-          orderStatus: order.orderStatusCode?.toString() || '',
+          orderStatusCode: order.orderStatusCode?.toString() || '',
           //productName: order.productOrderList?.length > 0 ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` : '',
         }
       });
@@ -250,7 +250,7 @@ const OrderGeneral = () => {
     setFilteredInfo(filters);
     setJoinForm(prev => ({
       ...prev,
-      orderStatus: filters.orderStatus ? filters.orderStatus[0] : null
+      orderStatusCode: filters.orderStatusCode ? filters.orderStatusCode[0] : null
     }));
   };
 
@@ -285,7 +285,7 @@ const OrderGeneral = () => {
     const selectedOrders = orders.filter(order => selectedRowKeys.includes(order.orderDetailId));
 
     // 2. 선택된 주문들의 현재 상태를 가져옵니다.
-    const currentStatuses = selectedOrders.map(order => order.orderStatus);
+    const currentStatuses = selectedOrders.map(order => order.orderStatusCode);
 
     console.log('선택된 주문들:', selectedOrders);
     console.log('현재 상태들:', currentStatuses);
@@ -296,11 +296,11 @@ const OrderGeneral = () => {
    
     
     const isValidStatus = selectedOrders.every(order => {
-      console.log('현재 status: ', order.orderStatus);
-      if (status == 'PREPARING_PRODUCT' && order.orderStatus !== 'PAYMENT_COMPLETED') {
+      console.log('현재 status: ', order.orderStatusCode);
+      if (status == 'PREPARING_PRODUCT' && order.orderStatusCode !== 'PAYMENT_COMPLETED') {
         return false;
       }
-      if (status == 'AWAITING_RELEASE' && order.orderStatus !== 'PREPARING_PRODUCT') {
+      if (status == 'AWAITING_RELEASE' && order.orderStatusCode !== 'PREPARING_PRODUCT') {
         return false;
       }
       return true;
@@ -437,18 +437,15 @@ const OrderGeneral = () => {
     // },
     {
       title: '주문 상태',
-      dataIndex: 'orderStatus',
-      key: 'orderStatus',
+      dataIndex: 'orderStatusCode',
+      key: 'orderStatusCode',
       filters: [
         { text: '결제완료', value: 'PAYMENT_COMPLETED' },
-        // { text: '주문승인', value: 'ORDER_APPROVED' },
         { text: '상품준비중', value: 'PREPARING_PRODUCT' },
-        // { text: '배송중', value: 'IN_DELIVERY' },
-        // { text: '배송완료', value: 'DELIVERY_COMPLETED' },
         { text: '출고대기중', value: 'AWAITING_RELEASE' },
       ],
-      filteredValue: joinForm.orderStatus ? [joinForm.orderStatus] : null,
-      onFilter: (value, record) => record.orderStatus === value,
+      filteredValue: joinForm.orderStatusCode ? [joinForm.orderStatusCode] : null,
+      onFilter: (value, record) => record.orderStatusCode === value,
       render: (status) => (
         <Tag color={getStatusColor(status)}>
           {getStatusText(status)}
