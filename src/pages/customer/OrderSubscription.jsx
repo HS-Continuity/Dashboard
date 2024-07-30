@@ -63,7 +63,7 @@ const OrderSubscription = () => {
 
     const ordersForDate = monthlyOrderCounts.filter(order => 
       // dayjs(order.START_DATE).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
-      dayjs(order.date).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
+      dayjs(order.days).format('YYYY-MM-DD') === current.format('YYYY-MM-DD')
     );
 
     if (ordersForDate.length === 0) return null;
@@ -125,26 +125,20 @@ const OrderSubscription = () => {
     setIsDrawerVisible(false);
   };
 
-  const onRowClick = (record) => {
-    navigate ('../subscriptionDetail', {
-      state: {
-        selectedTags: record.regular_delivery_status,
-        selectedOrderId: record.regular_delivery_application_id,
-        selectedOrderStartDate: record.start_date,
-        selectedOrderEndDate: record.end_date,
-        selectedOrderCycle: record.cycle,
-        selectedOrderMemo: record.order_memo
-      },
-    });
-  };
-
   const onRow = (record) => {
     return {
       onClick: () => {
-        navigate(`/subscription/${record.REGULAR_DELIVERY_APPLICATION_ID}`, {
-          state: { orderData: record }
+        navigate(`/subscription/${record.orderApplicationId}`, {
+          state: { 
+            selectedTags: record.regular_delivery_status,
+            selectedOrderId: record.orderApplicationId,
+            selectedOrderStartDate: record.start_date,
+            selectedOrderEndDate: record.end_date,
+            selectedOrderCycle: record.cycle,
+            selectedOrderMemo: record.order_memo,
+            orderData: record
+          }
         });
-        //setLastClickedRow(rowIndex);
       },
     };
   };
@@ -238,7 +232,6 @@ const OrderSubscription = () => {
             pagination={false}
             onRow={onRow}
             rowSelection={rowSelection}
-            onRowClick={onRowClick}
           />
         ) : (
           <h2>주문건이 없습니다.</h2>

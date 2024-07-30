@@ -49,7 +49,7 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
       endDate: endDate.format('YYYY-MM-DD'),
     };
     console.log('Sending params:', params);  // 파라미터 로깅
-    const response = await apiGet(ORDER_DB_URL, `/regular-order/count`, params);
+    const response = await apiGet(ORDER_DB_URL, `/regular-order/monthly`, params);
     console.log('어떤 데이터를 보내나요?: ', response);
     return response;
   } catch (error) {
