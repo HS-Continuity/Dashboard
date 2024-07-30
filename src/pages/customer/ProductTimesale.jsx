@@ -78,7 +78,8 @@ const ProductTimeSale = () => {
           productId: item.productId,
           productName: item.productName,
           serviceStatus: item.serviceStatus,
-          startDateTime: moment(item.startDateTime).format('YYYY-MM-DD HH:mm')
+          startDateTime: moment(item.startDateTime).format('YYYY-MM-DD HH:mm'),
+          timesaleId: item.timesaleId
         }
       });
 
@@ -113,19 +114,20 @@ const ProductTimeSale = () => {
   };
 
   const handleCellClick = (record) => {
-    console.log("클릭한 행의 key: ", record.productId)
+    console.log("클릭한 행의 key: ", record.timesaleId)
     setSelectedRowKeys(record.productId)
   }
 
   const onRow = (record) => {
     return {
       onClick: () => {
-        if (record && record.productId) {
-          // navigate()
-        } else {
-          console.error('Invalid record: ', record);
-          message.error('타임세일 정보를 불러올 수 없습니다.');
-        }
+        // if (record && record.timesaleId) {
+          navigate(`/product/timesale/${record.timesaleId}`);
+          console.log('주소: ', record.timesaleId)
+        // } else {
+        //   console.error('Invalid record: ', record);
+        //   message.error('타임세일 정보를 불러올 수 없습니다.');
+        // }
       }
     };
   };
@@ -225,17 +227,17 @@ const ProductTimeSale = () => {
 
   // // -------------------------------------------------------------------------
   const columns = [
-    // { 
-    //   title: '타임세일식품ID', 
-    //   dataIndex: 'productId', 
-    //   key: 'productId',
-    //   filteredValue: filteredInfo.productId || null,
-    //   filtered: false,
-    //   ...getColumnSearchProps('productId'),
-    //   onCell: (record) => ({
-    //     onClick: () => handleCellClick(record),
-    //   })
-    // },
+    { 
+      title: '타임세일식품ID', 
+      dataIndex: 'timesaleId', 
+      key: 'timesaleId',
+      filteredValue: filteredInfo.timesaleId || null,
+      filtered: false,
+      ...getColumnSearchProps('timesaleId'),
+      onCell: (record) => ({
+        onClick: () => handleCellClick(record),
+      })
+    },
     { 
       title: '식품ID', 
       dataIndex: 'productId', 

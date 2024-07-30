@@ -76,7 +76,7 @@ function App() {
             <Route path='eco' element={<ProductEco />} />
             <Route path='eco/:productId' element={<ProductEcoDetail />} />
             <Route path='timesale' element={<ProductTimeSale />} />
-            <Route path='timesale/:productId' element={<ProductTimeSaleDetail />} />
+            <Route path='timesale/:timesaleId' element={<ProductTimeSaleDetail />} />
             <Route path='create' element={<ProductCreate />} />
           </Route>
           <Route path='/order'>
