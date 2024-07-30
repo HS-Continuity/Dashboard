@@ -21,8 +21,8 @@ import ProductGeneral from "./pages/customer/ProductGeneral";
 import ProductGeneralDetail from "./pages/customer/ProductGeneralDetail";
 import ProductEco from "./pages/customer/ProductEco";
 import ProductEcoDetail from "./pages/customer/ProductEcoDetail";
-//import ProductTimeSale from "./pages/customer/ProductTimeSale";
-//import ProductTimeSaleDetail from "./pages/customer/ProductTimeSaleDetail";
+import ProductTimeSale from "./pages/customer/ProductTimeSale";
+import ProductTimeSaleDetail from "./pages/customer/ProductTimeSaleDetail";
 import ProductCreate from "./pages/customer/ProductCreate";
 import OrderGeneral from "./pages/customer/OrderGeneral";
 import OrderGeneralDetail from "./pages/customer/OrderGeneralDetail";
@@ -75,10 +75,9 @@ function App() {
             <Route path='general/:productId' element={<ProductGeneralDetail />} />
             <Route path='eco' element={<ProductEco />} />
             <Route path='eco/:productId' element={<ProductEcoDetail />} />
-            {/* <Route path='timeSale' element={<ProductTimeSale />} />
-            <Route path='timeSale/:productId' element={<ProductTimeSaleDetail />} /> */}
+            <Route path='timesale' element={<ProductTimeSale />} />
+            <Route path='timesale/:productId' element={<ProductTimeSaleDetail />} />
             <Route path='create' element={<ProductCreate />} />
-
           </Route>
           <Route path='/order'>
             <Route path='general' element={<OrderGeneral />} />

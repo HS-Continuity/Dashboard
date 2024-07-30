@@ -214,7 +214,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       collapsed={collapsed}
       style={{ background: colorBgContainer }}>
       <div className='demo-logo-vertical' />
-      <Title level={3}>효성CMS+ 스퀘어</Title>
+      <Title level={3}>연이음</Title>
       <Menu
         theme='light'
         mode='inline'

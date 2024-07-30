@@ -159,6 +159,18 @@ export const fetchEcoProductItems = async (params) => {
   return response;
 }
 
+// ----------- 타임세일 식품 조회 ----------- 
+export const fetchTimeSaleList = async () => {
+  try {
+    const response = await apiGet(PRODUCT_DB_URL, `/time-sale/list`);
+    console.log('타임세일 보내는 데이터: ', response)
+    return response;
+  } catch (error) {
+    console.error('Error fetching timesale list:', error);
+    throw error;
+  }
+};
+
 // ----------- 식품 상세 조회 ----------- 
 export const fetchProductDetail = async (productId) => {
   try {
@@ -172,8 +184,6 @@ export const fetchProductDetail = async (productId) => {
 };
 
 // ----------- 친환경 식품 인증서 조회 ----------- 
-// apisProducts.js
-
 export const fetchProductCertification = async (productId) => {
   try {
     const response = await apiGet(PRODUCT_DB_URL, `/product-image/certification/${productId}`);
