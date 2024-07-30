@@ -56,10 +56,12 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
 };
 
 // ----------- 정기 주문 일별 조회 ----------- 
-export const fetchRegularOrderCountByDate = async (date) => {
+export const fetchRegularOrderCountByDate = async (date, size, page) => {
   try {
     const params = {
-      date: date.format('YYYY-MM-DD')
+      date,
+      size, 
+      page
     }
     console.log('일별 조회 서버에서 보내는 params: ', params)
     const response = await apiGet(ORDER_DB_URL, `/regular-order/daily`, params)
@@ -71,18 +73,18 @@ export const fetchRegularOrderCountByDate = async (date) => {
   }
 }
 
-// ----------- 정기 주문 상세 조회 ----------- 
-export const fetchRegularOrderDetails = async (regularOrderId) => {
-  try {
-    const response = await apiGet(ORDER_DB_URL, `/regular-order/${regularOrderId}/detail`);
-    // return response;
-    console.log('정기주문 상세 보내는 데이터: ', response)
-    return response.result;
-  } catch (error) {
-    console.error('Error fetching regular order details:', error);
-    throw error;
-  }
-};
+// // ----------- 정기 주문 상세 조회 ----------- 
+// export const fetchRegularOrderDetails = async (regularOrderId) => {
+//   try {
+//     const response = await apiGet(ORDER_DB_URL, `/regular-order/${regularOrderId}/detail`);
+//     // return response;
+//     console.log('정기주문 상세 보내는 데이터: ', response)
+//     return response.result;
+//   } catch (error) {
+//     console.error('Error fetching regular order details:', error);
+//     throw error;
+//   }
+// };
 
 
 

@@ -38,7 +38,7 @@ const OrderSubscription = () => {
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
   const [selectedDate, setSelectedDate] = useState(dayjs()); // 현재 날짜로 초기화
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
-  const [selectedDateOrders, setSelectedDateOrders] = useState([]);
+  //const [selectedDateOrders, setSelectedDateOrders] = useState([]);
   const [panelDate, setPanelDate] = useState(dayjs()); // 현재 패널 날짜 상태 추가
   //const [selectedRowKeys, setSelectedRowKeys] = useState();
 
@@ -60,17 +60,16 @@ const OrderSubscription = () => {
     }
   };
 
-  const fetchDailyOrders = async (date, size = 10, page = 1) => {
+  const fetchDailyOrders = async (date, size = 10, page = 0) => {
     setLoading(true);
     try {
-      const response = await fetchRegularOrderCountByDate(date, size, page-1);
+      const response = await fetchRegularOrderCountByDate(date, size, page);
       console.log('response: ', response)
-      setDailyOrders(response);
-      console.log('가져온 데이터: ', dailyOrders)
+      setDailyOrders(response.content);
       setDailyOrdersPagination({
-        current: page,
+        current: page+1,
         pageSize: size,
-        total: response.totalElements
+        total: response.totalElements || 0
       });
     } catch (error) {
         console.error('Failed to fetch daily orders: ', error);
@@ -113,55 +112,53 @@ const OrderSubscription = () => {
     setCurrentMonth(value);
   };
 
+  // const onSelectDate = (selectedDate) => {
+  //   // 선택된 날짜가 현재 표시된 달에 속하는지 확인
+  //   if (selectedDate.isSame(panelDate, 'month')) {
+  //     setSelectedDate(selectedDate);
+  //     fetchDailyOrders(selectedDate.format('YYYY-MM-DD'));
+      
+  //     // const ordersForDate = monthlyOrderCounts.filter(
+  //     //   order => dayjs(order.date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD')
+  //     // );
+  //     //setSelectedDateOrders(ordersForDate);
+  //     setIsDrawerVisible(true);
+  //   } else {
+  //     // 다른 달의 날짜를 선택한 경우, 해당 달로 이동만 하고 drawer는 열지 않음
+  //     setPanelDate(selectedDate);
+  //     setCurrentMonth(selectedDate);
+  //   }
+  // };
+
   const onSelectDate = (selectedDate) => {
-    // 선택된 날짜가 현재 표시된 달에 속하는지 확인
     if (selectedDate.isSame(panelDate, 'month')) {
       setSelectedDate(selectedDate);
-      fetchDailyOrders(selectedDate);
-      
-      const ordersForDate = monthlyOrderCounts.filter(
-        order => dayjs(order.date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD')
-      );
-      setSelectedDateOrders(ordersForDate);
+      const formattedDate = selectedDate.format('YYYY-MM-DD');
+      console.log('Fetching orders for date:', formattedDate);
+      fetchDailyOrders(formattedDate);
       setIsDrawerVisible(true);
     } else {
-      // 다른 달의 날짜를 선택한 경우, 해당 달로 이동만 하고 drawer는 열지 않음
       setPanelDate(selectedDate);
       setCurrentMonth(selectedDate);
     }
   };
 
-
+  const handleTableChange = (pagination) => {
+    fetchDailyOrders(selectedDate.format('YYYY-MM-DD', pagination.pageSize, pagination.current))
+  };
 
   const onCloseDrawer = () => {
     setIsDrawerVisible(false);
   };
 
-  // const onRow = (record) => {
-  //   return {
-  //     onClick: () => {
-  //       navigate(`/subscription/${record.orderApplicationId}`, {
-  //         state: { 
-  //           selectedTags: record.regular_delivery_status,
-  //           selectedOrderId: record.orderApplicationId,
-  //           selectedOrderStartDate: record.start_date,
-  //           selectedOrderEndDate: record.end_date,
-  //           selectedOrderCycle: record.cycle,
-  //           selectedOrderMemo: record.order_memo,
-  //           orderData: record
-  //         }
-  //       });
-  //     },
-  //   };
-  // };
-
   const onRow = (record) => {
     return {
       onClick: () => {
         console.log("Clicked record:", record);
-        navigate(`../subscription/${record.regularDelivaryApplicationId}`, {
+        navigate(`./${record.regularDelivaryApplicationId}`, {
           state: { 
-             regularOrderId: record.regularDelivaryApplicationId
+             regularOrderId: record.regularDelivaryApplicationId,
+             record: record
           }
         });
       },
@@ -258,9 +255,9 @@ const OrderSubscription = () => {
             ...dailyOrdersPagination,
             showSizeChanger: true,
             showQuickJumper: true,
-            // showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-            onChange: (page, size) => fetchDailyOrders(selectedDate.format('YYYY-MM-DD'), size, page)
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
           }}
+          onChange={handleTableChange}
           onRow={onRow}
          />
        </>
