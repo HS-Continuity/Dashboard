@@ -96,11 +96,12 @@ const Shipment = () => {
           }
         }
         
+        console.log('order: ', order)
         return {
           orderId: order.orderId.toString() || '',
           productName: !isProductInfoAvailable ? (productName || '') : '확인중',
           startDeliveryDate: order.startDeliveryDate,
-          orderStatus: order.statusName?.toString() || '',
+          releaseStatus: order.statusName?.toString() || '',
           productOrderList: productOrderList,
           memberId: order.memberInfo.memberId,
           recipientAddress: order.recipient.recipientAddress,
@@ -110,7 +111,7 @@ const Shipment = () => {
         }
       });
 
-      //console.log('어떤 데이터를 받아오나요?: ', transformedOrders)
+      console.log('어떤 데이터를 받아오나요?: ', transformedOrders)
 
       setReleases(transformedOrders);
       setIsServerUnstable(isServerUnstable);
@@ -232,7 +233,7 @@ const Shipment = () => {
     setFilteredInfo(filters);
     setJoinForm(prev => ({
       ...prev,
-      orderStatus: filters.orderStatus ? filters.orderStatus[0] : null
+      releaseStatus: filters.releaseStatus ? filters.releaseStatus[0] : null
     }));
   };
 
@@ -261,19 +262,19 @@ const Shipment = () => {
       message.warning('변경할 항목을 선택해주세요.');
       return;
     }
-    console.log("변경할 status: ", releases.orderStatus);
+    console.log("변경할 status: ", releases.releaseStatus);
   
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
     
     const isValidStatus = selectedReleases.every(release => {
-      console.log('현재 status: ', release.orderStatus);
-      if (status === 'RELEASE_COMPLETED' && release.orderStatus !== 'AWAITING_RELEASE') {
+      console.log('현재 status: ', release.releaseStatus);
+      if (status === 'RELEASE_COMPLETED' && release.releaseStatus !== 'AWAITING_RELEASE') {
         return false;
       }
-      if (status === 'HOLD_RELEASE' && release.orderStatus === 'RELEASE_COMPLETED') {
+      if (status === 'HOLD_RELEASE' && release.releaseStatus === 'RELEASE_COMPLETED') {
         return false;
       }
-      if (status === 'COMBINED_PACKAGING_COMPLETED' && release.orderStatus !== 'AWAITING_RELEASE') {
+      if (status === 'COMBINED_PACKAGING_COMPLETED' && release.releaseStatus !== 'AWAITING_RELEASE') {
         return false;
       }
       return true;
@@ -312,7 +313,7 @@ const Shipment = () => {
       release.memberId === arr[0].memberId &&
       release.startDeliveryDate === arr[0].startDeliveryDate &&
       release.recipientAddress === arr[0].recipientAddress &&
-      release.orderStatus === 'AWAITING_RELEASE'  // 출고대기 상태인 주문만 합포장 가능
+      release.releaseStatus === 'AWAITING_RELEASE'  // 출고대기 상태인 주문만 합포장 가능
     );
 
     if (!isValid) {
@@ -435,16 +436,16 @@ const Shipment = () => {
     },
     {
       title: '출고상태', 
-      dataIndex: 'orderStatus',
-      key: 'orderStatus',
+      dataIndex: 'releaseStatus',
+      key: 'releaseStatus',
       filters: [
         { text: '출고대기', value: 'AWAITING_RELEASE' },
         { text: '출고보류', value: 'HOLD_RELEASE' },
         { text: '출고완료', value: 'RELEASE_COMPLETED' },
         { text: '합포장완료', value: 'COMBINED_PACKAGING_COMPLETED'}
       ],
-      filteredValue: joinForm.orderStatus ? [joinForm.orderStatus] : null,
-      onFilter: (value, record) => record.orderStatus === value,
+      filteredValue: joinForm.releaseStatus ? [joinForm.releaseStatus] : null,
+      onFilter: (value, record) => record.releaseStatus === value,
       render: (status) => (
         <Tag color={getStatusColor(status)}>
           {getStatusText(status)}

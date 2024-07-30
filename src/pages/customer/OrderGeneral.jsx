@@ -1,11 +1,13 @@
 import { fetchCustomerOrders, updateOrderStatus, updateBulkOrderStatus,subscribeToOrderStatusUpdates } from '../../apis/apisOrders';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, DatePicker, Table, Tag, Button, Input, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import Swal from 'sweetalert2';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
+import orderIn from '../../assets/audio/orderIn.mp3';
 
 const { RangePicker } = DatePicker;
 
@@ -29,45 +31,23 @@ const OrderGeneral = () => {
   const tableRef = useRef();
   const navigate = useNavigate();
   const eventSourceRef = useRef(null);
-
-  // useEffect(() => {
-  //   fetchOrders();
-    
-  //   // SSE 구독 설정(*)
-  //   const customerId = 1;  // 실제 사용 시 로그인한 사용자의 ID 사용하기!!
-  //   eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
-  //   eventSourceRef.current.onopen = () => {
-  //     console.log('SSE connection opened');
-  //   };
-  //   //console.log(eventSourceRef.current);
-
-  
+  const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
 
 
-  //   eventSourceRef.current.onmessage = (event) => {  // onmessage 들어올 때마다 '띠링'하는 알림 소리 붙이기!!
-  //     console.log('12334421');
-  //     const data = JSON.parse(event.data);
-      
-  //     setStatusCount(data);
-      
-  //     console.log(data);
-  //   };
-
-  //   eventSourceRef.current.onerror = (error) => {
-  //     console.error('SSE Error: ', error);
-  //     console.log('2133312332131321');
-  //     eventSourceRef.current.close();
-  //   };
-
-  //   return () => {
-  //     if (eventSourceRef.current) {
-  //       eventSourceRef.current.close();
-  //     }
-  //   };
-  // }, [pagination.current, pagination.pageSize, joinForm]);
+  const updateStatusCount = useCallback((newData) => {
+    setStatusCount(prevStatusCount => {
+      const updatedStatusCount = { ...prevStatusCount };
+      newData.forEach(item => {
+        if (['PAYMENT_COMPLETED', 'PREPARING_PRODUCT', 'AWAITING_RELEASE'].includes(item.statusName)) {
+          updatedStatusCount[item.statusName] = item.count;
+        }
+      });
+      return updatedStatusCount;
+    });
+  }, [])
 
   useEffect(() => {
-    // fetchOrders();
+    fetchOrders();
     
     const customerId = 1;
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
@@ -80,7 +60,15 @@ const OrderGeneral = () => {
       console.log('Received SSE message:', event);
       const data = JSON.parse(event.data);
       console.log('Parsed SSE data:', data);
-      setStatusCount(data); // 받은 데이터를 그대로 상태로 설정
+      updateStatusCount(data);
+      //audioRef.current.play();  //  알림 소리 재생
+      Swal.fire({
+        title: 'Notification',
+        text: '새로운 주문이 들어왔습니다',
+        icon: 'info',
+        timer: 3000, // 2 seconds
+        showConfirmButton: false,
+      });
     };
   
     eventSourceRef.current.onerror = (error) => {
@@ -93,7 +81,7 @@ const OrderGeneral = () => {
         eventSourceRef.current.close();
       }
     };
-  }, []); // 의존성 배열을 비워 컴포넌트 마운트 시 한 번만 실행되도록 함
+  }, [updateStatusCount]);
 
   useEffect(() => {
     fetchOrders();
@@ -178,26 +166,6 @@ const OrderGeneral = () => {
       setLoading(false);
     }
   };
-
-  // const fetchStatusCounts = async () => {
-  //   try {
-  //     const customerId = 1;
-  //     const response = await fetchOrderStatusCounts(customerId);
-  //     if (response) {
-  //       console.log('Status counts response:', response);
-  //       const counts = {};
-  //       response.forEach(item => {
-  //         counts[item.statusName] = item.count;
-  //       });
-  //       setStatusCount(counts);
-  //     } else {
-  //       console.error('No response received for status counts.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to fetch status counts:', error);
-  //     message.error('상태별 개수를 불러오는데 실패했습니다.');
-  //   }
-  // };
 
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -529,23 +497,21 @@ const OrderGeneral = () => {
             allowClear />
         </Flex>
         <Flex gap="small" wrap>
-          {Array.isArray(statusCount) && statusCount.map((item) => (
+        {/* {['PAYMENT_COMPLETED', 'PREPARING_PRODUCT', 'AWAITING_RELEASE'].map((status) => (
             <StatusCard 
-              key={item.statusName}
-              title={getStatusText(item.statusName)}
-              count={item.count}
+              key={status}
+              title={getStatusText(status)}
+              count={statusCount[status] || 0}
+            />
+          ))} */}
+          {Object.entries(statusCount).map(([status, count]) => (
+            <StatusCard 
+              key={status}
+              title={getStatusText(status)}
+              count={count}
             />
           ))}
         </Flex>
-        {/* <Flex gap="small" wrap>
-          {Object.entries(statusCount).map(([status, item]) => (
-            <StatusCard 
-              key={status} 
-              title={getStatusText(item.statusName)} 
-              count={item.count} 
-            />
-          ))}
-        </Flex> */}
       </Flex>
       <br />
       <Flex gap='small' align='center' justify='space-between'>

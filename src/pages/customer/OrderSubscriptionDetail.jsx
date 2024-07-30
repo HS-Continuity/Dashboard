@@ -10,21 +10,14 @@ const { TextArea } = Input;
 
 const OrderSubscriptionDetail = () => {
 
-  // const location = useLocation();
-  // const [selectedTags, setSelectedTags] = useState([]);
-  // const [orderId, setOrderId] = useState('');
-  // const [orderDate, setOrderDate] = useState();
-  // const [orderEndDate, setOrderEndDate] = useState();
-  // const [orderCycle, setOrderCycle] = useState();
-  // const [orderDay, setOrderDay] = useState();
   const [orderDetails, setOrderDetails] = useState(null);
-  const { state } = useLocation();
+  //const { state } = useLocation();
   const { regularOrderId } = useParams();
   console.log("Received ID from params:", regularOrderId);
 
   const navigate = useNavigate();
 
- useEffect(() => {
+  useEffect(() => {
     const fetchDetails = async () => {
       try {
         const details = await fetchRegularOrderDetails(regularOrderId);
@@ -34,15 +27,12 @@ const OrderSubscriptionDetail = () => {
       }
     };
 
-    if (state?.orderData) {
-      setOrderDetails(state.orderData);
-    } else {
-      fetchDetails();
-    }
-  }, [regularOrderId, state]);
+    fetchDetails();
+  }, [regularOrderId]);
 
-  if (!orderDetails) return <div>Loading...</div>;
-
+  if (!orderDetails) {
+    return <div>Loading...</div>;
+  }
   const onHandleBackClick = () => {
     navigate(-1); // 이전 페이지로 이동
   };

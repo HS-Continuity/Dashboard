@@ -1,6 +1,7 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { apiGet, apiPatch, ORDER_DB_URL } from './apisCommon';
 import 'event-source-polyfill';
+
 // [ 일반 주문 페이지 ]
 // ----------- 일반 주문 조회 ----------- 
 export const fetchCustomerOrders = async (params) => {
@@ -22,11 +23,6 @@ export const updateOrderStatus = async (orderId, orderStatusCode) => {
 export const updateBulkOrderStatus = async (orderIds, orderStatusCode) => {
   return await apiPatch(ORDER_DB_URL, `/order/bulk-status`, { orderIds, orderStatusCode })
 };
-
-// // ----------- 일반 주문 상태별 개수 조회 ----------- 
-// export const fetchOrderStatusCounts = async (customerId) => {
-//   return await apiGet(ORDER_DB_URL, `/order/counts?customerId=${customerId}`)
-// }
 
 // ----------- 일반 주문 상태별 개수 실시간 조회 ----------- 
 export const subscribeToOrderStatusUpdates = (customerId) => {
@@ -58,11 +54,28 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
   }
 };
 
+// ----------- 정기 주문 일별 조회 ----------- 
+export const fetchRegularOrderCountByDate = async (date) => {
+  try {
+    const params = {
+      date: date.format('YYYY-MM-DD')
+    }
+    console.log('일별 조회 서버에서 보내는 params: ', params)
+    const response = await apiGet(ORDER_DB_URL, `/regular-order/daily`, params)
+    console.log('일별 조회 때 어떤 데이터를 보내나요? :', response)
+    return response
+  } catch (error) {
+    console.error('Error fetching regular order counts: ', error);
+    throw error
+  }
+}
+
 // ----------- 정기 주문 상세 조회 ----------- 
 export const fetchRegularOrderDetails = async (regularOrderId) => {
   try {
     const response = await apiGet(ORDER_DB_URL, `/regular-order/${regularOrderId}/detail`);
     // return response;
+    console.log('정기주문 상세 보내는 데이터: ', response)
     return response.result;
   } catch (error) {
     console.error('Error fetching regular order details:', error);

@@ -1,8 +1,8 @@
-import { fetchRegularOrderCountsBetweenMonth } from '../../apis/apisOrders';
+import { fetchRegularOrderCountsBetweenMonth, fetchRegularOrderCountByDate } from '../../apis/apisOrders';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 //import { useQuery } from '@tanstack/react-query';
-import { Flex, ConfigProvider, Table, Badge,  Calendar, message, Drawer } from 'antd'
+import { Flex, ConfigProvider, Table, Badge,  Calendar, message, Drawer, Pagination } from 'antd'
 //import { ExclamationOutlined } from '@ant-design/icons';
 import locale from 'antd/locale/ko_KR'; // 한국어 locale 파일 import
 import dayjs from 'dayjs';
@@ -27,6 +27,12 @@ const OrderSubscription = () => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [monthlyOrderCounts, setMonthlyOrderCounts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dailyOrders, setDailyOrders] = useState([]);
+  const [dailyOrdersPagination, setDailyOrdersPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
   const navigate = useNavigate();
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
@@ -34,7 +40,7 @@ const OrderSubscription = () => {
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [selectedDateOrders, setSelectedDateOrders] = useState([]);
   const [panelDate, setPanelDate] = useState(dayjs()); // 현재 패널 날짜 상태 추가
-  const [selectedRowKeys, setSelectedRowKeys] = useState();
+  //const [selectedRowKeys, setSelectedRowKeys] = useState();
 
   const fetchMonthlyOrders = async () => {
     setLoading(true);
@@ -53,6 +59,26 @@ const OrderSubscription = () => {
       setLoading(false);
     }
   };
+
+  const fetchDailyOrders = async (date, size = 10, page = 1) => {
+    setLoading(true);
+    try {
+      const response = await fetchRegularOrderCountByDate(date, size, page-1);
+      console.log('response: ', response)
+      setDailyOrders(response);
+      console.log('가져온 데이터: ', dailyOrders)
+      setDailyOrdersPagination({
+        current: page,
+        pageSize: size,
+        total: response.totalElements
+      });
+    } catch (error) {
+        console.error('Failed to fetch daily orders: ', error);
+        message.error('일별 주문 데이터를 불러오는데 실패했습니다');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     fetchMonthlyOrders();
@@ -85,27 +111,13 @@ const OrderSubscription = () => {
 
   const onPanelChange = (value) => {
     setCurrentMonth(value);
-    //setPanelDate(value); // 패널 날짜를 업데이트
   };
-
-  if (loading) return <p>Loading...</p>;
-  // if (error) return <p>Error: {error.message}</p>;
-
-
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys, selectedRows) => {
-      const selectedIds = selectedRows.map(row => row.REGULAR_DELIVERY_APPLICATION_ID);
-      setSelectedRowKeys(selectedIds);
-    },
-  };
-
 
   const onSelectDate = (selectedDate) => {
     // 선택된 날짜가 현재 표시된 달에 속하는지 확인
     if (selectedDate.isSame(panelDate, 'month')) {
       setSelectedDate(selectedDate);
+      fetchDailyOrders(selectedDate);
       
       const ordersForDate = monthlyOrderCounts.filter(
         order => dayjs(order.date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD')
@@ -125,18 +137,31 @@ const OrderSubscription = () => {
     setIsDrawerVisible(false);
   };
 
+  // const onRow = (record) => {
+  //   return {
+  //     onClick: () => {
+  //       navigate(`/subscription/${record.orderApplicationId}`, {
+  //         state: { 
+  //           selectedTags: record.regular_delivery_status,
+  //           selectedOrderId: record.orderApplicationId,
+  //           selectedOrderStartDate: record.start_date,
+  //           selectedOrderEndDate: record.end_date,
+  //           selectedOrderCycle: record.cycle,
+  //           selectedOrderMemo: record.order_memo,
+  //           orderData: record
+  //         }
+  //       });
+  //     },
+  //   };
+  // };
+
   const onRow = (record) => {
     return {
       onClick: () => {
-        navigate(`/subscription/${record.orderApplicationId}`, {
+        console.log("Clicked record:", record);
+        navigate(`../subscription/${record.regularDelivaryApplicationId}`, {
           state: { 
-            selectedTags: record.regular_delivery_status,
-            selectedOrderId: record.orderApplicationId,
-            selectedOrderStartDate: record.start_date,
-            selectedOrderEndDate: record.end_date,
-            selectedOrderCycle: record.cycle,
-            selectedOrderMemo: record.order_memo,
-            orderData: record
+             regularOrderId: record.regularDelivaryApplicationId
           }
         });
       },
@@ -149,20 +174,21 @@ const OrderSubscription = () => {
       dataIndex: 'no',  // 해당 데이터가 어떤 필드에 있는지
       key: 'no',
       fixed: 'left',
-      width: 100,
-      render: (text, record, index) => index + 1,
+      width: 50,
+      // render: (text, record, index) => index + 1,
+      render: (text, record, index) => (dailyOrdersPagination.current - 1) * dailyOrdersPagination.pageSize + index + 1,  //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
     },
     {
       title: '정기주문ID',
-      dataIndex: 'orderApplicationId',
-      key: 'orderApplicationId',
+      dataIndex: 'regularDelivaryApplicationId',
+      key: 'regularDelivaryApplicationId',
       fixed: 'left',
-      filteredValue: filteredInfo.orderApplicationId || null,
+      filteredValue: filteredInfo.regularDelivaryApplicationId || null,
       filtered: false,
       width: 135
     },
     {
-      title: '대표상품명',
+      title: '주문상품',
       dataIndex: 'productName',
       key: 'productName',
       fixed: 'left',
@@ -170,15 +196,15 @@ const OrderSubscription = () => {
       filtered: false,
       width: 140
     },
-    {
-      title: '주문건수',
-      dataIndex: 'productCount',
-      key: 'productCount',
-      fixed: 'left',
-      filteredValue: filteredInfo.productCount || null,
-      filtered: false,
-      width: 140
-    }
+    // {
+    //   title: '주문건수',
+    //   dataIndex: 'reservationCount',
+    //   key: 'reservationCount',
+    //   fixed: 'left',
+    //   filteredValue: filteredInfo.reservationCount || null,
+    //   filtered: false,
+    //   width: 140
+    // }
   ];
 
   return (
@@ -220,19 +246,24 @@ const OrderSubscription = () => {
         placement="right"
         onClose={onCloseDrawer}
         open={isDrawerVisible}
-        width={900}
+        width={1200}
       >
-        {selectedDateOrders.length > 0 ? (
-          <Table
-            //columns={columns.filter((col) => col.key !== 'start_date')}
-            columns={columns.filter((col) => col.key !== 'start_date')}
-            dataSource={selectedDateOrders}
-            //onChange={onHandleChange}
-            rowKey="orderApplicationId"
-            pagination={false}
-            onRow={onRow}
-            rowSelection={rowSelection}
-          />
+        {dailyOrders.length > 0 ? (
+         <>
+         <Table
+          columns={columns}
+          dataSource={dailyOrders}
+          rowKey="regularDelivaryApplicationId"
+          pagination={{
+            ...dailyOrdersPagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            // showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+            onChange: (page, size) => fetchDailyOrders(selectedDate.format('YYYY-MM-DD'), size, page)
+          }}
+          onRow={onRow}
+         />
+       </>
         ) : (
           <h2>주문건이 없습니다.</h2>
         )}

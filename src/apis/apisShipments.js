@@ -7,6 +7,7 @@ export const fetchReleases = async (params) => {
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
     .join('&');
   console.log('Query string:', queryString);
+  console.log('받는 params: ', params)
   return await apiGet(ORDER_DB_URL, `/release/list?${queryString}`)
 }
 
