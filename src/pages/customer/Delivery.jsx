@@ -1,426 +1,390 @@
-import { useEffect, useRef, useState } from 'react';
-import { Flex, Space, DatePicker, Table, Tag, Button, Input } from 'antd'
+import { fetchDeliveries, fetchDeliveryStatusCounts } from '../../apis/apisDelivery';
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom';
+import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
 import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
-
 const { RangePicker } = DatePicker;
-const deliveryStatusTags = ['배송준비', '배송완료', '환불'];
-const tagColors = {
-  '배송준비': 'green',
-  '배송완료': 'blue',
-  '환불': 'orange'
-};
-
-const data = [
-  {
-    key: '1',
-    no: 1,
-    주문번호: 100001,
-    배송번호: 200001,
-    회원ID: 'C00001',
-    회원명: '김하늘',
-    배송시작일: '2024-01-01',
-    상품: '오이 외 1건',
-    tags: ['배송완료']
-  },
-  {
-    key: '2',
-    no: 2,
-    주문번호: 100002,
-    배송번호: 200002,
-    회원ID: 'C00001',
-    회원명: '이태양',
-    배송시작일: '2024-04-02',
-    상품: '오이 외 2건',
-    tags: ['배송준비']
-  },
-  {
-    key: '3',
-    no: 3,
-    주문번호: 100001,
-    배송번호: 200001,
-    회원ID: 'C00001',
-    회원명: '박은별',
-    배송시작일: '2024-03-01',
-    상품: '오이 외 1건',
-    tags: ['배송준비']},
-  {
-    key: '4',
-    no: 4,
-    주문번호: 100001,
-    배송번호: 200001,
-    회원ID: 'C00001',
-    회원명: '최바다',
-    배송시작일: '2024-02-01',
-    상품: '오이 외 1건',
-    tags: ['환불']
-  },
-  {
-    key: '5',
-    no: 5,
-    주문번호: 100001,
-    배송번호: 200001,
-    회원ID: 'C00001',
-    회원명: '정구름',
-    배송시작일: '2024-01-01',
-    상품: '오이 외 1건',
-    tags: ['배송완료']
-  },
-  {
-    key: '6',
-    no: 6,
-    주문번호: 100001,
-    배송번호: 200001,
-    회원ID: 'C00001',
-    회원명: '한별이',
-    배송시작일: '2024-05-01',
-    상품: '오이 외 1건',
-    tags: ['배송완료']
-  },
-];
 
 const Delivery = () => {
-
-  const [selectedDateRange, setSelectedDateRange] = useState([]);
-  const [searchText, setSearchText] = useState('');  //  검색 정보 저장
-  const [searchedColumn, setSearchedColumn] = useState('');
+  const [isServerUnstable, setIsServerUnstable] = useState(false);
+  const [deliveries, setDeliveries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  
+  const [joinForm, setJoinForm] = useState({});
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [statusCount, setStatusCount] = useState({});
+  const [dateRange, setDateRange] = useState([]);
   const searchInput = useRef(null);
-  const datasRef = useRef(data);  //  상태 변경 후 영구 저장
-  const [datas, setDatas] = useState(data);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
-  const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
-  const [filteredData, setFilteredData] = useState(datasRef.current);  //  초기값은 원본 데이터(data)
-  const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,  // 현재 페이지 번호
-      pageSize: 20,  //  페이지당 항목 수
-    },
-  });
+  const tableRef = useRef();
+  const navigate = useNavigate();
 
-  // status별 개수 세기
-  // 1. 빈 객체 생성하기 (태그별 개수 저장)
-  const statusCounts = {};
-  // 2. forEach 사용해서 orderStatusTags 배열 순회하기
-  deliveryStatusTags.forEach((tag) => {
-    // 옵셔널 체이닝(?.) 사용해서 item.tags가 존재하는경우에만 includes(tag) 호출하기a
-    // 태그가 key, 개수가 value
-    statusCounts[tag] = datasRef.current.filter((item) => item.tags?.includes(tag)).length;
-  });
-
-  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const onHandleChange = (pagination, filters) => {
-    setFilteredInfo(filters);  //  필터링 정보 업데이트
-  };
-
-  const onClearFilters = () => {  //  모든 필터 초기화 이벤트
-    setFilteredInfo({});
-  };
-
-  const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
-    clearFilters();
-    setSearchText('');
-  };
-
-  const onHandleRangePickerChange = (dates) => {
-    setSelectedDateRange(dates || []);  //  상태 업데이트
-  }
-
-  const applyFilters = (data) => {
-    if (!selectedDateRange || selectedDateRange.length === 0) {
-      return data;
-    } else {
-      const startDate = selectedDateRange[0].startOf('day').format('YYYY-MM-DD');
-      const endDate = selectedDateRange[1].endOf('day').format('YYYY-MM-DD');
-  
-      return data.filter(item => {
-        const itemDate = moment(item.배송시작일, 'YYYY-MM-DD').startOf('day');
-        const isInRange = itemDate.isBetween(startDate, endDate, undefined, '[]');
-  
-        // 검색어 필터링 로직 추가
-        const searchFilter = filteredInfo.주문번호 || filteredInfo.배송번호 || filteredInfo.회원ID || filteredInfo.회원명 || filteredInfo.상품;
-        const isSearchMatch = !searchFilter || Object.keys(searchFilter).every(key => 
-          searchFilter[key].includes(item[key])
-        );
-  
-        return isInRange && isSearchMatch;
-      });
-    }
-  }
-
-  const onHandleStatusChange = (newStatus) => {
-    // 1. 깊은 복사
-    const updatedData = JSON.parse(JSON.stringify(datasRef.current)); 
-
-    // 2. tags 값 변경
-    updatedData.forEach(item => {
-      if (selectedRowKeys.includes(item.key)) {
-        item.tags = [newStatus]; 
-      }
-    });
-
-    // 3. 상태 업데이트 및 localStorage 저장
-    datasRef.current = updatedData;
-    setDatas(updatedData);
-    setFilteredData(applyFilters(updatedData));
-    localStorage.setItem('deliveryData', JSON.stringify(updatedData)); 
-    setSelectedRowKeys([]);
-    console.log("StatusChangeButton 클릭 후 변경된 데이터:", updatedData);
-  }
+  useEffect(() => {
+    fetchDeliveryData();
+    fetchStatusCounts();
+  }, [pagination.current, pagination.pageSize, joinForm])
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: (selectedRowKeys) => {
-      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
+    onChange: (selectedRowKeys, selectedRows) => {
+      setSelectedRowKeys(selectedRowKeys);
+    }
+  }
+
+  const fetchDeliveryData = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        customerId: 1,
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+        ...joinForm
+      };
+
+      Object.entries(joinForm).forEach(([key, value]) => {
+        if (value != null && value !== '') {
+          if (value instanceof Date) {
+            params[key] = value.toISOString().split('T')[0]; // YYYY-MM-DD 형식으로 변환
+          } else if (Array.isArray(value)) {
+            params[key] = value.join(','); // 배열을 쉼표로 구분된 문자열로 변환
+          } else {
+            params[key] = value;
+          }
+        }
+      });
+      
+      const response = await fetchDeliveries(params);
+
+      console.log('받아오는 배송 데이터: ', response)
+
+      const transformedDeliveries = response.content.map(delivery => ({
+       //const productOrderListEntityLists = delivery.productOrderListEntityLists?.productOrderListEntityLists || null;
+
+        additionalOrderCount: delivery.additionalOrderCount.toString() || '',
+        deliveryId: delivery.deliveryId || '',
+        deliveryStatusCode: delivery.deliveryStatusCode || '',
+        memberId: delivery.memberId || '',
+        representativeOrderId: delivery.representativeOrderId || '',
+        shipmentNumber: delivery.shipmentNumber || '',
+        startDeliveryDate: delivery.startDeliveryDate || ''
+      }));
+
+      setDeliveries(transformedDeliveries);
+      setIsServerUnstable(false);
+      setPagination({
+        ...pagination,
+        total: response.totalElements,
+      })
+      
+    } catch (error) {
+      message.error('배송 데이터를 불러오는데 실패했습니다.');
+      setIsServerUnstable(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const fetchStatusCounts = async () => {
+    try {
+      const customerId = 1;
+      const response = await fetchDeliveryStatusCounts(customerId);
+      if (response) {
+        console.log('Status counts response:', response);
+        const counts = {};
+        response.forEach(item => {
+          counts[item.statusName] = item.count;
+        });
+        setStatusCount(counts);
+      } else {
+        console.error('No response received for status counts.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch status counts:', error);
+      message.error('상태별 개수를 불러오는데 실패했습니다.');
     }
   };
 
-  useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem('deliveryData')) || data; // localStorage에서 불러오기
-    datasRef.current = storedData;
-    setDatas(storedData);
-    setFilteredData(applyFilters(datas));
-    console.log("페이지 최초 렌더링 시 데이터:", storedData);
-  }, []);
+  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setJoinForm(prev => ({
+      ...prev,
+      [dataIndex]: selectedKeys[0] ? [selectedKeys[0]] : null
+    }));
+  };
 
-  useEffect(() => {
-    setFilteredData(applyFilters(datas)); // datas 변경 시 filteredData 업데이트
-  }, [datas, selectedDateRange]); // datas와 selectedDateRange에 의존하도록 변경
+  const onHandleReset = () => {
+    setJoinForm({});
+    setFilteredInfo({});
+    setDateRange([]);
+    if (tableRef.current) {
+      tableRef.current.clearFilters();
+    }
+    fetchDeliveryData();
+  }
+
+  const onHandleTableChange = (newPagination, filters) => {
+    setPagination(newPagination);
+    setFilteredInfo(filters);
+    setJoinForm(prev => ({
+      ...prev,
+      deliveryStatusCode: filters.deliveryStatusCode ? filters.deliveryStatusCode[0] : null
+    }));
+  };
+
+  // const onHandleStatusChange = async (status) => {
+  //   if (selectedRowKeys.length === 0) {
+  //     message.warning('변경할 항목을 선택해주세요.');
+  //     return;
+  //   }
+  
+  //   const selectedDelivery = deliveries.filter(delivery => selectedRowKeys.includes(delivery.deliveryId));
+    
+  //   const isValidStatus = selectedDelivery.every(delivery => {
+  //     console.log('현재 status: ', delivery.deliveryStatusCode);
+  //     if (status === 'IN_DELIVERY' && delivery.deliveryStatusCode !== 'SHIPPED') {
+  //       return false;
+  //     }
+  //     if (status === 'DELIVERED' && delivery.deliveryStatusCode !== 'IN_DELIVERY') {
+  //       return false;
+  //     }
+  //     return true;
+  //   });
+  
+  //   if (!isValidStatus) {
+  //     message.error(`해당 주문건의 출고 상태는 ${status} 상태로 변경할 수 없습니다.`);
+  //     return;
+  //   }
+  
+  //   try {
+  //     if (selectedRowKeys.length === 1) {
+  //       await fetchDeliveryStatusCounts(selectedRowKeys[0], status);
+  //     } else {
+  //       await fetchDeliveryStatusCounts(selectedRowKeys, status);
+  //     }
+  //     message.success('배송 상태가 성공적으로 변경되었습니다.');
+  //     fetchDeliveryData();
+  //     setSelectedRowKeys([]);
+  //   } catch (error) {
+  //     console.error('배송 상태 변경 실패:', error);
+  //     message.error('배송 상태 변경에 실패했습니다.');
+  //   }
+  // };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-      
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
+      <div style={{ padding: 8 }}>
         <Input
           ref={searchInput}
           placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0] || ''}  // 빈 문자열도 처리
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => confirm()}  //  Enter 입력 시 필터링 적용
-          style={{
-            marginBottom: 8,
-            display: 'block',
-          }}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ 
+            marginBottom: 8, 
+            display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
-            // ???
-            onClick={() => confirm()}
+            onClick={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
-            style={{
-              width: 90,
-            }}
+            style={{ width: 90 }}
           >
             Search
           </Button>
-          <Button
-            onClick={() => clearFilters && onHandleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
+          <Button onClick={() => onHandleReset(clearFilters, dataIndex)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
+          <Button type="link" size="small" onClick={() => {
               close();
-            }}
-          >
+            }}>
             close
           </Button>
         </Space>
       </div>
     ),
-    filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? '#1677ff' : undefined,
-        }}
-      />
-    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    // onFilter: (value, record) =>
+    //   record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : '',
     onFilter: (value, record) => {
-      setFilteredData(datasRef.current.filter(item => {
-        if (dataIndex === "tags") {
-          return item.tags.includes(value);
-        } else {
-          return item[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
-        }
-      }));
+      if (record[dataIndex] == null) return false;
+      
+      const itemValue = record[dataIndex];
+      const filterValue = value;
+    
+      // 날짜 처리
+      if (itemValue instanceof Date) {
+        const dateValue = itemValue.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+        return dateValue.includes(filterValue);
+      }
+    
+      // 그 외의 경우
+      const stringItemValue = String(itemValue).toLowerCase();
+      const stringFilterValue = String(filterValue).toLowerCase();
+    
+      return stringItemValue.includes(stringFilterValue);
     },
-
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
-
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{
-            backgroundColor: '#ffc069',
-            padding: 0,
-          }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
   });
 
   const columns = [
     {
-      title: 'NO.',
-      dataIndex: 'no',  // 해당 데이터가 어떤 필드에 있는지
+      title: 'No.',
       key: 'no',
-      fixed: 'left'
+      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,  //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
+      width: '5%',
+      fixed: 'left',
+      //width: '5%',
+      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
-      title: '주문번호',
-      dataIndex: '주문번호',
-      key: '주문번호',
-      fixed: 'left',
-      filteredValue: filteredInfo.주문번호 || null,
-      filtered: false,
-      ...getColumnSearchProps('주문번호'),
-    },
-    {
-      title: '배송번호',
-      dataIndex: '배송번호',
-      key: '배송번호',
-      fixed: 'left',
-      filteredValue: filteredInfo.배송번호 || null,
-      filtered: false,
-      ...getColumnSearchProps('배송번호'),
-    },
-    {
-      title: '회원ID',
-      dataIndex: '회원ID',
-      key: '회원ID',
-      fixed: 'left',
-      filteredValue: filteredInfo.회원ID || null,
-      filtered: false,
-      ...getColumnSearchProps('회원ID'),
-    },
-    {
-      title: '회원명',
-      dataIndex: '회원명',
-      key: '회원명',
-      fixed: 'left',
-      filteredValue: filteredInfo.회원명 || null,
-      filtered: false,
-      ...getColumnSearchProps('회원명'),
+      title: '배송ID',
+      dataIndex: 'deliveryId',
+      key: 'deliveryId',
+      filteredValue: joinForm.deliveryId ? [joinForm.deliveryId] : null,
+      ...getColumnSearchProps('deliveryId'),
     },
     {
       title: '배송시작일',
-      dataIndex: '배송시작일',
-      key: '배송시작일',
-      fixed: 'left',
-      filteredValue: filteredInfo.배송시작일 || null,
-      filtered: false,
-      ...getColumnSearchProps('배송시작일'),
+      dataIndex: 'startDeliveryDate',
+      key: 'startDeliveryDate',
+      filteredValue: joinForm.startDeliveryDate ? [joinForm.startDeliveryDate] : null,
+      // ...getColumnSearchProps('startDeliveryDate'),
     },
     {
-      title: '상품',
-      dataIndex: '상품',
-      key: '상품',
-      fixed: 'left',
-      filteredValue: filteredInfo.상품 || null,
-      filtered: false,
-      ...getColumnSearchProps('상품'),
+      title: '회원ID',
+      dataIndex: 'memberId',
+      key: 'memberId',
+      filteredValue: joinForm.memberId ? [joinForm.memberId] : null,
+      ...getColumnSearchProps('memberId'),
+    },
+    {
+      title: 'representativeOrderId',
+      dataIndex: 'representativeOrderId',
+      key: 'representativeOrderId',
+      filteredValue: joinForm.representativeOrderId ? [joinForm.representativeOrderId] : null,
+      ...getColumnSearchProps('representativeOrderId'),
+    },
+    {
+      title: '출고번호',
+      dataIndex: 'shipmentNumber',
+      key: 'shipmentNumber',
+      filteredValue: joinForm.shipmentNumber ? [joinForm.shipmentNumber] : null,
+      ...getColumnSearchProps('shipmentNumber'),
     },
     {
       title: '배송상태',
-      dataIndex: 'tags',  //  밑에 데이터에서 'tags' 필드를 사용하므로
-      key: 'tags',
-      render: (_, {tags}) => (
-        <>
-          {tags.map((tag) => {  //  배송상태정보가 배송상태 필드에 저장되어 있으므로
-            let color = tagColors[tag] || 'default';  //  tagColors 객체에 해당 tag의 색상이 없으면 'default' 색상 사용
-            return (
-              <Tag color={color} key={tag}>
-                {tag}
-              </Tag>
-            );
-          })}
-        </>
+      dataIndex: 'deliveryStatusCode',
+      key: 'deliveryStatusCode',
+      filters: [
+        { text: '출고완료', value: 'SHIPPED' },
+        { text: '배송중', value: 'IN_DELIVERY' },
+        { text: '배송완료', value: 'DELIVERED' },
+      ],
+      filteredValue: joinForm.deliveryStatusCode ? [joinForm.deliveryStatusCode] : null,
+      onFilter: (value, record) => record.deliveryStatusCode === value,
+      render: (status) => (
+        <Tag color={getStatusColor(status)}>
+          {getStatusText(status)}
+        </Tag>
       ),
-      filters: deliveryStatusTags.map((tag) => ({ text: tag, value: tag })), // 필터 생성하기
-      filteredValue: filteredInfo.tags || null,  //  컬럼의 dataIndex를 키로 사용
-      onFilter: (value, record) => record.tags.includes(value),  //  선택된 태그 값(value)이 record.tag 배열에 포함되어 있는지 확인 후 필터링하기
+      width: '10%',
     },
   ];
 
+  const getStatusColor = (status) => {
+    const colors = {
+      SHIPPED: 'green',
+      IN_DELIVERY: 'orange',
+      DELIVERED: 'cyan'
+    };
+    return colors[status] || 'default';
+  };
+
+  const getStatusText = (status) => {
+    const texts = {
+      SHIPPED: '출고완료',
+      IN_DELIVERY: '배송중',
+      DELIVERED: '배송완료'
+    };
+    return texts[status] || status;
+  };
+
   return (
     <div>
+      <Flex gap="small" align="center" justify="space-between">
+        <Flex gap="small" wrap>
+          <h2>배송관리</h2>
+        </Flex>
+      </Flex>
       <Flex gap="small" align="center" justify='space-between'>
         <Flex gap="small" wrap>
           <Space align="center">검색기간</Space>
           <RangePicker 
-            value={selectedDateRange}
-            onChange={onHandleRangePickerChange}
-            allowClear />
+            value={dateRange}
+            // onChange={onHandleRangePickerChange}
+            allowClear
+          />
         </Flex>
         <Flex gap="small" wrap>
-          {deliveryStatusTags.map((tag) => (
-            <StatusCard key={tag} title={tag} count={statusCounts[tag]} />
-          ))}
+        {['SHIPPED', 'IN_DELIVERY', 'DELIVERED'].map((status) => (
+          <StatusCard 
+            key={status} 
+            title={getStatusText(status)} 
+            count={statusCount[status] || 0} 
+          />
+        ))}
         </Flex>
       </Flex>
       <br />
       <Flex gap='small' align='center' justify='space-between'>
         <Flex gap="small" wrap>
-          <Button onClick={onClearFilters}>Clear Filter</Button>
-          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
+          {/* <Button >Clear Filter</Button> */}
+          {/* <Button onClick={onClearFilters}>Clear Filter</Button> */}
+          <Button onClick={onHandleReset}>Clear Filter</Button>
         </Flex>
-        <Flex gap="small" wrap>
-          <Space align="center">배송상태변경</Space>
+        {/* <Flex gap="small" wrap>
+          <Space align="center">출고상태변경</Space>
+          <StatusChangeButton 
+            title={"출고완료"}
+            onClick={() => onHandleStatusChange('SHIPPED')}
+          />
+          <StatusChangeButton 
+            title={"배송중"}
+            onClick={() => onHandleStatusChange('IN_DELIVERY')}
+          />
           <StatusChangeButton 
             title={"배송완료"}
-            onClick={() => {
-              onHandleStatusChange('배송완료');
-              setSelectedRowKeys([]);
-            }} />
-          <StatusChangeButton 
-            title={"환불신청"}
-            onClick={() => {
-              onHandleStatusChange('환불');
-              setSelectedRowKeys([]);
-            }} />
-        </Flex>
+            onClick={() => onHandleStatusChange('DELIVERED')}
+          />
+        </Flex> */}
+        <br/>
       </Flex>
-      <br />
+      <br/>
       <Table
         columns={columns}
-        //rowSelection={{}}  // 체크박스
+        dataSource={deliveries}
+        rowKey="deliveryId"
+        pagination={pagination}
+        loading={loading}
+        onChange={onHandleTableChange}
         rowSelection={rowSelection}
-        dataSource={filteredData}
-        pagination={tableParams.pagination}
-        onChange={onHandleChange}  // 페이지 변경 이벤트
-        scroll={{ x: 1300 }}
-        rowKey="key"
       />
     </div>
-  );
-};
+  )
+}
 
 export default Delivery;
