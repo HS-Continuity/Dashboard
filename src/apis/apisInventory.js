@@ -1,4 +1,4 @@
-import { apiGet, PRODUCT_DB_URL } from './apisCommon';
+import { apiGet, apiPut, apiPost, PRODUCT_DB_URL } from './apisCommon';
 
 // ----------- 상품별 재고 수량 합계 조회 ----------- 
 export const fetchInventorySummary = async (customerId, page=0, size=10) => {
@@ -30,3 +30,27 @@ export const fetchProductInventories = async (productId, page=0, size=10) => {
     throw error;
   }
 }
+
+// ----------- 상품 재고 수량 변경 ----------- 
+export const modifyProductInventory = async (productInventoryId, modifyData) => {
+  try {
+    const response = await apiPut(PRODUCT_DB_URL, `/inventory/${productInventoryId}`, modifyData);
+    console.log('상품 재고 수량 변경 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('상품 재고 수량 변경 오류:', error);
+    throw error;
+  }
+};
+
+// ----------- 상품 재고 등록 ----------- 
+export const registerProductInventory = async (registerData) => {
+  try {
+    const response = await apiPost(PRODUCT_DB_URL, `/inventory`, registerData);
+    console.log('상품 재고 등록 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('상품 재고 등록 오류:', error);
+    throw error;
+  }
+};
