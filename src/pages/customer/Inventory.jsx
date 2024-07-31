@@ -1,209 +1,143 @@
-//import { fetchProductItems } from '../../apis'; // fetchProductItems 함수를 가져오기
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
-import { LeftOutlined } from '@ant-design/icons';
+import { fetchInventorySummary, fetchProductInventories } from '../../apis/apisInventory';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Flex, Space, Table, Drawer, Button, Input, message } from 'antd'
+import moment from 'moment';
+import { LeftOutlined, SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 
 const Inventory = () => {
-  const navigate = useNavigate();
-  const [lastClickedRow, setLastClickedRow] = useState(null);
-  const [lastClickedTime, setLastClickedTime] = useState(null);
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-
-  const [products, setProducts] = useState([]);
-  
-  //const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저장
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);  //  선택한 행의 key 값 저
   const [filteredInfo, setFilteredInfo] = useState({});  // 필터링 정보 저장
-  const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,  // 현재 페이지 번호
-      pageSize: 20,  //  페이지당 항목 수
-    },
+
+  const [inventorySummary, setInventorySummary] = useState([]);
+  const [productInventories, setProductInventories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
   });
 
+  const [drawerFilteredInfo, setDrawerFilteredInfo] = useState({});
+  const [drawerSortedInfo, setDrawerSortedInfo] = useState({});
+  const [drawerSearchText, setDrawerSearchText] = useState('');
+  const [drawerSearchedColumn, setDrawerSearchedColumn] = useState('');
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product"],
-    queryFn: () => fetchProductItems()
-  });
+  useEffect(() => {
+    fetchInventorySummaryData();
+  }, [pagination.current, pagination.pageSize]);
 
-  const uniqueProducts = useMemo(() => {
-    if (isLoading || !product) return []; // 데이터 로딩 중이거나 product가 없으면 빈 배열 반환
-  
-    const productCountMap = product.reduce((acc, product) => {
-      acc[product.productName] = (acc[product.productName] || 0) + 1;
-      return acc;
-    }, {});
-  
-    return Object.entries(productCountMap).map(([productName, count], index) => ({
-      index: index + 1,
-      productName,
-      count,
-    }));
-  }, [product, isLoading]); // product와 isLoading 값이 변경될 때만 uniqueProducts 재계산
-  
-  console.log("product:", product);
-  console.log("unique:", uniqueProducts);
+  // 상품별 재고 합계 현황
+  const fetchInventorySummaryData = async () => {
+    setLoading(true);
+    try {
+      const customerId = 1;
+      const response = await fetchInventorySummary(customerId, pagination.current - 1, pagination.pageSize);
+      setInventorySummary(response.content);
+      setPagination({
+        ...pagination,
+        total: response.totalElements
+      });
 
-  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const onHandleChange = (pagination, filters) => {
-    setFilteredInfo(filters);  //  필터링 정보 업데이트
-  };
-
-  const onClearFilters = () => {  //  모든 필터 초기화 이벤트
-    setFilteredInfo({});
-  };
-
-  const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
-    clearFilters();
-    setSearchText('');
-  };
-
-  const setIsModalOpen = useCallback((isOpen) => {
-    setState(prevState => ({ ...prevState, isModalOpen: isOpen }));
-  }, []); // 빈 배열을 전달하여 useCallback이 한 번만 실행되도록 함
-
-  const onShowModal = () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('타임어택을 신청할 상품을 선택하세요.');
-      return;
+      console.log('받아온 데이터: ', inventorySummary);
+    } catch (error) {
+      message.error('재고 데이터를 불러오는데 실패했습니다.')
+    } finally {
+      setLoading(false);
     }
-    console.log('key값:',selectedRowKeys)
-    setIsModalOpen(true);
   };
 
+  // 특정 상품 재고 현황
+  const fetchProductInventoriesData = async (productId) => {
+    setLoading(true);
+    try {
+      const response = await fetchProductInventories(productId, 0, 10);
+      //setProductInventories(response);
 
-  // const onHandleExit = () => {
-  //   setIsModalOpen(false); // 모달 상태 변경
-  // };
+      console.log('받아온 특정 상품 재고 리스트: ', response)
 
-  // const onClickCreate = () => {
-  //   navigate('../create');
-  // }
-
-  const handleCellClick = (record) => {
-    console.log("클릭한 행의 key: ", record.productName)
-  }
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys) => {
-      setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
-      console.log('key값업데이트', selectedRowKeys)
-    },
-    onClick: (e) => {
-      console.log(e);
-    },
-  };
-
-  const onRow = (record, rowIndex) => {
-    return {
-      onClick: (e) => {
-        const currentTime = new Date().getTime();
-        if (
-          lastClickedRow === rowIndex &&
-          currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-        ) {
-          navigate(`${record.productName}`);
-          // console.log(e)
-
+      const transformedInventoriesData = response.map(inventory => {
+        return {
+          expirationDate: inventory.expirationDate,
+          productId: inventory.productId,
+          productInventoryId: inventory.productInventoryId,
+          productName: inventory.productName,
+          quantity: inventory.quantity,
+          warehouseDate: inventory.warehouseDate
         }
-        setLastClickedRow(rowIndex);
-        setLastClickedTime(currentTime);
-      },
-    };
+      })
+
+      setProductInventories(transformedInventoriesData);
+      setPagination({
+        ...pagination,
+        total: response.totalElements
+      })
+    } catch (error) {
+      message.error('상품 재고 리스트를 불러오는데 실패했습니다.')
+    } finally {
+      setLoading(false);
+    }
+  }
+  //console.log('받아온 특정 상품 재고 리스트: ', productInventories)
+
+  const onHandleTableChange = (newPagination) => {
+    setPagination(newPagination);
   };
 
-  const getColumnSearchProps = (dataIndex) => ({
+  const onDrawerTableChange = (pagination, filters, sorter) => {
+    setDrawerFilteredInfo(filters);
+    setDrawerSortedInfo(sorter);
+  };
+
+  const getDrawerColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-      
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
+      <div style={{ padding: 8 }}>
         <Input
           ref={searchInput}
           placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0] || ''}  // 빈 문자열도 처리
+          value={selectedKeys[0] || ''}
           onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => confirm()}  //  Enter 입력 시 필터링 적용
-          style={{
-            marginBottom: 8,
-            display: 'block',
-          }}
+          onPressEnter={() => onHandleDrawerSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
-            // ???
-            onClick={() => confirm()}
+            onClick={() => onHandleDrawerSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
-            style={{
-              width: 90,
-            }}
+            style={{ width: 90 }}
           >
             Search
           </Button>
-          <Button
-            onClick={() => clearFilters && onHandleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
+          <Button onClick={() => onHandleDrawerReset(clearFilters)} size="small" style={{ width: 90 }}>
             Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
           </Button>
         </Space>
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? '#1677ff' : undefined,
-        }}
-      />
+      <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
     ),
-    onFilter: (value, record) => {
-      const recordValue = record[dataIndex];
-      return recordValue !== undefined && recordValue.toString().toLowerCase().includes(value.toLowerCase());
-    },
-
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
-
     render: (text) =>
-      searchedColumn === dataIndex ? (
+      drawerSearchedColumn === dataIndex ? (
         <Highlighter
-          highlightStyle={{
-            backgroundColor: '#ffc069',
-            padding: 0,
-          }}
-          searchWords={[searchText]}
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[drawerSearchText]}
           autoEscape
           textToHighlight={text ? text.toString() : ''}
         />
@@ -212,11 +146,99 @@ const Inventory = () => {
       ),
   });
 
+  const onHandleDrawerSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setDrawerSearchText(selectedKeys[0]);
+    setDrawerSearchedColumn(dataIndex);
+  };
+
+  // const onhandleDrawerReset = (clearFilters) => {
+  //   clearFilters();
+  //   setDrawerSearchText('');
+  // };
+
+
+  const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
+    clearFilters();
+    setSearchText('');
+  };
+
+  const onHandleDrawerReset = () => {
+    setDrawerFilteredInfo({});
+    setDrawerSortedInfo({});
+    setDrawerSearchText('');
+    setDrawerSearchedColumn('');
+  };
+
+  const onRow = (record) => {
+    return {
+      onClick: () => {
+        setSelectedProduct(record);
+        fetchProductInventoriesData(record.productId);
+        setDrawerVisible(true);
+      },
+    };
+  };
+
+  
   const columns = [
-    { title: 'Index', dataIndex: 'index', key: 'index' },
-    { title: '상품명', dataIndex: 'productName', key: 'productName' },
-    { title: '개수', dataIndex: 'count', key: 'count' },
-  ];
+    {
+      title: '상품명',
+      dataIndex: 'productName',
+      key: 'productName',
+      width: '40%'
+    },
+    {
+      title: '재고 수량',
+      dataIndex: 'totalQuantity',
+      key: 'totalQuantity',
+      width: '40%'
+    }
+  ]
+
+  const drawerColumns = [
+    {
+      title: 'NO.',
+      dataIndex: 'no',  // 해당 데이터가 어떤 필드에 있는지
+      key: 'no',
+      fixed: 'left',
+      width: '10%',
+      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,  //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
+    },
+    {
+      title: '입고날짜',
+      dataIndex: 'warehouseDate',
+      key: 'warehouseDate',
+      width: '20%',
+      filteredValue: drawerFilteredInfo.warehouseDate || null,
+      filtered: false,
+      ...getDrawerColumnSearchProps('warehouseDate'),
+      sorter: (a, b) => moment(a.warehouseDate).unix() - moment(b.warehouseDate).unix(),
+      sortOrder: drawerSortedInfo.columnKey === 'warehouseDate' && drawerSortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: '유통기한',
+      dataIndex: 'expirationDate',
+      key: 'expirationDate',
+      width: '20%',
+      filteredValue: drawerFilteredInfo.expirationDate || null,
+      filtered: false,
+      ...getDrawerColumnSearchProps('expirationDate'),
+      sorter: (a, b) => moment(a.expirationDate).unix() - moment(b.expirationDate).unix(),
+      sortOrder: drawerSortedInfo.columnKey === 'expirationDate' && drawerSortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: '수량',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      width: '20%',
+      filteredValue: drawerFilteredInfo.quantity || null,
+      filtered: false,
+    },
+  ]
+
 
   return (
     <div>
@@ -227,16 +249,38 @@ const Inventory = () => {
           <h2>상품별 재고현황</h2>
         </Flex>
       </Flex>
+      <br/>
       <Table 
-            dataSource={uniqueProducts} 
-            columns={columns}
-            // pagination={tableParams.pagination}
-            onChange={onHandleChange}  // 페이지 변경 이벤트
-            // scroll={{ y: 600,}}
-            onRow={onRow}
-            rowKey="productName"
-            />
-</div>
+        dataSource={inventorySummary} 
+        columns={columns}
+        pagination={pagination}
+        onChange={onHandleTableChange}
+        onRow={onRow}
+        rowKey="productId"
+        loading={loading}
+      />
+      <Drawer
+        title={`${selectedProduct?.productName} 재고 리스트`}
+        placement="right"
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+        width={1100}
+      >
+        <Flex gap="small" wrap>
+          <Button onClick={onHandleDrawerReset}>Clear Filter</Button>
+          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
+        </Flex>
+        <br/>
+        <Table 
+          dataSource={productInventories} 
+          columns={drawerColumns}
+          pagination={false}
+          rowKey="productInventoryId"
+          onChange={onDrawerTableChange}
+          sortDirections={['descend', 'ascend', 'descend']}
+        />
+      </Drawer>
+    </div>
   )
 };
 
