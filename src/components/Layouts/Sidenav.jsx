@@ -12,7 +12,7 @@ import {
   BarChartOutlined,
   CarOutlined,
   GiftOutlined,
-  TruckOutlined
+  TruckOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, theme } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -129,7 +129,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
         {
           key: "12-1",
           label: <Link to='/member/manage'>회원 관리</Link>,
-        }
+        },
       ],
     },
     {
