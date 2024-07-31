@@ -1,8 +1,9 @@
-import { fetchInventorySummary, fetchProductInventories } from '../../apis/apisInventory';
+import { fetchInventorySummary, fetchProductInventories, modifyProductInventory, registerProductInventory } from '../../apis/apisInventory';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Flex, Space, Table, Drawer, Button, Input, message } from 'antd'
 import moment from 'moment';
-import { LeftOutlined, SearchOutlined } from '@ant-design/icons';
+import Swal from 'sweetalert2';
+import { LeftOutlined, SearchOutlined, HourglassOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 
 const Inventory = () => {
@@ -77,6 +78,7 @@ const Inventory = () => {
         ...pagination,
         total: response.totalElements
       })
+      //console.log('변환된 재고 리스트: ', transformedInventoriesData)
     } catch (error) {
       message.error('상품 재고 리스트를 불러오는데 실패했습니다.')
     } finally {
@@ -93,6 +95,133 @@ const Inventory = () => {
     setDrawerFilteredInfo(filters);
     setDrawerSortedInfo(sorter);
   };
+
+  // 재고 수량 변경 클릭
+  const onHandleInventoryChange = (record) => {
+    Swal.fire({
+      title: '재고 변경',
+      input: 'number',
+      inputLabel: '추가할 재고 수량',
+      inputPlaceholder: '숫자를 입력하세요',
+      showCancelButton: true,
+      confirmButtonText: '추가하기',
+      cancelButtonText: '취소',
+      inputValidator: (value) => {
+        if (!value || value <= 0) {
+          return '0보다 큰 숫자를 입력해주세요';
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onHandleInventoryUpdate(record, parseInt(result.value));
+      }
+    });
+  };
+
+  // 재고 수량 업데이트
+  const onHandleInventoryUpdate = async (record, additionalQuantity) => {
+    try {
+      // console.log('warehousingDate: ', record.warehouseDate)
+      // console.log('quantity: ', record.quantity + additionalQuantity)
+      // console.log('expirationDate: ', record.expirationDate)
+      // console.log('productInventoryId: ', record.productInventoryId)
+      const productInventoryId = record.productInventoryId;
+      const modifyData = {
+        warehousingDate: record.warehouseDate,
+        quantity: record.quantity + additionalQuantity,
+        expirationDate: record.expirationDate
+      };
+      //console.log('modifyData: ', modifyData)
+      const response = await modifyProductInventory(productInventoryId, modifyData);
+
+      if (response && response.resultCode === "200") {
+        message.success('재고가 성공적으로 변경되었습니다.');
+        
+        // 로컬 상태 업데이트
+        setProductInventories(prevInventories => 
+          prevInventories.map(inventory => 
+            inventory.productInventoryId === productInventoryId
+              ? {...inventory, quantity: modifyData.quantity}
+              : inventory
+          )
+        );
+
+        // 전체 재고 요약 업데이트
+        setInventorySummary(prevSummary =>
+          prevSummary.map(item => 
+            item.productId === record.productId
+              ? {...item, totalQuantity: item.totalQuantity + additionalQuantity}
+              : item
+          )
+        );
+      } else {
+        message.error('재고 변경에 실패했습니다: ' + (response ? response.resultMsg : '알 수 없는 오류'));
+      }
+    } catch (error) {
+      console.error('재고 변경 오류:', error);
+      message.error('재고 변경에 실패했습니다: ' + error.message);
+    }
+  };
+
+  // 재고 등록 클릭
+  const onHandleInventoryRegister = (record) => {
+    Swal.fire({
+      title: '재고 등록',
+      html:
+      '<div class="swal2-input-group">' +
+      '<label for="swal-input1" class="swal2-input-label">입고날짜:</label>' +
+      '<input id="swal-input1" class="swal2-input" type="date">' +
+      '</div>' +
+      '<div class="swal2-input-group">' +
+      '<label for="swal-input2" class="swal2-input-label">재고수량:</label>' +
+      '<input id="swal-input2" class="swal2-input" type="number">' +
+      '</div>' +
+      '<div class="swal2-input-group">' +
+      '<label for="swal-input3" class="swal2-input-label">소비기한:</label>' +
+      '<input id="swal-input3" class="swal2-input" type="date">' +
+      '</div>',
+      focusConfirm: false,
+      preConfirm: () => {
+        return {
+          warehouseDate: document.getElementById('swal-input1').value,
+          quantity: document.getElementById('swal-input2').value,
+          expirationDate: document.getElementById('swal-input3').value
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const { warehouseDate, quantity, expirationDate } = result.value;
+        if (!warehouseDate || !quantity || !expirationDate) {
+          Swal.fire('오류', '모든 필드를 입력해주세요.', 'error');
+          return;
+        }
+        onHandleInventoryCreate(record.productId, warehouseDate, parseInt(quantity), expirationDate);
+      }
+    });
+  };
+
+  // 재고 등록
+  const onHandleInventoryCreate = async (productId, warehouseDate, quantity, expirationDate) => {
+    try {
+      const registerData = {
+        productId,
+        warehouseDate,
+        quantity,
+        expirationDate
+      };
+      const response = await registerProductInventory(registerData);
+      if (response && response.successCode === SuccessCode.INSERT_SUCCESS) {
+        message.success('재고가 성공적으로 등록되었습니다.');
+        fetchInventorySummaryData(); // 재고 요약 데이터 새로고침
+      } else {
+        message.error('재고 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('재고 등록 오류:', error);
+      message.error('재고 등록에 실패했습니다.');
+    }
+  };
+
 
   const getDrawerColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -152,11 +281,6 @@ const Inventory = () => {
     setDrawerSearchedColumn(dataIndex);
   };
 
-  // const onhandleDrawerReset = (clearFilters) => {
-  //   clearFilters();
-  //   setDrawerSearchText('');
-  // };
-
 
   const onHandleReset = (clearFilters) => {  //  컬럼별 리셋
     clearFilters();
@@ -193,6 +317,13 @@ const Inventory = () => {
       dataIndex: 'totalQuantity',
       key: 'totalQuantity',
       width: '40%'
+    },
+    {
+      title: '재고 등록',
+      key: 'register',
+      render: (_, record) => (
+        <Button onClick={() => onHandleInventoryRegister(record)}>재고 등록</Button>
+      ),
     }
   ]
 
@@ -237,6 +368,14 @@ const Inventory = () => {
       filteredValue: drawerFilteredInfo.quantity || null,
       filtered: false,
     },
+    {
+      title: '재고 변경',
+      key: 'action',
+      width: '15%',
+      render: (_, record) => (
+        <Button onClick={() => onHandleInventoryChange(record)}>재고 변경</Button>
+      ),
+    }
   ]
 
 
@@ -266,9 +405,20 @@ const Inventory = () => {
         open={drawerVisible}
         width={1100}
       >
+        {/* <Flex gap="small" wrap>
+          <Button onClick={onHandleDrawerReset}>Clear Filter</Button>
+        </Flex>
+        <br/>
+        <Table 
+          dataSource={productInventories} 
+          columns={drawerColumns}
+          pagination={false}
+          rowKey="productInventoryId"
+          onChange={onDrawerTableChange}
+          sortDirections={['descend', 'ascend', 'descend']}
+        /> */}
         <Flex gap="small" wrap>
           <Button onClick={onHandleDrawerReset}>Clear Filter</Button>
-          {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
         </Flex>
         <br/>
         <Table 
