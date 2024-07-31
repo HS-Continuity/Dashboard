@@ -1,4 +1,4 @@
-import { fetchProductItems } from '../../apis/apisProducts';
+import { fetchProductItems, registerTimesale } from '../../apis/apisProducts';
 import { useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
@@ -247,6 +247,110 @@ const ProductGeneral = () => {
     };
   };
 
+  const onHandleTimesaleApply = async () => {
+    if (selectedRowKeys.length !== 1) {
+      message.warning('타임세일을 신청할 상품을 하나만 선택해주세요.');
+      return;
+    }
+
+    const selectedProductId = selectedRowKeys[0];
+    const now = moment();
+
+    const { value: formValues } = await Swal.fire({
+      title: '타임세일 신청',
+      html:
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input1" style="display: inline-block; width: 150px; font-weight: bold;">상품 아이디</label>' +
+      `<input id="swal-input1" class="swal2-input" value="${selectedProductId}" readonly style="width: 230px;">` +
+      '</div>' +
+      '<div style="text-align: left; margin-bottom: 5px;">' +
+      '<label for="swal-input2" style="display: inline-block; width: 150px; font-weight: bold;">타임세일 시작</label>' +
+      `<input id="swal-input2" class="swal2-input" type="datetime-local" min="${now.format('YYYY-MM-DDTHH:mm')}" style="width: 300px;" placeholder="날짜와 시간을 선택하세요">` +
+      '</div>' +
+      '<div id="swal-input2-error" style="color: red; margin-left: 150px; margin-bottom: 15px;"></div>' +
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input3" style="display: inline-block; width: 150px; font-weight: bold;">타임세일 종료</label>' +
+      '<input id="swal-input3" class="swal2-input" type="datetime-local" readonly style="width: 300px;">' +
+      '</div>' +
+      '<div style="text-align: left; margin-bottom: 5px;">' +
+      '<label for="swal-input4" style="display: inline-block; width: 150px; font-weight: bold;">타임세일 할인율</label>' +
+      '<div style="display: inline-block; position: relative; width: 230px;">' +
+      '<input id="swal-input4" class="swal2-input" type="number" min="0" max="100" style="width: 100%;">' +
+      '<span style="position: absolute; right: 10px; top: 60%; transform: translateY(-50%); font-weight: bold;">%</span>' +
+      '</div>' +
+      '</div>' +
+      '<div id="swal-input4-error" style="color: red; margin-left: 150px;"></div>',
+      focusConfirm: false,
+      //showCancelButton: true,
+      confirmButtonText: '신청하기',
+      //cancelButtonText: '취소',
+      showCloseButton: true,
+      width: '700px',
+      padding: '20px',
+      preConfirm: () => {
+        const startTime = document.getElementById('swal-input2').value;
+        const discountRate = document.getElementById('swal-input4').value;
+        let isValid = true;
+  
+        // 타임세일 시작 시간 검증
+        if (!startTime) {
+          document.getElementById('swal-input2-error').textContent = '타임세일 시작 시간을 선택해주세요.';
+          isValid = false;
+        } else {
+          document.getElementById('swal-input2-error').textContent = '';
+        }
+  
+        // 할인율 검증
+        if (!discountRate) {
+          document.getElementById('swal-input4-error').textContent = '할인율을 입력해주세요.';
+          isValid = false;
+        } else {
+          document.getElementById('swal-input4-error').textContent = '';
+        }
+  
+        if (!isValid) {
+          return false;  // 폼 제출 방지
+        }
+  
+        const endTime = moment(startTime).add(3, 'hours').format('YYYY-MM-DDTHH:mm');
+        document.getElementById('swal-input3').value = endTime;
+        return [
+          document.getElementById('swal-input1').value,
+          startTime,
+          endTime,
+          discountRate
+        ]
+      },
+      didOpen: () => {
+        const startInput = document.getElementById('swal-input2');
+        startInput.addEventListener('change', (e) => {
+          const endInput = document.getElementById('swal-input3');
+          const endTime = moment(e.target.value).add(3, 'hours').format('YYYY-MM-DDTHH:mm');
+          endInput.value = endTime;
+        });
+      }
+    })
+    
+    if (formValues) {
+      const [productId, startTime, endTime, discountRate] = formValues;
+  
+      try {
+        const timesaleData = {
+          productId: parseInt(productId), 
+          startTime: moment(startTime).toISOString(),
+          endTime: moment(endTime).toISOString(),
+          discountRate: parseInt(discountRate)
+        };
+  
+        await registerTimesale(timesaleData);
+        message.success('타임세일 신청이 완료되었습니다');
+      } catch (error) {
+        console.error('Error: ', error);
+        message.error('타임세일 신청에 실패했습니다.');
+      }
+    }
+  };
+
   
 
   // const selectedProducts = products.filter(product => selectedRowKeys.includes(product.orderId))
@@ -430,18 +534,12 @@ const ProductGeneral = () => {
         </Flex>
         <Flex gap="small" wrap>
           <RegisterButton 
-            title={"식품 등록하기"}
+            title={"일반식품"}
             onClick={onClickCreate}
           />
-          <ApplyButton title={"타임어택"}/>
-          {/* <ApplyButton title={"타임어택"} onClick={onShowModal} /> */}
-          {/* {isModalOpen && (
-            <TimeAttackApplyModal
-              isModalOpen={isModalOpen}
-              selectedProductIds={selectedRowKeys}
-              onClose={() => setIsModalOpen(false)}
-            />
-          )} */}
+          <ApplyButton 
+            title={"타임세일"}
+            onClick={onHandleTimesaleApply}/>
         </Flex>
         
       </Flex>
