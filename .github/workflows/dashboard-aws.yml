@@ -3,7 +3,7 @@ name: Yeonieum Mobile AWS Deployment
 on:
   push:
     branches:
-      - KAN-654--test/대시보드서비스-배포자동화-테스트
+      - main
 
 jobs:
   build-and-deploy:
