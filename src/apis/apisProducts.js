@@ -142,8 +142,8 @@ export const fetchProductItems = async (params) => {
     .filter(([_, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
     .join('&');
-  console.log('Query string:', queryString);
-  console.log('params: ', params)
+  // console.log('Query string:', queryString);
+  // console.log('params: ', params)
   const response = await apiGet(PRODUCT_DB_URL, `/management/product/list?${queryString}`)
   return response;
 }
@@ -154,7 +154,7 @@ export const fetchEcoProductItems = async (params) => {
     .filter(([_, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
     .join('&');
-  console.log('Query string:', queryString);
+  //console.log('Query string:', queryString);
   const response = await apiGet(PRODUCT_DB_URL, `/management/product/list?${queryString}`);
   return response;
 }
@@ -217,6 +217,19 @@ export const registerTimesale = async (timesaleData) => {
     return response;
   } catch (error) {
     console.error('타임세일 신청 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+
+// ----------- 상단 노출 신청 ----------- 
+export const registerAdvertisement = async (advertisementData) => {
+  try {
+    const response = await apiPost(PRODUCT_DB_URL, `/advertisement/product`, advertisementData);
+    console.log('상단 노출 신청 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('상단 노출 신청 중 오류 발생:', error);
     throw error;
   }
 };
