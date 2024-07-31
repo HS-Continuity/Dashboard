@@ -21,7 +21,7 @@ import ProductGeneral from "./pages/customer/ProductGeneral";
 import ProductGeneralDetail from "./pages/customer/ProductGeneralDetail";
 import ProductEco from "./pages/customer/ProductEco";
 import ProductEcoDetail from "./pages/customer/ProductEcoDetail";
-import ProductTimeSale from "./pages/customer/ProductTimeSale";
+import ProductTimeSale from "./pages/customer/ProductTimesale";
 import ProductTimeSaleDetail from "./pages/customer/ProductTimeSaleDetail";
 import ProductCreate from "./pages/customer/ProductCreate";
 import OrderGeneral from "./pages/customer/OrderGeneral";
