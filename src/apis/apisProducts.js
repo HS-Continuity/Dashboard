@@ -207,3 +207,16 @@ export const fetchProductCertification = async (productId) => {
     throw error;
   }
 };
+
+
+// ----------- 타임세일 신청 ----------- 
+export const registerTimesale = async (timesaleData) => {
+  try {
+    const response = await apiPost(PRODUCT_DB_URL, `/time-sale`, timesaleData);
+    console.log('타임세일 신청 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('타임세일 신청 중 오류 발생:', error);
+    throw error;
+  }
+};
