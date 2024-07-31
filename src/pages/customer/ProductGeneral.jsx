@@ -153,23 +153,24 @@ const ProductGeneral = () => {
     const { value: formValues } = await Swal.fire({
       title: '상단 노출 신청',
       html:
-        '<div style="text-align: left; margin-bottom: 20px;">' +
-        '<label for="swal-input1" style="display: inline-block; width: 150px; font-weight: bold;">상품 아이디</label>' +
-        `<input id="swal-input1" class="swal2-input" value="${selectedProduct.productId}" readonly style="width: 230px;">` +
-        '</div>' +
-        '<div style="text-align: left; margin-bottom: 20px;">' +
-        '<label for="swal-input2" style="display: inline-block; width: 150px; font-weight: bold;">상품명</label>' +
-        `<input id="swal-input2" class="swal2-input" value="${selectedProduct.productName}" readonly style="width: 230px;">` +
-        '</div>' +
-        '<div style="text-align: left; margin-bottom: 5px;">' +
-        '<label for="swal-input3" style="display: inline-block; width: 150px; font-weight: bold;">노출 시작일</label>' +
-        '<input id="swal-input3" class="swal2-input" type="date" style="width: 300px;">' +
-        '</div>' +
-        '<div id="swal-input3-error" style="color: red; margin-left: 150px; margin-bottom: 15px;"></div>' +
-        '<div style="text-align: left; margin-bottom: 20px;">' +
-        '<label for="swal-input4" style="display: inline-block; width: 150px; font-weight: bold;">노출 종료일</label>' +
-        '<input id="swal-input4" class="swal2-input" type="date" readonly style="width: 300px;">' +
-        '</div>',
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input1" style="display: inline-block; width: 150px; font-weight: bold;">상품ID</label>' +
+      `<input id="swal-input1" class="swal2-input" value="${selectedProduct.productId}" readonly style="width: 230px;">` +
+      '</div>' +
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input2" style="display: inline-block; width: 150px; font-weight: bold;">상품명</label>' +
+      `<input id="swal-input2" class="swal2-input" value="${selectedProduct.productName}" readonly style="width: 230px;">` +
+      '</div>' +
+      '<div style="text-align: left; margin-bottom: 5px;">' +
+      '<label for="swal-input3" style="display: inline-block; width: 150px; font-weight: bold;">노출 시작일</label>' +
+      '<input id="swal-input3" class="swal2-input" type="date" style="width: 300px;">' +
+      '</div>' +
+      '<div id="swal-input3-error" style="color: red; margin-left: 150px; margin-bottom: 15px;"></div>' +
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input4" style="display: inline-block; width: 150px; font-weight: bold;">노출 종료일</label>' +
+      '<input id="swal-input4" class="swal2-input" type="date" readonly style="width: 300px;">' +
+      '</div>',
+      confirmButtonText: '신청하기',
       focusConfirm: false,
       preConfirm: () => {
         const startDate = document.getElementById('swal-input3').value;
@@ -227,15 +228,7 @@ const ProductGeneral = () => {
           productName,
           startDate,
           endDate
-          // startDate: moment(startDate).format('YYYY-MM-DD'),
-          // endDate: moment(endDate).format('YYYY-MM-DD')
         };
-
-        // console.log('productId: ', productId)
-        // console.log('productName: ', productName)
-        // console.log('startDate: ', startDate)
-        // console.log('endDate: ', moment(endDate).format('YYYY-MM-DD'))
-        // console.log('advertisementData: ', advertisementData)
 
         await registerAdvertisement(advertisementData);
         message.success('상단 노출 신청이 완료되었습니다');

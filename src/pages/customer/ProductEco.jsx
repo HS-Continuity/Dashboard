@@ -1,14 +1,13 @@
-import { fetchEcoProductItems, registerTimesale } from '../../apis/apisProducts';
+import { fetchEcoProductItems, registerTimesale, registerAdvertisement } from '../../apis/apisProducts';
 import { useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import RegisterButton from '../../components/Buttons/RegisterButton';
 import ApplyButton from '../../components/Buttons/ApplyButton';
-import TimeAttackApplyModal from '../../components/Modals/TimeAttackApplyModal';
+import PromotionApplyButton from '../../components/Buttons/PromotionApplyButton';
 
 
 const ProductEco = () => {
@@ -31,18 +30,6 @@ const ProductEco = () => {
   const tableRef = useRef();
   const navigate = useNavigate();
 
-  // const [lastClickedRow, setLastClickedRow] = useState(null);
-  // const [lastClickedTime, setLastClickedTime] = useState(null);
-  // const [searchText, setSearchText] = useState('');  //  검색 정보 저장
-  // const [searchedColumn, setSearchedColumn] = useState('');
-  //const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [tableParams, setTableParams] = useState({
-  //   pagination: {
-  //     current: 1,  // 현재 페이지 번호
-  //     pageSize: 20,  //  페이지당 항목 수
-  //   },
-  // });
-
   const [state, setState] = useState({
     isModalOpen: false,
     selectedRowKeys: [],
@@ -54,8 +41,6 @@ const ProductEco = () => {
       },
     },
   });
-
-  //const { isModalOpen } = state;
 
   // ----------------------------------------------------------------------------------
 
@@ -155,6 +140,103 @@ const ProductEco = () => {
       tableRef.current.clearFilters();
     }
     fetchProducts();
+  };
+
+  const onHandlePromotionApply = async () => {
+    if (selectedRowKeys.length !== 1) {
+      message.warning('상단 노출을 신청할 상품을 하나만 선택해주세요.');
+      return;
+    }
+
+    const selectedProduct = products.find(product => product.productId === selectedRowKeys[0]);
+
+    const { value: formValues } = await Swal.fire({
+      title: '상단 노출 신청',
+      html:
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input1" style="display: inline-block; width: 150px; font-weight: bold;">상품 아이디</label>' +
+      `<input id="swal-input1" class="swal2-input" value="${selectedProduct.productId}" readonly style="width: 230px;">` +
+      '</div>' +
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input2" style="display: inline-block; width: 150px; font-weight: bold;">상품명</label>' +
+      `<input id="swal-input2" class="swal2-input" value="${selectedProduct.productName}" readonly style="width: 230px;">` +
+      '</div>' +
+      '<div style="text-align: left; margin-bottom: 5px;">' +
+      '<label for="swal-input3" style="display: inline-block; width: 150px; font-weight: bold;">노출 시작일</label>' +
+      '<input id="swal-input3" class="swal2-input" type="date" style="width: 300px;">' +
+      '</div>' +
+      '<div id="swal-input3-error" style="color: red; margin-left: 150px; margin-bottom: 15px;"></div>' +
+      '<div style="text-align: left; margin-bottom: 20px;">' +
+      '<label for="swal-input4" style="display: inline-block; width: 150px; font-weight: bold;">노출 종료일</label>' +
+      '<input id="swal-input4" class="swal2-input" type="date" readonly style="width: 300px;">' +
+      '</div>',
+      confirmButtonText: '신청하기',
+      focusConfirm: false,
+      preConfirm: () => {
+        const startDate = document.getElementById('swal-input3').value;
+        let isValid = true;
+
+        if (!startDate) {
+          document.getElementById('swal-input3-error').textContent = '노출 시작일을 선택해주세요.';
+          isValid = false;
+        } else {
+          const selectedDate = moment(startDate);
+          if (selectedDate.day() !== 1) {  // 1은 월요일을 의미합니다
+            document.getElementById('swal-input3-error').textContent = '노출 시작일은 월요일이어야 합니다.';
+            isValid = false;
+          } else {
+            document.getElementById('swal-input3-error').textContent = '';
+          }
+        }
+
+        if (!isValid) {
+          return false;
+        }
+
+        const endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
+        document.getElementById('swal-input4').value = endDate;
+
+        return [
+          document.getElementById('swal-input1').value,
+          document.getElementById('swal-input2').value,
+          startDate,
+          endDate
+        ];
+      },
+      didOpen: () => {
+        const startInput = document.getElementById('swal-input3');
+        startInput.addEventListener('change', (e) => {
+          const selectedDate = moment(e.target.value);
+          if (selectedDate.day() === 1) {
+            const endDate = selectedDate.endOf('week').format('YYYY-MM-DD');
+            document.getElementById('swal-input4').value = endDate;
+            document.getElementById('swal-input3-error').textContent = '';
+          } else {
+            document.getElementById('swal-input3-error').textContent = '노출 시작일은 월요일이어야 합니다.';
+            document.getElementById('swal-input4').value = '';
+          }
+        });
+      }
+    });
+
+    if (formValues) {
+      const [productId, productName, startDate, endDate] = formValues;
+
+      try {
+        const advertisementData = {
+          productId: parseInt(productId),
+          productName,
+          startDate,
+          endDate
+        };
+
+        await registerAdvertisement(advertisementData);
+        message.success('상단 노출 신청이 완료되었습니다');
+      } catch (error) {
+        console.error('Error: ', error);
+        message.error('상단 노출 신청에 실패했습니다.');
+      }
+    }
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -351,63 +433,13 @@ const ProductEco = () => {
     }
   };
 
-  // const selectedProducts = products.filter(product => selectedRowKeys.includes(product.orderId))
-
-  // const setIsModalOpen = useCallback((isOpen) => {
-  //   setState(prevState => ({ ...prevState, isModalOpen: isOpen }));
-  // }, []); // 빈 배열을 전달하여 useCallback이 한 번만 실행되도록 함
-
-  // const onShowModal = () => {
-  //   if (selectedRowKeys.length === 0) {
-  //     message.warning('타임어택을 신청할 상품을 선택하세요.');
-  //     return;
-  //   }
-  //   console.log('key값:',selectedRowKeys)
-  //   setIsModalOpen(true);
-  // };
-
-
-  // const onHandleExit = () => {
-  //   setIsModalOpen(false); // 모달 상태 변경
-  // };
-
   const onClickCreate = () => {
     navigate('../create');
   }
 
-  const handleCellClick = (record) => {
-    console.log("클릭한 행의 key: ", record.productId)
-  }
-
-  // const rowSelection = {
-  //   selectedRowKeys,
-  //   onChange: (selectedRowKeys) => {
-  //     setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
-  //     console.log('key값업데이트', selectedRowKeys)
-  //   },
-  //   onClick: (e) => {
-  //     console.log(e);
-  //   },
-  // };
-
-  // const onRow = (record, rowIndex) => {
-  //   return {
-  //     onClick: (e) => {
-  //       const currentTime = new Date().getTime();
-  //       if (
-  //         lastClickedRow === rowIndex &&
-  //         currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-  //       ) {
-  //         //navigate(`${record.productId}`);
-  //         // console.log(e)
-
-  //       }
-  //       setLastClickedRow(rowIndex);
-  //       setLastClickedTime(currentTime);
-  //     },
-  //   };
-  // };
-
+  // const handleCellClick = (record) => {
+  //   console.log("클릭한 행의 key: ", record.productId)
+  // }
 
   // -------------------------------------------------------------------------
   const columns = [
@@ -537,15 +569,12 @@ const ProductEco = () => {
           />
           <ApplyButton 
             title={"타임세일"}
-            onClick={onHandleTimesaleApply}/>
-          {/* <ApplyButton title={"타임어택"} onClick={onShowModal} /> */}
-          {/* {isModalOpen && (
-            <TimeAttackApplyModal
-              isModalOpen={isModalOpen}
-              selectedProductIds={selectedRowKeys}
-              onClose={() => setIsModalOpen(false)}
-            />
-          )} */}
+            onClick={onHandleTimesaleApply}
+          />
+          <PromotionApplyButton 
+            title={"상단 노출"}
+            onClick={onHandlePromotionApply}
+          />
         </Flex>
         
       </Flex>
