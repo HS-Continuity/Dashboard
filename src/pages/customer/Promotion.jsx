@@ -7,6 +7,9 @@ const { RangePicker } = DatePicker;
 
 
 const Promotion = () => {
+  // ***************
+  const [dateRange, setDateRange] = useState([]);
+  //**************** 
   const [advertisements, setAdvertisements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -23,7 +26,7 @@ const Promotion = () => {
 
   useEffect(() => {
     fetchAdvertisementData();
-  }, [pagination.current, pagination.pageSize]);
+  }, [pagination.current, pagination.pageSize, dateRange, joinForm]);
 
   const fetchAdvertisementData = async () => {
     setLoading(true);
@@ -32,11 +35,18 @@ const Promotion = () => {
         customerId: 1, // 실제 사용시 로그인한 고객의 ID를 사용해야 함
         startPage: pagination.current - 1,
         pageSize: pagination.pageSize,
-        // ...joinForm
+        ...joinForm
       };
+      // ******************************
+      if (dateRange && dateRange.length === 2) {
+        params.startDate = dateRange[0].format('YYYY-MM-DD');
+        params.endDate = dateRange[1].format('YYYY-MM-DD');
+      }
+      // ******************************
+
       const response = await fetchAdvertisements(params);
 
-      const transformedPromoData = response.map(promo => {
+      let transformedPromoData = response.map(promo => {
 
         return {
           discountRate: promo.discountRate,
@@ -49,6 +59,17 @@ const Promotion = () => {
           startDate: promo.startDate
         }
       })
+      
+      // ******************************
+      // if (dateRange && dateRange.length === 2) {
+      //   transformedPromoData = transformedPromoData.filter(ad => {
+      //     const adStartDate = new Date(ad.startDate);
+      //     const adEndDate = new Date(ad.endDate);
+      //     return adStartDate >= dateRange[0].startOf('day') && adEndDate <= dateRange[1].endOf('day');
+      //   });
+      // }
+      
+      // ******************************
 
       setAdvertisements(transformedPromoData);
       setPagination(prev => ({
@@ -83,7 +104,7 @@ const Promotion = () => {
           >
             Search
           </Button>
-          <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => onHandleReset(clearFilters)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
         </Space>
@@ -120,8 +141,11 @@ const Promotion = () => {
   };
 
   const onHandleReset = () => {
-    // setJoinForm({});
+    setJoinForm({});
     setFilteredInfo({});
+    // *****************************
+    setDateRange([]);
+    // *****************************
     setPagination({
       current: 1,
       pageSize: 10,
@@ -133,6 +157,27 @@ const Promotion = () => {
     }
     fetchAdvertisementData();
     };
+
+    // *****************************
+    // const onHandleDateRangeChange = (dates) => {
+    //   setDateRange(dates);
+    //   if (dates) {
+    //     const filteredData = advertisements.filter(ad => {
+    //       const adStartDate = new Date(ad.startDate);
+    //       const adEndDate = new Date(ad.endDate);
+    //       return adStartDate >= dates[0].startOf('day') && adEndDate <= dates[1].endOf('day');
+    //     });
+    //     setAdvertisements(filteredData);
+    //   } else {
+    //     fetchAdvertisementData(dates);
+    //   }
+    // };
+    const onHandleDateRangeChange = (dates) => {
+      setDateRange(dates);
+      setPagination(prev => ({ ...prev, current: 1 })); // 페이지 초기화
+      fetchAdvertisementData();
+    };
+    // *****************************
 
   const columns = [
     {
@@ -254,9 +299,14 @@ const Promotion = () => {
       <Flex gap="small" wrap>
         <Space align="center">검색기간</Space>
           <RangePicker 
-            // value={dateRange}
-            // onChange={onHandleRangePickerChange}
+            value={dateRange}
+            onChange={onHandleDateRangeChange}
             allowClear
+            onCalendarChange={(dates) => {
+              if (!dates) {
+                onHandleReset();
+              }
+            }}
           />
         </Flex>
         <Flex gap="small" wrap>
