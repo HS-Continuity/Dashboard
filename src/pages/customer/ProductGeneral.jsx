@@ -1,4 +1,5 @@
 import { fetchProductItems, registerTimesale, registerAdvertisement  } from '../../apis/apisProducts';
+import { registerProductInventory } from '../../apis/apisInventory'; 
 import { useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
@@ -77,8 +78,8 @@ const ProductGeneral = () => {
         }
       });
 
-      console.log('Sending params:', params);
-      console.log('Fetching with params:', params);
+      // console.log('Sending params:', params);
+      // console.log('Fetching with params:', params);
 
       const response = await fetchProductItems(params);
       
@@ -142,6 +143,7 @@ const ProductGeneral = () => {
     fetchProducts();
   };
 
+  // 상단 노출 신청
   const onHandlePromotionApply = async () => {
     if (selectedRowKeys.length !== 1) {
       message.warning('상단 노출을 신청할 상품을 하나만 선택해주세요.');
@@ -172,6 +174,7 @@ const ProductGeneral = () => {
       '</div>',
       confirmButtonText: '신청하기',
       focusConfirm: false,
+      showCloseButton: true,
       preConfirm: () => {
         const startDate = document.getElementById('swal-input3').value;
         let isValid = true;
@@ -236,6 +239,66 @@ const ProductGeneral = () => {
         console.error('Error: ', error);
         message.error('상단 노출 신청에 실패했습니다.');
       }
+    }
+  };
+
+  // 재고 등록 버튼
+  const onHandleInventoryRegister = (event, record) => {
+    event.stopPropagation();  // 이벤트 전파 중단
+    Swal.fire({
+      title: '재고 등록',
+      html:
+      '<div class="swal2-input-group">' +
+      '<label for="swal-input1" class="swal2-input-label">입고날짜:</label>' +
+      '<input id="swal-input1" class="swal2-input" type="date">' +
+      '</div>' +
+      '<div class="swal2-input-group">' +
+      '<label for="swal-input2" class="swal2-input-label">재고수량:</label>' +
+      '<input id="swal-input2" class="swal2-input" type="number">' +
+      '</div>' +
+      '<div class="swal2-input-group">' +
+      '<label for="swal-input3" class="swal2-input-label">소비기한:</label>' +
+      '<input id="swal-input3" class="swal2-input" type="date">' +
+      '</div>',
+      focusConfirm: false,
+      preConfirm: () => {
+        return {
+          warehouseDate: document.getElementById('swal-input1').value,
+          quantity: document.getElementById('swal-input2').value,
+          expirationDate: document.getElementById('swal-input3').value
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const { warehouseDate, quantity, expirationDate } = result.value;
+        if (!warehouseDate || !quantity || !expirationDate) {
+          Swal.fire('오류', '모든 필드를 입력해주세요.', 'error');
+          return;
+        }
+        onHandleInventoryCreate(record.productId, warehouseDate, parseInt(quantity), expirationDate);
+      }
+    });
+  };
+
+  // 재고 등록
+  const onHandleInventoryCreate = async (productId, warehouseDate, quantity, expirationDate) => {
+    try {
+      const registerData = {
+        productId,
+        warehouseDate,
+        quantity,
+        expirationDate
+      };
+      const response = await registerProductInventory(registerData);
+      if (response && response.successCode === SuccessCode.INSERT_SUCCESS) {
+        message.success('재고가 성공적으로 등록되었습니다.');
+        //fetchInventorySummaryData(); // 재고 요약 데이터 새로고침
+      } else {
+        //message.error('재고 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('재고 등록 오류:', error);
+      message.error('재고 등록에 실패했습니다.');
     }
   };
 
@@ -323,8 +386,11 @@ const ProductGeneral = () => {
 
   const onRow = (record) => {
     return {
-      onClick: () => {
-        navigate(`/product/general/${record.productId}`)
+      onClick: (event) => {
+        // 재고 등록 버튼 클릭 시 상세 페이지로 이동하지 않음
+        if (event.target.tagName != 'BUTTON') {
+          navigate(`/product/general/${record.productId}`)
+        }
       }
     };
   };
@@ -433,28 +499,6 @@ const ProductGeneral = () => {
     }
   };
 
-  
-
-  // const selectedProducts = products.filter(product => selectedRowKeys.includes(product.orderId))
-
-  // const setIsModalOpen = useCallback((isOpen) => {
-  //   setState(prevState => ({ ...prevState, isModalOpen: isOpen }));
-  // }, []); // 빈 배열을 전달하여 useCallback이 한 번만 실행되도록 함
-
-  // const onShowModal = () => {
-  //   if (selectedRowKeys.length === 0) {
-  //     message.warning('타임어택을 신청할 상품을 선택하세요.');
-  //     return;
-  //   }
-  //   console.log('key값:',selectedRowKeys)
-  //   setIsModalOpen(true);
-  // };
-
-
-  // const onHandleExit = () => {
-  //   setIsModalOpen(false); // 모달 상태 변경
-  // };
-
   const onClickCreate = () => {
     navigate('../create');
   }
@@ -462,36 +506,6 @@ const ProductGeneral = () => {
   const handleCellClick = (record) => {
     console.log("클릭한 행의 key: ", record.productId)
   }
-
-  // const rowSelection = {
-  //   selectedRowKeys,
-  //   onChange: (selectedRowKeys) => {
-  //     setSelectedRowKeys(selectedRowKeys);  // 선택한 행의 key 값 업데이트
-  //     console.log('key값업데이트', selectedRowKeys)
-  //   },
-  //   onClick: (e) => {
-  //     console.log(e);
-  //   },
-  // };
-
-  // const onRow = (record, rowIndex) => {
-  //   return {
-  //     onClick: (e) => {
-  //       const currentTime = new Date().getTime();
-  //       if (
-  //         lastClickedRow === rowIndex &&
-  //         currentTime - lastClickedTime < 300 // 300ms 이내에 두 번 클릭하면 더블 클릭으로 간주
-  //       ) {
-  //         //navigate(`${record.productId}`);
-  //         // console.log(e)
-
-  //       }
-  //       setLastClickedRow(rowIndex);
-  //       setLastClickedTime(currentTime);
-  //     },
-  //   };
-  // };
-
 
   // -------------------------------------------------------------------------
   const columns = [
@@ -508,6 +522,7 @@ const ProductGeneral = () => {
       title: '식품ID', 
       dataIndex: 'productId', 
       key: 'productId',
+      width: '10%',
       filteredValue: joinForm.productId ? [joinForm.productId] : null,
       ...getColumnSearchProps('productId'),
     },
@@ -583,6 +598,13 @@ const ProductGeneral = () => {
         </Tag>
       ),
     },
+    {
+      title: '재고 등록',
+      key: 'register',
+      render: (_, record) => (
+        <Button onClick={(event) => onHandleInventoryRegister(event, record)}>재고 등록</Button>
+      ),
+    }
   ];
 
   const getTagColor = (status) => {
