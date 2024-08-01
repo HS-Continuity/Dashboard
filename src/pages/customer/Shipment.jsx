@@ -8,6 +8,7 @@ import moment from 'moment';
 import style from './Shipment.module.css';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
+import styles from './Table.module.css';
 const { RangePicker } = DatePicker;
 
 const Shipment = () => {
@@ -529,6 +530,7 @@ const Shipment = () => {
       </Flex>
       <br/>
       <Table
+        className={styles.customTable}
         columns={columns}
         dataSource={releases}
         rowKey="orderId"
@@ -537,6 +539,8 @@ const Shipment = () => {
         onChange={onHandleTableChange}
         rowSelection={rowSelection}
         onRow={onRow}
+        style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
+        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
       </Flex>
       <Button onClick={onHandleCombinedPackaging}>합포장 요청</Button>

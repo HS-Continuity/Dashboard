@@ -7,11 +7,11 @@ const RegisterButton = ({title, onClick}) => {
       <Button 
         type='primary' 
         icon={<PlusCircleOutlined  style={{fontWeight: 'bold' }}/>}
-        style={{width: '150px', height: '95px'}} 
+        style={{width: '110px', height: '55px'}} 
         onClick={onClick}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}> 
-          <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{title}</span> 
-          <span style={{ fontSize: '18px', fontWeight: 'bold' }}>등록하기</span>
+          <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{title}</span> 
+          <span style={{ fontSize: '13px', fontWeight: 'bold' }}>등록하기</span>
         </div>
       </Button>
     </div>

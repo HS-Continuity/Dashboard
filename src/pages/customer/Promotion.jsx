@@ -3,6 +3,7 @@ import { useEffect, useRef, useState} from 'react';
 import { Flex, Table, Tag, Button, Input, Space, message, DatePicker } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import StatusCard from '../../components/Cards/StatusCard';
+import styles from './Table.module.css';
 const { RangePicker } = DatePicker;
 
 
@@ -319,6 +320,7 @@ const Promotion = () => {
         </Flex>
       <br />
       <Table
+        className={styles.customTable}
         ref={tableRef}
         columns={columns}
         dataSource={advertisements}
@@ -326,6 +328,8 @@ const Promotion = () => {
         pagination={pagination}
         loading={loading}
         onChange={onHandleTableChange}
+        style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
+        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
     </div>
   );

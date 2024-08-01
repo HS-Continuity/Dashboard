@@ -6,6 +6,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
+import styles from './Table.module.css';
 const { RangePicker } = DatePicker;
 
 const Delivery = () => {
@@ -375,6 +376,7 @@ const Delivery = () => {
       </Flex>
       <br/>
       <Table
+        className={styles.customTable}
         columns={columns}
         dataSource={deliveries}
         rowKey="deliveryId"
@@ -382,6 +384,8 @@ const Delivery = () => {
         loading={loading}
         onChange={onHandleTableChange}
         rowSelection={rowSelection}
+        style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
+        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
     </div>
   )

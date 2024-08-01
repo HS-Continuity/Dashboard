@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import orderIn from '../../assets/audio/orderIn.mp3';
+import styles from './Table.module.css';
 
 const { RangePicker } = DatePicker;
 
@@ -529,6 +530,7 @@ const OrderGeneral = () => {
       </Flex>
       <br />
       <Table
+        className={styles.customTable}
         columns={columns}
         dataSource={orders}
         rowKey="orderDetailId"
@@ -537,7 +539,10 @@ const OrderGeneral = () => {
         onChange={onHandleTableChange}
         rowSelection={rowSelection}
         onRow={onRow}
+        style={{ width: '100%', height: '300px' }} // 전체 테이블 크기 조정
+        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
+      
     </div>
   );
 };

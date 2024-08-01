@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import styles from '../Layouts/Sidenav.module.css';
+import logo from "../../assets/images/logo.png"
+
 import {
   ShoppingCartOutlined,
   SignatureOutlined,
@@ -14,14 +17,27 @@ import {
   GiftOutlined,
   TruckOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme, Slider, Flex, Space } from "antd";
 import { Link, useLocation } from "react-router-dom";
 import Title from "antd/es/typography/Title";
+import { useFontSizeStore } from "../../stores/fontSizeStore";
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
 
 const Sidenav = ({ collapsed, onCollapse }) => {
+
+  const { fontSize, setFontSize } = useFontSizeStore();
+  const [sliderValue, setSliderValue] = useState(fontSize);
+
+  const handleFontSizeChange = value => {
+    setSliderValue(value);
+  };
+
+  const handleFontSizeAfterChange = value => {
+    setFontSize(value);
+  };
+
   const location = useLocation();
   const [selectedKeys, setSelectedKeys] = useState(["1"]);
   const [openKeys, setOpenKeys] = useState([]);
@@ -29,9 +45,9 @@ const Sidenav = ({ collapsed, onCollapse }) => {
   // Token 값으로 userRole 불러오기
   const userRole = "customer"; // 또는 "customer"
 
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
+  // const {
+  //   token: { colorBgContainer },
+  // } = theme.useToken();
 
   useEffect(() => {
     const pathname = location.pathname;
@@ -60,10 +76,11 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       "/product/timesale": "13-3",
       "/order/general": "14-1",
       "/order/subscription": "14-2",
-      "/inventory": "15",
+      "/inventory": "15-1",
       "/statistics": "16",
-      "/delivery": "17-1",
-      "/promotion": "18",
+      "/shipment": "17-1",
+      "/delivery": "18-1",
+      "/promotion": "19",
     };
     return pathToKey[pathname] || "1";
   };
@@ -169,7 +186,13 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     {
       key: "15",
       icon: <InboxOutlined />,
-      label: <Link to='/inventory'>재고</Link>,
+      label: "재고",
+      children: [
+        {
+          key: "15-1",
+          label:  <Link to='/inventory'>재고 관리</Link>,
+        }
+      ]
     },
     {
       key: "16",
@@ -179,7 +202,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     {
       key: "17",
       icon: <TruckOutlined />,
-      label: <Link to='/solution'>출고</Link>,
+      label: "출고",
       children: [
         {
           key: "17-1",
@@ -194,7 +217,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "18-1",
-          label: <Link to='/delivery'>배송 상태 관리</Link>,
+          label: <Link to='/delivery'>배송 관리</Link>,
         },
       ],
     },
@@ -212,16 +235,49 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       trigger={null}
       collapsible
       collapsed={collapsed}
-      style={{ background: colorBgContainer }}>
+      // style={{ background: colorBgContainer }}
+      width={200}
+      collapsedWidth={60}
+    >
       <div className='demo-logo-vertical' />
-      <Title level={3}>연이음</Title>
+      <Flex>
+        <img 
+          src={logo} 
+          alt="연이음로고"  
+          style={{ 
+            width: collapsed ? '60%' :'25%', 
+            height: collapsed ? '60%' :'25%',
+            marginLeft: collapsed ? 'auto' : '30px',
+            marginTop: collapsed ? '17px' : '16px',
+            marginBottom: collapsed ? '5px' : '0px',
+            marginRight: collapsed ? 'auto' : '10px',
+          }}
+        />
+        {!collapsed && 
+          <Title 
+            level={3} 
+            style={{ 
+              marginTop: '6%'
+              //marginLeft: 50,
+              //whiteSpace: 'nowrap'
+            }}
+          >
+            연이음
+          </Title>
+        }
+      </Flex>
+      
       <Menu
+        className={styles.customMenu}
         theme='light'
         mode='inline'
         selectedKeys={selectedKeys}
         openKeys={openKeys}
         onOpenChange={setOpenKeys}
         items={menuItems}
+        style={{
+          marginTop: collapsed ? '18.7px' : '8.5px',
+        }}
       />
     </Sider>
   );

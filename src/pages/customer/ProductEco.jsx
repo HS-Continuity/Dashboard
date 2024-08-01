@@ -9,6 +9,8 @@ import moment from 'moment';
 import RegisterButton from '../../components/Buttons/RegisterButton';
 import ApplyButton from '../../components/Buttons/ApplyButton';
 import PromotionApplyButton from '../../components/Buttons/PromotionApplyButton';
+import styles from './Table.module.css';
+
 
 
 const ProductEco = () => {
@@ -651,15 +653,17 @@ const ProductEco = () => {
       </Flex>
       <br/>
     <Table
+      className={styles.customTable}
       columns={columns}
       dataSource={products}
       pagination={pagination}
       //loading={loading}
       onChange={onHandleTableChange}  // 페이지 변경 이벤트
-      scroll={{ y: 600,}}
       rowSelection={rowSelection}
       onRow={onRow}
       rowKey="productId"
+      style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
+      scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
     </div>
   )
