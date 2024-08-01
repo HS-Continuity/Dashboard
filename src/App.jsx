@@ -37,9 +37,17 @@ import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";
+import useAuthStore from "./stores/useAuthStore";
+import ProtectedRoute from "./components/Login/ProtectedRoute";
 
 function App() {
   const { fontSize } = useFontSizeStore();
+  const { initializeAuth, setupInterceptors } = useAuthStore();
+
+  useEffect(() => {
+    setupInterceptors();
+    initializeAuth();
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`;
@@ -52,7 +60,14 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
 
         <Route element={<Main />}>
-          <Route path='/' element={<Home />} />
+          <Route 
+            path='/' 
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Admin routes */}
           <Route path='/admin'>

@@ -71,9 +71,11 @@ const Shipment = () => {
       // console.log('받아오는 출고데이터: ', response)
 
       let isServerUnstable = false;
-
+      console.log('서버에서 받아온 데이터: ', response)
       const transformedOrders = response.content.map(order => {
+        
         const productOrderList = order.productOrderList?.productOrderList || 'null';
+        const recipient = order.recipient;
         let productName = '';
         let isMemberInfoAvailable = true;
         let isProductInfoAvailable = true;
@@ -95,23 +97,26 @@ const Shipment = () => {
             isServerUnstable = true;
           }
         }
-        
-        console.log('order: ', order)
+        // console.log('서버에서 받아온 데이터: ', response)
+        //console.log('order: ', order)
         return {
+          holdReason: order.holdReason || '',
+
           orderId: order.orderId.toString() || '',
           productName: !isProductInfoAvailable ? (productName || '') : '확인중',
           startDeliveryDate: order.startDeliveryDate,
           releaseStatus: order.statusName?.toString() || '',
           productOrderList: productOrderList,
-          memberId: order.memberInfo.memberId,
-          recipientAddress: order.recipient.recipientAddress,
-          memberName: order.memberInfo.memberName,
-          memberPhoneNumber : order.memberInfo.memberPhoneNumber,
+          //memberId: order.memberInfo.memberId,
+          recipient: recipient.recipient,
+          recipientAddress: recipient.recipientAddress,
+         // memberName: order.memberInfo.memberName,
+          //memberPhoneNumber : order.memberInfo.memberPhoneNumber,
           memo: order.memo || '',
         }
       });
 
-      console.log('어떤 데이터를 받아오나요?: ', transformedOrders)
+      //console.log('어떤 데이터를 받아오나요?: ', transformedOrders)
 
       setReleases(transformedOrders);
       setIsServerUnstable(isServerUnstable);

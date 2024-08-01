@@ -17,6 +17,7 @@
     "antd": "^5.19.0",
     "apexcharts": "^3.49.2",
     "axios": "^1.7.2",
+    "base-64": "^1.0.0",
     "dayjs": "^1.11.12",
     "dotenv": "^16.4.5",
     "event-source-polyfill": "^1.0.31",

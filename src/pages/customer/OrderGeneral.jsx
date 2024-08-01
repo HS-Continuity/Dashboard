@@ -66,7 +66,7 @@ const OrderGeneral = () => {
         title: 'Notification',
         text: '새로운 주문이 들어왔습니다',
         icon: 'info',
-        timer: 1000, // 1 seconds
+        timer: 1500, // 1 seconds
         showConfirmButton: false,
       });
     };
