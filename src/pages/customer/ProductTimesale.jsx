@@ -8,6 +8,7 @@ import Highlighter from 'react-highlight-words';
 import moment from 'moment';
 
 import StatusCard from '../../components/Cards/StatusCard';
+import styles from './Table.module.css';
 
 
 const ProductTimeSale = () => {
@@ -383,16 +384,18 @@ const ProductTimeSale = () => {
           <StatusCard title="취소" count={statusCount['CANCELED'] || 0} />
         </Flex>
       </Flex>
-
+      <br/>   
       <Table
+      className={styles.customTable}
       columns={columns}
       rowSelection={rowSelection}
       dataSource={timeSaleProducts}
       pagination={pagination}
       onChange={onHandleTableChange}
-      scroll={{ y: 600,}}
       onRow={onRow}
       rowKey="productId"
+      style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
+      scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
     </div>
   );

@@ -2,7 +2,7 @@ import { fetchProductItems, registerTimesale, registerAdvertisement  } from '../
 import { registerProductInventory } from '../../apis/apisInventory'; 
 import { useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Space, Table, Tag, Button, Input, message } from 'antd'
+import { Flex, Space, Table, Tag, Button, Input, message, ConfigProvider } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import Swal from 'sweetalert2';
@@ -11,6 +11,7 @@ import RegisterButton from '../../components/Buttons/RegisterButton';
 import ApplyButton from '../../components/Buttons/ApplyButton';
 import PromotionApplyButton from '../../components/Buttons/PromotionApplyButton';
 import TimeAttackApplyModal from '../../components/Modals/TimeAttackApplyModal';
+import styles from './Table.module.css';
 
 
 const ProductGeneral = () => {
@@ -568,7 +569,10 @@ const ProductGeneral = () => {
       filteredValue: joinForm.isRegularSale ? [joinForm.isRegularSale] : null,
       onFilter: (value, record) => record.isRegularSale === value,
       render: (status) => (
-        <Tag color={getTagColor(status)}>
+        <Tag 
+          color={getTagColor(status)}
+          className={styles.largeTag}
+        >
           {getTagText(status)}
         </Tag>
       ),
@@ -593,7 +597,10 @@ const ProductGeneral = () => {
       filteredValue: joinForm.isPageVisibility ? [joinForm.isPageVisibility] : null,
       onFilter: (value, record) => record.isPageVisibility === value,
       render: (status) => (
-        <Tag color={getTagColor(status)}>
+        <Tag 
+          color={getTagColor(status)}
+          className={styles.largeTag}
+        >
           {getTagText(status)}
         </Tag>
       ),
@@ -633,7 +640,7 @@ const ProductGeneral = () => {
       </Flex>
       <Flex gap='small' align='center' justify='space-between'>
         <Flex gap="small" wrap>
-          <Button onClick={onHandleReset}>Clear Filter</Button>
+          <Button onClick={onHandleReset} className={styles.smallButton} >Clear Filter</Button>
           {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
         </Flex>
         <Flex gap="small" wrap>
@@ -653,17 +660,40 @@ const ProductGeneral = () => {
         
       </Flex>
       <br/>
-    <Table
-      columns={columns}
-      dataSource={products}
-      pagination={pagination}
-      //loading={loading}
-      onChange={onHandleTableChange}  // 페이지 변경 이벤트
-      scroll={{ y: 600,}}
-      rowSelection={rowSelection}
-      onRow={onRow}
-      rowKey="productId"
+      <ConfigProvider
+        theme={{
+          token: {
+            fontSizeSM: '8px'
+          },
+        }}
+      >
+        <Table
+        className={styles.customTable}
+        columns={columns}
+        dataSource={products}
+        pagination={pagination}
+        //loading={loading}
+        onChange={onHandleTableChange}  // 페이지 변경 이벤트
+        rowSelection={rowSelection}
+        onRow={onRow}
+        rowKey="productId"
+        style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
+        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
+      </ConfigProvider>
+      {/* <Table
+        className={styles.customTable}
+        columns={columns}
+        dataSource={products}
+        pagination={pagination}
+        //loading={loading}
+        onChange={onHandleTableChange}  // 페이지 변경 이벤트
+        rowSelection={rowSelection}
+        onRow={onRow}
+        rowKey="productId"
+        style={{ width: '95%', height: '300px'}} // 전체 테이블 크기 조정
+        scroll={{ x: '100%', y: 600,}}// 가로 스크롤과 세로 스크롤 설정
+      /> */}
     </div>
   )
 };

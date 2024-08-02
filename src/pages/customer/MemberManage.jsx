@@ -6,10 +6,15 @@ import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import { useQuery } from '@tanstack/react-query';
 import './MemberManageModule.css';
+import styles from './Table.module.css';
+
+import useAuthStore from "../../stores/useAuthStore";
 
 
 const MemberManage = () => {
 
+  const {username} = useAuthStore();
+  //const customerId = username;
 
   //const [isServerUnstable, setIsServerUnstable] = useState(false);
     
@@ -328,23 +333,25 @@ const MemberManage = () => {
         </Flex>
       </Flex>
       <br />
-      <Flex gap="small" justify= "flex-start">
+      <Flex gap="small" justify= "flex-end">
         <Button onClick={clearFilters}>Clear Filter</Button>
       </Flex>
       <br />
       <Table
-      columns={columns}
-      rowSelection={rowSelection}
-      dataSource={members}
-      loading={loading}
-      pagination={pagination}
-      onChange={onHandleTableChange}  // 페이지 변경 이벤트
-      scroll={{ y: 600,}}
-      onRow={onRow}
-      rowKey="memberId"
-      locale={{
-        emptyText: '데이터가 없습니다',
-      }}
+        className={styles.customTable}
+        columns={columns}
+        rowSelection={rowSelection}
+        dataSource={members}
+        loading={loading}
+        pagination={pagination}
+        onChange={onHandleTableChange}  // 페이지 변경 이벤트
+        onRow={onRow}
+        rowKey="memberId"
+        locale={{
+          emptyText: '데이터가 없습니다',
+        }}
+        style={{ width: '90%', height: '500px' }} // 전체 테이블 크기 조정
+        //scroll={{ x: '100%', y: 600,}}// 가로 스크롤과 세로 스크롤 설정
       />
     </div>
   );

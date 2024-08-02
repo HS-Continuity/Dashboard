@@ -5,6 +5,7 @@ import moment from 'moment';
 import Swal from 'sweetalert2';
 import { LeftOutlined, SearchOutlined, HourglassOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
+import styles from './Table.module.css';
 
 const Inventory = () => {
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
@@ -422,6 +423,7 @@ const Inventory = () => {
         </Flex>
         <br/>
         <Table 
+          className={styles.customTable}
           dataSource={productInventories} 
           columns={drawerColumns}
           pagination={false}

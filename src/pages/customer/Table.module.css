@@ -1,0 +1,41 @@
+.customTable * {
+  font-size: 12px !important;
+}
+
+.customTable th {
+  font-size: 13px; 
+  padding: 20px 10px !important; 
+}
+
+.customTable tr > th {
+  font-size: 13px !important;
+}
+
+/* 모든 헤더 셀에 대한 스타일
+.customTable .ant-table-thead > tr > th {
+  font-size: 12px !important;
+  padding: 8px 4px !important;
+}
+
+/* 모든 바디 셀에 대한 스타일 */
+.customTable .ant-table-tbody > tr > td {
+  font-size: 12px !important;
+  padding: 8px 4px !important;
+}
+
+/* 특정 열(예: No.와 재고등록)에 대한 추가 스타일 */
+.customTable .ant-table-cell-fix-left,
+.customTable .ant-table-cell-fix-right {
+  font-size: 12px !important;
+} 
+
+.smallButton {
+  width: 80px;
+  font-size: 13px; /* 원하는 폰트 사이즈로 조정 */
+  padding: 10px 50px; /* 필요에 따라 패딩 조정 */
+}
+
+.largeTag {
+  font-size: 14px;
+  padding: 8px 8px;
+}

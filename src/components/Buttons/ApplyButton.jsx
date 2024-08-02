@@ -6,11 +6,11 @@ const ApplyButton = ({title, onClick}) => {
     <div>
       <Button 
         icon={<HourglassOutlined  style={{fontWeight: 'bold' }}/>}
-        style={{width: '150px', height: '95px', backgroundColor: '#ffa39e'}} 
+        style={{width: '110px', height: '55px', backgroundColor: '#ffa39e'}} 
         onClick={onClick}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}> 
-          <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{title}</span> 
-          <span style={{ fontSize: '18px', fontWeight: 'bold' }}>신청하기</span>
+          <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{title}</span> 
+          <span style={{ fontSize: '13px', fontWeight: 'bold' }}>신청하기</span>
         </div>
       </Button>
     </div>
