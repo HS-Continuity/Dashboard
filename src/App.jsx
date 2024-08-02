@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import "./index.css";
 import Main from "./components/Layouts/Main";
@@ -37,11 +37,20 @@ import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";
+import { useLargeCursorStore } from "./stores/largeCursorStore";
+
+// 쉽게보기
+import EasyMemberManage from "./pages/easyview/EasyMemberManage";
+// import EasyMemberDetail from "./pages/easyview/EasyMemberDetail";
+import EasyProductGeneral from "./pages/easyview/EasyProductGeneral";
+import EasyViewLayout from "./components/Easyview/layout/EasyViewLayout";
 import useAuthStore from "./stores/useAuthStore";
 import ProtectedRoute from "./components/Login/ProtectedRoute";
 
 function App() {
   const { fontSize } = useFontSizeStore();
+  const location = useLocation();
+  const { setIsLargeCursor } = useLargeCursorStore();
   const { initializeAuth, setupInterceptors } = useAuthStore();
 
   useEffect(() => {
@@ -53,20 +62,27 @@ function App() {
     document.documentElement.style.fontSize = `${fontSize}px`;
   }, [fontSize]);
 
+  useEffect(() => {
+    // '/easy' 경로를 벗어나면 큰 커서 상태를 초기화
+    if (!location.pathname.startsWith("/easy")) {
+      setIsLargeCursor(false);
+    }
+  }, [location.pathname, setIsLargeCursor]);
+
   return (
-    <div className='app-root' style={{ fontSize: `${fontSize}` }}>
+    <div className='app-root'>
       <Routes>
         {/* 로그인 페이지 라우트 */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path='/login' element={<LoginPage />} />
 
         <Route element={<Main />}>
-          <Route 
-            path='/' 
+          <Route
+            path='/'
             element={
               <ProtectedRoute>
                 <Home />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Admin routes */}
@@ -82,8 +98,8 @@ function App() {
 
           {/* Customer routes */}
           <Route path='/member'>
-            <Route path='manage' element={<MemberManage />} />
-            <Route path='manage/:member_id' element={<MemberManageDetail />} />
+            <Route index element={<MemberManage />} />
+            <Route path=':member_id' element={<MemberManageDetail />} />
           </Route>
           <Route path='/product'>
             <Route path='general' element={<ProductGeneral />} />
@@ -107,6 +123,37 @@ function App() {
           <Route path='shipment/:orderDetailId' element={<ShipmentDetail />} />
           <Route path='/delivery' element={<Delivery />} />
           <Route path='/promotion' element={<Promotion />} />
+        </Route>
+
+        {/* 쉽게 보기 */}
+        <Route path='/easy' element={<EasyViewLayout />}>
+          <Route index element={<Home />} />
+          <Route path='member'>
+            <Route index element={<EasyMemberManage />} />
+          </Route>
+          <Route path='product'>
+            <Route path='general' element={<ProductGeneral />} />
+            <Route path='general/:productId' element={<ProductGeneralDetail />} />
+            <Route path='eco' element={<ProductEco />} />
+            <Route path='eco/:productId' element={<ProductEcoDetail />} />
+            <Route path='timesale' element={<ProductTimeSale />} />
+            <Route path='timesale/:timesaleId' element={<ProductTimeSaleDetail />} />
+            <Route path='create' element={<ProductCreate />} />
+          </Route>
+
+          <Route path='order'>
+            <Route path='general' element={<OrderGeneral />} />
+            <Route path='generalDetail' element={<OrderGeneralDetail />} />
+            <Route path='subscription' element={<OrderSubscription />} />
+            <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} />
+          </Route>
+
+          <Route path='inventory' element={<Inventory />} />
+          <Route path='inventory/:productName' element={<InventoryDetail />} />
+          {/* <Route path='inventory/*' element={<Inventory />} /> */}
+          <Route path='solution' element={<CustomerSolution />} />
+          <Route path='delivery' element={<Delivery />} />
+          <Route path='promotion' element={<Promotion />} />
         </Route>
       </Routes>
     </div>
