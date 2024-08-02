@@ -508,15 +508,15 @@ const ProductEco = () => {
 
   // -------------------------------------------------------------------------
   const columns = [
-    {
-      title: 'No.',
-      key: 'no',
-      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,  //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
-      width: '5%',
-      fixed: 'left',
-      //width: '5%',
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
-    },
+    // {
+    //   title: 'No.',
+    //   key: 'no',
+    //   render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,  //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
+    //   width: '5%',
+    //   fixed: 'left',
+    //   //width: '5%',
+    //   //fixed: 'left'  // 테이블의 왼쪽에 고정
+    // },
     { 
       title: '식품ID', 
       dataIndex: 'productId', 
