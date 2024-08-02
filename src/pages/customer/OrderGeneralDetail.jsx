@@ -11,9 +11,7 @@ const { TextArea } = Input;
 // };
 // const onTextChange = (e) => {
 // };
-// const onHandleBackClick = () => {
-//   navigate(-1); // 이전 페이지로 이동
-// };
+
 const formItemLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -58,6 +56,7 @@ const OrderGeneralDetail = () => {
       ),
     },
   ];
+
 
   // return (
   //   <div>

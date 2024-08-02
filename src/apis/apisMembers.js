@@ -24,7 +24,7 @@ export const fetchStoreMembers = async (params) => {
 
   try {
     const response = await apiGet(MEMBER_DB_URL, `/member-store/list/${customerId}?${queryString}`);
-    console.log('Server response:', response);
+    console.log('서버로부터 받아오는 회원 정보: ', response);
     return response;
   } catch (error) {
     console.error('Error fetching store members:', error);

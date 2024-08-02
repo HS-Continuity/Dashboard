@@ -1,4 +1,4 @@
-import { apiGet, apiPost, PRODUCT_DB_URL } from './apisCommon';
+import { apiGet, apiPost, apiPut, apiDelete, PRODUCT_DB_URL } from './apisCommon';
 
 // ----------- 일반 식품 등록 ----------- 
 export const registerNormalProduct = async (normalProduct, defaultImage, detailImageList) => {
@@ -182,6 +182,31 @@ export const fetchProductDetail = async (productId) => {
     throw error;
   }
 };
+
+// ----------- 식품 상세 수정 -----------  
+export const updateProduct = async (productId, productData) => {
+  try {
+    const response = await apiPut(PRODUCT_DB_URL, `/management/product/${productId}`, productData);
+    console.log('상품 수정 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('상품 수정 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+// ----------- 식품 상세 삭제 ----------- 
+export const deleteProduct = async (productId) => {
+  try {
+    const response = await apiDelete(PRODUCT_DB_URL, `/management/product/${productId}`);
+    console.log('상품 삭제 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('상품 삭제 중 오류 발생:', error);
+    throw error;
+  }
+};
+
 
 // ----------- 타임세일 식품 상세 조회 ----------- 
 export const fetchTimeSaleDetail = async (timesaleId) => {
