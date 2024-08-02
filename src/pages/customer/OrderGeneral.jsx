@@ -343,7 +343,7 @@ const OrderGeneral = () => {
         console.log("Clicked record:", record);
         navigate('../general/${orderDetailId}', { 
           state: { 
-            orderDetail: record,
+            orderDetail: [record],
           } 
         }); 
       },

@@ -8,7 +8,8 @@ const { TextArea } = Input;
 
 const OrderGeneralDetail = () => {
   const location = useLocation();
-  const { orderDetail, productOrderList } = location.state || {};
+  // const { orderDetail, productOrderList } = location.state || {};
+  const { orderDetail } = location.state || {};
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
@@ -50,7 +51,8 @@ const OrderGeneralDetail = () => {
     },
   ];
 
-  const tableData = productOrderList?.productOrderList?.map((product, index) => ({
+  console.log('orderDetail:', orderDetail)
+  const tableData = orderDetail?.productOrderList?.map((product, index) => ({
     key: index,
     no: index + 1,
     productId: product.productId,
@@ -60,6 +62,8 @@ const OrderGeneralDetail = () => {
     finalPrice: product.finalPrice,
     status: product.status,
   })) || [];
+
+  console.log('table data: ', tableData)
 
   const cardStyle = {
     marginBottom: '16px',
@@ -98,7 +102,7 @@ const OrderGeneralDetail = () => {
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item name="memberId" label="회원 ID" style={formItemStyle}>
+                  <Form.Item name="memberId" label="회원번호" style={formItemStyle}>
                     <Input value={orderDetail?.memberId} disabled />
                   </Form.Item>
                 </Col>

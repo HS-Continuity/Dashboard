@@ -205,11 +205,11 @@ const OrderSubscription = () => {
       theme={{
         token: {
           // Seed Token
-          colorPrimary: '#F29325',  // today cell color
+          colorPrimary: '#FFB30D',  // today cell color
           borderRadius: 2,
 
           // Alias Token
-          colorBgContainer: '#F4E2DE', // calendar bg color
+          colorBgContainer: '#ffffff', // calendar bg color
           fontSizeSM: 12
           
 
@@ -238,6 +238,7 @@ const OrderSubscription = () => {
         {dailyOrders.length > 0 ? (
          <>
          <Table
+         size='small'
           columns={columns}
           dataSource={dailyOrders}
           rowKey="regularDelivaryApplicationId"
