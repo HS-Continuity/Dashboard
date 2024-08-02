@@ -7,6 +7,7 @@ import moment from 'moment';
 import Swal from 'sweetalert2';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
+import style from './Order.module.css';
 import orderIn from '../../assets/audio/orderIn.mp3';
 import styles from './Table.module.css';
 
@@ -406,7 +407,6 @@ const OrderGeneral = () => {
       title: '배송지',
       dataIndex: 'deliveryAddress',
       key: 'deliveryAddress',
-      fixed: 'left',
       filteredValue: joinForm.deliveryAddress ? [joinForm.deliveryAddress] : null,
       filtered: false,
       ...getColumnSearchProps('deliveryAddress'),
@@ -417,7 +417,6 @@ const OrderGeneral = () => {
       title: '수령인',
       dataIndex: 'recipient',
       key: 'recipient',
-      fixed: 'left',
       filteredValue: joinForm.recipient ? [joinForm.recipient] : null,
       filtered: false,
       ...getColumnSearchProps('recipient'),
@@ -458,12 +457,12 @@ const OrderGeneral = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      PAYMENT_COMPLETED: 'green',
+      PAYMENT_COMPLETED: '#E2860A',
       // ORDER_APPROVED: 'blue',
-      PREPARING_PRODUCT: 'orange',
+      PREPARING_PRODUCT: '#447E7A',
       // IN_DELIVERY: 'purple',
       // DELIVERY_COMPLETED: 'cyan',
-      AWAITING_RELEASE: 'cyan'
+      AWAITING_RELEASE: '#D6737A'
     };
     return colors[status] || 'default';
   };
@@ -486,49 +485,44 @@ const OrderGeneral = () => {
           <h2>일반주문관리</h2>
         </Flex>
       </Flex>
-      <Flex gap="small" align="center" justify='space-between'>
+      <Flex gap="small" align="center" justify='end'>
         <Flex gap="small" wrap>
-          <Space align="center">검색기간</Space>
-          <RangePicker 
-            value={dateRange}
-            onChange={onHandleRangePickerChange}
-            allowClear />
-        </Flex>
-        <Flex gap="small" wrap>
-        {/* {['PAYMENT_COMPLETED', 'PREPARING_PRODUCT', 'AWAITING_RELEASE'].map((status) => (
-            <StatusCard 
-              key={status}
-              title={getStatusText(status)}
-              count={statusCount[status] || 0}
-            />
-          ))} */}
-          {Object.entries(statusCount).map(([status, count]) => (
-            <StatusCard 
-              key={status}
-              title={getStatusText(status)}
-              count={count}
-            />
-          ))}
+          {['PAYMENT_COMPLETED', 'PREPARING_PRODUCT', 'AWAITING_RELEASE'].map((status) => (
+          <StatusCard 
+            key={status} 
+            title={getStatusText(status)} 
+            count={statusCount[status] || 0} 
+            color={getStatusColor(status)}
+          />
+        ))}
         </Flex>
       </Flex>
       <br />
-      <Flex gap='small' align='center' justify='space-between'>
-        <Flex gap="small" wrap>
-          <Button onClick={onHandleReset}>Clear Filter</Button>
-        </Flex>
-        <Flex gap="small" wrap>
-          <Space align="center">주문상태변경</Space>
-          <StatusChangeButton 
-            title={"상품준비중"}
-            onClick={() => onHandleStatusChange('PREPARING_PRODUCT')}
-          />
-          <StatusChangeButton 
-            title={"출고대기"}
-            onClick={() => onHandleStatusChange('AWAITING_RELEASE')}
-          />
+      <Flex className={style.fullScreen}>
+        <Flex gap='large' align='center' justify='space-between'>
+          <Flex gap="small" >
+            <Flex gap='small'> 
+              <Space align="center">검색기간</Space>
+              <RangePicker 
+                value={dateRange}
+                onChange={onHandleRangePickerChange}
+                allowClear
+              />
+            </Flex>
+            <Button onClick={onHandleReset}>Clear Filter</Button>
+          </Flex>
+          <Flex gap="small" >
+            <Space align="center">출고상태변경</Space>
+            <StatusChangeButton 
+              title={"배송시작"}
+            />
+            <StatusChangeButton 
+              title={"배송완료"}
+            />
+          </Flex>
         </Flex>
       </Flex>
-      <br />
+      <br/>
       <Table
         className={styles.customTable}
         columns={columns}

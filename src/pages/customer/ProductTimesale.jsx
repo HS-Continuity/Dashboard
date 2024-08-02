@@ -234,6 +234,7 @@ const ProductTimeSale = () => {
       key: 'timesaleId',
       filteredValue: filteredInfo.timesaleId || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('timesaleId'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -245,6 +246,7 @@ const ProductTimeSale = () => {
       key: 'productId',
       filteredValue: filteredInfo.productId || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('productId'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -256,6 +258,7 @@ const ProductTimeSale = () => {
       key: 'productId',
       filteredValue: filteredInfo.productName || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('productName'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -267,6 +270,7 @@ const ProductTimeSale = () => {
       key: 'startDateTime',
       filteredValue: filteredInfo.startDateTime || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('startDateTime') ,
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
