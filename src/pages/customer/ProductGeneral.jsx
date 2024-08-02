@@ -528,7 +528,7 @@ const ProductGeneral = () => {
       ...getColumnSearchProps('productId'),
     },
     { 
-      title: '식품상세카테고리', 
+      title: '상세카테고리', 
       dataIndex: 'detailCategoryName', 
       key: 'detailCategoryName',
       filteredValue: joinForm.detailCategoryName ? [joinForm.detailCategoryName] : null,
@@ -558,7 +558,7 @@ const ProductGeneral = () => {
       ...getColumnSearchProps('baseDiscountRate'),
     },
     { 
-      title: '정기배송가능여부', 
+      title: '정기배송여부', 
       dataIndex: 'isRegularSale', 
       key: 'isRegularSale', 
       //render: (visible) => (visible === 'O' ? '노출' : '미노출'), 
@@ -577,11 +577,19 @@ const ProductGeneral = () => {
         </Tag>
       ),
     },
+    // { 
+    //   title: '정기배송할인율', 
+    //   dataIndex: 'regularDiscountRate', 
+    //   key: 'regularDiscountRate', 
+    //   render: (regularDiscountRate) => `${regularDiscountRate}%`,
+    //   filteredValue: joinForm.regularDiscountRate ? [joinForm.regularDiscountRate] : null,
+    //   ...getColumnSearchProps('regularDiscountRate'),
+    // },
     { 
       title: '정기배송할인율', 
       dataIndex: 'regularDiscountRate', 
       key: 'regularDiscountRate', 
-      render: (regularDiscountRate) => `${regularDiscountRate}%`,
+      render: (regularDiscountRate, record) => record.isRegularSale === 'ACTIVE' ? `${regularDiscountRate}%` : '-',
       filteredValue: joinForm.regularDiscountRate ? [joinForm.regularDiscountRate] : null,
       ...getColumnSearchProps('regularDiscountRate'),
     },
