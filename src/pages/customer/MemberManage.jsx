@@ -16,6 +16,7 @@ import useAuthStore from "../../stores/useAuthStore";
 
 const MemberManage = () => {
   const { username } = useAuthStore();
+  console.log("username: ", username);
   //const customerId = username;
 
   //const [isServerUnstable, setIsServerUnstable] = useState(false);
@@ -52,7 +53,7 @@ const MemberManage = () => {
     setLoading(true);
     try {
       const params = {
-        customerId: 1,
+        customerId: String(username),
         ...joinForm,
         page: pagination.current - 1,
         size: pagination.pageSize,

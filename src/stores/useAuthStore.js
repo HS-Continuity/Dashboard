@@ -29,6 +29,7 @@ const useAuthStore = create((set, get) => ({
       );
 
       const authHeader = response.headers["authorization"];
+
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
@@ -80,11 +81,13 @@ const useAuthStore = create((set, get) => ({
       );
 
       const authHeader = response.headers["authorization"];
+      console.log('authHeader: ', authHeader)
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
-        const customerId = payload.customerId;  // customerId 추가
+        console.log(username)
+        const customerId = payload.username;  // customerId 추가
 
         set({ 
           accessToken: token, 
