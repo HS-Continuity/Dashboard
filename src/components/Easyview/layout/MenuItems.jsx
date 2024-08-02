@@ -14,7 +14,7 @@ export const mainMenuItems = [
   { key: "product", icon: <ShopOutlined className='easyIcon' />, label: "식품" },
   { key: "order", icon: <OrderedListOutlined className='easyIcon' />, label: "주문" },
   { key: "inventory", icon: <InboxOutlined className='easyIcon' />, label: "재고" },
-  { key: "solution", icon: <BarChartOutlined className='easyIcon' />, label: "통계" },
+  { key: "statistics", icon: <BarChartOutlined className='easyIcon' />, label: "통계" },
   { key: "delivery", icon: <CarOutlined className='easyIcon' />, label: "배송" },
   { key: "promotion", icon: <GiftOutlined className='easyIcon' />, label: "광고" },
 ];

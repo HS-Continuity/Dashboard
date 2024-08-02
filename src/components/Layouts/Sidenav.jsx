@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import styles from '../Layouts/Sidenav.module.css';
-import logo from "../../assets/images/logo.png"
+import styles from "../Layouts/Sidenav.module.css";
+import logo from "../../assets/images/logo.png";
 
 import {
   ShoppingCartOutlined,
@@ -26,7 +26,6 @@ const { Sider } = Layout;
 const { SubMenu } = Menu;
 
 const Sidenav = ({ collapsed, onCollapse }) => {
-
   const { fontSize, setFontSize } = useFontSizeStore();
   const [sliderValue, setSliderValue] = useState(fontSize);
 
@@ -77,7 +76,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       "/order/general": "14-1",
       "/order/subscription": "14-2",
       "/inventory": "15-1",
-      "/statistics": "16",
+      "/statistics": "16-1",
       "/shipment": "17-1",
       "/delivery": "18-1",
       "/promotion": "19",
@@ -190,14 +189,20 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "15-1",
-          label:  <Link to='/inventory'>재고 관리</Link>,
-        }
-      ]
+          label: <Link to='/inventory'>재고 관리</Link>,
+        },
+      ],
     },
     {
       key: "16",
       icon: <BarChartOutlined />,
-      label: <Link to='/solution'>통계</Link>,
+      label: "통계",
+      children: [
+        {
+          key: "16-1",
+          label: <Link to='/statistics'>통계 관리</Link>,
+        },
+      ],
     },
     {
       key: "17",
@@ -237,36 +242,34 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       collapsed={collapsed}
       // style={{ background: colorBgContainer }}
       width={200}
-      collapsedWidth={60}
-    >
+      collapsedWidth={60}>
       <div className='demo-logo-vertical' />
       <Flex>
-        <img 
-          src={logo} 
-          alt="연이음로고"  
-          style={{ 
-            width: collapsed ? '60%' :'25%', 
-            height: collapsed ? '60%' :'25%',
-            marginLeft: collapsed ? 'auto' : '30px',
-            marginTop: collapsed ? '17px' : '16px',
-            marginBottom: collapsed ? '5px' : '0px',
-            marginRight: collapsed ? 'auto' : '10px',
+        <img
+          src={logo}
+          alt='연이음로고'
+          style={{
+            width: collapsed ? "60%" : "25%",
+            height: collapsed ? "60%" : "25%",
+            marginLeft: collapsed ? "auto" : "30px",
+            marginTop: collapsed ? "17px" : "16px",
+            marginBottom: collapsed ? "5px" : "0px",
+            marginRight: collapsed ? "auto" : "10px",
           }}
         />
-        {!collapsed && 
-          <Title 
-            level={3} 
-            style={{ 
-              marginTop: '6%'
+        {!collapsed && (
+          <Title
+            level={3}
+            style={{
+              marginTop: "6%",
               //marginLeft: 50,
               //whiteSpace: 'nowrap'
-            }}
-          >
+            }}>
             연이음
           </Title>
-        }
+        )}
       </Flex>
-      
+
       <Menu
         className={styles.customMenu}
         theme='light'
@@ -276,7 +279,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
         onOpenChange={setOpenKeys}
         items={menuItems}
         style={{
-          marginTop: collapsed ? '18.7px' : '8.5px',
+          marginTop: collapsed ? "18.7px" : "8.5px",
         }}
       />
     </Sider>
