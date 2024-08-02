@@ -70,7 +70,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       "/admin/category": "4-3",
       "/admin/review": "5",
       "/admin/statistics": "6",
-      "/member/manage": "12-1",
+      "/member": "12-1",
       "/product/general": "13-1",
       "/product/eco": "13-2",
       "/product/timesale": "13-3",
@@ -145,7 +145,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       children: [
         {
           key: "12-1",
-          label: <Link to='/member/manage'>회원 관리</Link>,
+          label: <Link to='/member'>회원 관리</Link>,
         },
       ],
     },
