@@ -155,8 +155,20 @@ const ProductEcoDetail = () => {
                   <Form.Item name="baseDiscountRate" label="기본 할인율 (%)" style={formItemStyle}>
                     <InputNumber style={{ ...inputStyle, width: '100%' }} />
                   </Form.Item>
-                  <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
+                  {/* <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
                     <InputNumber style={{ ...inputStyle, width: '100%' }} />
+                  </Form.Item> */}
+                  <Form.Item
+                    noStyle
+                    shouldUpdate={(prevValues, currentValues) => prevValues.isRegularSale !== currentValues.isRegularSale}
+                  >
+                    {({ getFieldValue }) =>
+                      getFieldValue('isRegularSale') ? (
+                        <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
+                          <InputNumber style={{ ...inputStyle, width: '100%' }} />
+                        </Form.Item>
+                      ) : null
+                    }
                   </Form.Item>
                 </Col>
               </Row>
