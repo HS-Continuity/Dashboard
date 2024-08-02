@@ -5,29 +5,22 @@
   border-bottom-right-radius: 10px; /* 오른쪽 아래 모서리의 border-radius */
 }
 
-/* 선택된 항목의 배경색과 텍스트 색상 */
-.customMenu .ant-menu-item-selected {
-  background-color: #ff4d4f !important; /* 선택된 항목의 배경색 */
-  color: #ffffff !important; /* 선택된 항목의 텍스트 색상 */
+.customMenu :global(.ant-menu-sub .ant-menu-item-selected) {
+  background-color: #00800046 !important; /* 서브메뉴 아이템용 다른 초록색 */
+  color: #000000;
 }
 
-/* 호버 시 배경색과 텍스트 색상 */
-.customMenu .ant-menu-item:hover {
-  background-color: #edb724 !important; /* 호버 시 배경색 */
-  color: #d1ff18 !important; /* 호버 시 텍스트 색상 */
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title),
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover) {
+  color: #006400 !important; /* 진한 초록색 */
 }
 
-/* 기본 메뉴 항목의 텍스트 색상 */
-.customMenu.ant-menu .ant-menu-item {
-  color: #fa1414 !important; /* 기본 폰트 색상 */
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon),
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover .ant-menu-item-icon) {
+  color: #006400 !important; /* 아이콘 색상도 변경 */
 }
 
-/* 서브 메뉴의 기본 텍스트 색상 */
-.customMenu .ant-menu-submenu-title {
-  color: #e41b1b !important; /* 기본 서브 메뉴 폰트 색상 */
-}
-
-/* 서브 메뉴 항목의 hover 스타일 */
-.customMenu .ant-menu-submenu-title:hover {
-  color: #40a9ff !important; /* 서브 메뉴 hover 시 텍스트 색상 */
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow),
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover .ant-menu-submenu-arrow) {
+  color: #006400 !important; /* 화살표 색상도 변경 */
 }
