@@ -30,7 +30,7 @@ import OrderSubscription from "./pages/customer/OrderSubscription";
 import OrderSubscriptionDetail from "./pages/customer/OrderSubscriptionDetail";
 import Inventory from "./pages/customer/Inventory";
 import InventoryDetail from "./pages/customer/InventoryDetail";
-import CustomerSolution from "./pages/customer/Solution";
+import Statistics from "./pages/customer/Statistics";
 import Shipment from "./pages/customer/Shipment";
 import ShipmentDetail from "./pages/customer/ShipmentDetail";
 import Delivery from "./pages/customer/Delivery";
@@ -118,7 +118,7 @@ function App() {
           </Route>
           <Route path='/inventory' element={<Inventory />} />
           <Route path='/inventory/:productName' element={<InventoryDetail />} />
-          <Route path='/solution' element={<CustomerSolution />} />
+          <Route path='/statistics' element={<Statistics />} />
           <Route path='/shipment' element={<Shipment />} />
           <Route path='shipment/:orderDetailId' element={<ShipmentDetail />} />
           <Route path='/delivery' element={<Delivery />} />
@@ -151,7 +151,7 @@ function App() {
           <Route path='inventory' element={<Inventory />} />
           <Route path='inventory/:productName' element={<InventoryDetail />} />
           {/* <Route path='inventory/*' element={<Inventory />} /> */}
-          <Route path='solution' element={<CustomerSolution />} />
+          <Route path='statistics' element={<Statistics />} />
           <Route path='delivery' element={<Delivery />} />
           <Route path='promotion' element={<Promotion />} />
         </Route>
