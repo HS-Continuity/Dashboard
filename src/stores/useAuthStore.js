@@ -5,6 +5,7 @@ import base64 from "base-64";
 const useAuthStore = create((set, get) => ({
   accessToken: null,
   username: null,
+  customerId: null,  //  customerId 추가
   isAuthenticated: false,
   isInitializing: true,
   initializeAttempts: 0,
@@ -32,10 +33,12 @@ const useAuthStore = create((set, get) => ({
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
+        const customerId = payload.customerId;  //  customerId 추가
 
         set({
           accessToken: token,
           username: username,
+          customerId: customerId,  //  customerId 추가
           isAuthenticated: true,
           isInitializing: false,
           initializeAttempts: 0,
@@ -61,6 +64,7 @@ const useAuthStore = create((set, get) => ({
     return false;
   },
 
+  // 로그인 함수
   login: async loginData => {
     try {
       const response = await axios.post(
@@ -80,8 +84,14 @@ const useAuthStore = create((set, get) => ({
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
+        const customerId = payload.customerId;  // customerId 추가
 
-        set({ accessToken: token, username: username, isAuthenticated: true });
+        set({ 
+          accessToken: token, 
+          username: username, 
+          customerId: customerId,   //  customerId 추가
+          isAuthenticated: true 
+        });
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         return true;
       } else {
@@ -94,6 +104,7 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  // 로그아웃 함수
   logout: async () => {
     try {
       await axios.post(
@@ -107,7 +118,11 @@ const useAuthStore = create((set, get) => ({
     } catch (error) {
       console.error("Logout failed:", error);
     }
-    set({ accessToken: null, username: null, isAuthenticated: false });
+    set({ 
+      accessToken: null, 
+      username: null, 
+      customerId: null,  //  customerId 추가
+      isAuthenticated: false });
     delete axios.defaults.headers.common["Authorization"];
   },
 

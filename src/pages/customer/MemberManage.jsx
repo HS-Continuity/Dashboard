@@ -8,9 +8,13 @@ import { useQuery } from '@tanstack/react-query';
 import './MemberManageModule.css';
 import styles from './Table.module.css';
 
+import useAuthStore from "../../stores/useAuthStore";
+
 
 const MemberManage = () => {
 
+  const {username} = useAuthStore();
+  //const customerId = username;
 
   //const [isServerUnstable, setIsServerUnstable] = useState(false);
     
