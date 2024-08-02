@@ -59,6 +59,7 @@ const MemberManage = () => {
         size: pagination.pageSize,
         // ...joinForm
       };
+      console.log('customerId: ', username)
 
       Object.entries(joinForm).forEach(([key, value]) => {
         if (value != null && value !== "") {
