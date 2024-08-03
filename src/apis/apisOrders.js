@@ -30,9 +30,11 @@ export const subscribeToOrderStatusUpdates = (customerId) => {
   const url = `${ORDER_DB_URL}/order-notification/${customerId}/subscription`;
   console.log('Connecting to SSE URL:', url);
   return new EventSourcePolyfill(url, {
-    withCredentials:true
+    withCredentials:true,
+    heartbeatTimeout: 180*1000
   });
 }
+
 
 
 

@@ -1,7 +1,7 @@
 import { fetchCustomerOrders, updateOrderStatus, updateBulkOrderStatus,subscribeToOrderStatusUpdates } from '../../apis/apisOrders';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flex, Space, DatePicker, Table, Tag, Button, Input, message } from 'antd'
+import { Flex, Space, DatePicker, Table, Tag, Button, Input, message, Switch } from 'antd'
 import { SearchOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import Swal from 'sweetalert2';
@@ -17,6 +17,7 @@ const { RangePicker } = DatePicker;
 
 const OrderGeneral = () => {
 
+  const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -31,15 +32,18 @@ const OrderGeneral = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [statusCount, setStatusCount] = useState({});
   const [dateRange, setDateRange] = useState([]);
+  const [prevStatusCount, setPrevStatusCount] = useState({});
+  const [isSoundOn, setIsSoundOn] = useState(false);
   const searchInput = useRef(null);
   const tableRef = useRef();
   const navigate = useNavigate();
   const eventSourceRef = useRef(null);
-  const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
+  const prevStatusCountRef = useRef({});
   const { username } = useAuthStore();
 
 
   const updateStatusCount = useCallback((newData) => {
+    
     setStatusCount(prevStatusCount => {
       const updatedStatusCount = { ...prevStatusCount };
       newData.forEach(item => {
@@ -51,28 +55,62 @@ const OrderGeneral = () => {
     });
   }, [])
 
+  const checkForNewOrders = useCallback((newStatusCount) => {
+    let hasNewOrder = false;
+    ['PAYMENT_COMPLETED', 'PREPARING_PRODUCT', 'AWAITING_RELEASE'].forEach(status => {
+      if (newStatusCount[status] > (prevStatusCountRef.current[status] || 0)) {
+        hasNewOrder = true;
+      }
+    });
+    prevStatusCountRef.current = {...newStatusCount};
+    return hasNewOrder;
+  }, []);
+
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
     fetchOrders();
-    // customerId: String(username),
     const customerId = 1;
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
-  
+
     eventSourceRef.current.onopen = () => {
       console.log('SSE connection opened');
     };
-  
+
     eventSourceRef.current.onmessage = (event) => {
       console.log('Received SSE message:', event);
       const data = JSON.parse(event.data);
       console.log('Parsed SSE data:', data);
-      updateStatusCount(data);
-      //audioRef.current.play();  //  알림 소리 재생
-      Swal.fire({
-        title: 'Notification',
-        text: '새로운 주문이 들어왔습니다',
-        icon: 'info',
-        timer: 1500, // 1 seconds
-        showConfirmButton: false,
+
+      setStatusCount(prevStatusCount => {
+        const newStatusCount = {...prevStatusCount};
+        data.forEach(item => {
+          if (['PAYMENT_COMPLETED', 'PREPARING_PRODUCT', 'AWAITING_RELEASE'].includes(item.statusName)) {
+            newStatusCount[item.statusName] = item.count;
+          }
+        });
+
+        if (!isInitialMount.current) {
+          const hasNewOrder = checkForNewOrders(newStatusCount);
+
+          if (hasNewOrder) {
+            if (isSoundOn) {
+              audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
+            }
+            Swal.fire({
+              title: 'Notification',
+              text: '새로운 주문이 들어왔습니다',
+              icon: 'info',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          }
+        } else {
+          isInitialMount.current = false;
+        }
+
+        prevStatusCountRef.current = newStatusCount;
+        return newStatusCount;
       });
     };
   
@@ -86,11 +124,22 @@ const OrderGeneral = () => {
         eventSourceRef.current.close();
       }
     };
-  }, [updateStatusCount]);
+  // }, [updateStatusCount]);
+  }, [checkForNewOrders, isSoundOn]); 
+
 
   useEffect(() => {
-    fetchOrders();
-  }, [pagination.current, pagination.pageSize, joinForm])
+    // 사용자 상호작용 후 오디오를 로드합니다.
+    const handleUserInteraction = () => {
+      audioRef.current.load();
+      document.removeEventListener('click', handleUserInteraction);
+    };
+    document.addEventListener('click', handleUserInteraction);
+  
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+    };
+  }, []);
 
 
   const rowSelection = {
@@ -336,7 +385,7 @@ const OrderGeneral = () => {
       if (isServerUnstable) {
         message.warning('일부 주문에서 서버 연결이 불안정합니다.');
       } else {
-        message.success('주문 데이터를 성공적으로 불러왔습니다.');
+        //message.success('주문 데이터를 성공적으로 불러왔습니다.');
       }
     }
   }, [isServerUnstable]);
@@ -515,6 +564,15 @@ const OrderGeneral = () => {
             <Button onClick={onHandleReset}>Clear Filter</Button>
           </Flex>
           <Flex gap="small" >
+            <Flex gap="small" align='center'>
+              <Space align="center">음성 알림</Space>
+              <Switch
+                checkedChildren="ON"
+                unCheckedChildren="OFF"
+                checked={isSoundOn}
+                onChange={(checked) => setIsSoundOn(checked)}
+              />
+            </Flex>
             <Space align="center">출고상태변경</Space>
             <StatusChangeButton 
               title={"배송시작"}
