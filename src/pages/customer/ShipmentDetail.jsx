@@ -176,7 +176,7 @@ const ShipmentDetail = () => {
                   </Form.Item>
                 </Col>
                 <Col span={5}>
-                  <Form.Item name="memberId" label="회원번호" style={formItemStyle}>
+                  <Form.Item name="recipient" label="회원명" style={formItemStyle}>
                     <Input disabled style={{width: '100%'}} />
                   </Form.Item>
                 </Col>
