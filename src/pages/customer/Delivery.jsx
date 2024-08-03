@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import style from './Delivery.module.css';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import styles from './Table.module.css';
@@ -140,44 +141,25 @@ const Delivery = () => {
     }));
   };
 
-  // const onHandleStatusChange = async (status) => {
-  //   if (selectedRowKeys.length === 0) {
-  //     message.warning('변경할 항목을 선택해주세요.');
-  //     return;
-  //   }
-  
-  //   const selectedDelivery = deliveries.filter(delivery => selectedRowKeys.includes(delivery.deliveryId));
-    
-  //   const isValidStatus = selectedDelivery.every(delivery => {
-  //     console.log('현재 status: ', delivery.deliveryStatusCode);
-  //     if (status === 'IN_DELIVERY' && delivery.deliveryStatusCode !== 'SHIPPED') {
-  //       return false;
-  //     }
-  //     if (status === 'DELIVERED' && delivery.deliveryStatusCode !== 'IN_DELIVERY') {
-  //       return false;
-  //     }
-  //     return true;
-  //   });
-  
-  //   if (!isValidStatus) {
-  //     message.error(`해당 주문건의 출고 상태는 ${status} 상태로 변경할 수 없습니다.`);
-  //     return;
-  //   }
-  
-  //   try {
-  //     if (selectedRowKeys.length === 1) {
-  //       await fetchDeliveryStatusCounts(selectedRowKeys[0], status);
-  //     } else {
-  //       await fetchDeliveryStatusCounts(selectedRowKeys, status);
-  //     }
-  //     message.success('배송 상태가 성공적으로 변경되었습니다.');
-  //     fetchDeliveryData();
-  //     setSelectedRowKeys([]);
-  //   } catch (error) {
-  //     console.error('배송 상태 변경 실패:', error);
-  //     message.error('배송 상태 변경에 실패했습니다.');
-  //   }
-  // };
+  const onHandleRangePickerChange = (dates) => {
+    setDateRange(dates);
+    if (dates && dates[0] && dates[1]) {
+      const startDate = dates[0].format('YYYY-MM-DD');
+      const endDate = dates[1].format('YYYY-MM-DD');
+      setJoinForm(prev => ({
+        ...prev,
+        startDate: startDate,
+        endDate: endDate
+      }));
+    } else {
+      setJoinForm(prev => {
+        const newForm = { ...prev };
+        delete newForm.startDate;
+        delete newForm.endDate;
+        return newForm;
+      });
+    }
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -255,6 +237,7 @@ const Delivery = () => {
       title: '배송ID',
       dataIndex: 'deliveryId',
       key: 'deliveryId',
+      fixed: 'left',
       filteredValue: joinForm.deliveryId ? [joinForm.deliveryId] : null,
       ...getColumnSearchProps('deliveryId'),
     },
@@ -262,6 +245,7 @@ const Delivery = () => {
       title: '배송시작일',
       dataIndex: 'startDeliveryDate',
       key: 'startDeliveryDate',
+      fixed: 'left',
       filteredValue: joinForm.startDeliveryDate ? [joinForm.startDeliveryDate] : null,
       // ...getColumnSearchProps('startDeliveryDate'),
     },
@@ -269,11 +253,12 @@ const Delivery = () => {
       title: '회원ID',
       dataIndex: 'memberId',
       key: 'memberId',
+      fixed: 'left',
       filteredValue: joinForm.memberId ? [joinForm.memberId] : null,
       ...getColumnSearchProps('memberId'),
     },
     {
-      title: 'representativeOrderId',
+      title: '합배송대표주문ID',
       dataIndex: 'representativeOrderId',
       key: 'representativeOrderId',
       filteredValue: joinForm.representativeOrderId ? [joinForm.representativeOrderId] : null,
@@ -308,9 +293,9 @@ const Delivery = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      SHIPPED: 'green',
-      IN_DELIVERY: 'orange',
-      DELIVERED: 'cyan'
+      SHIPPED: '#215380',
+      IN_DELIVERY: '#488886',
+      DELIVERED: '#DB8387'
     };
     return colors[status] || 'default';
   };
@@ -331,48 +316,42 @@ const Delivery = () => {
           <h2>배송관리</h2>
         </Flex>
       </Flex>
-      <Flex gap="small" align="center" justify='space-between'>
-        <Flex gap="small" wrap>
-          <Space align="center">검색기간</Space>
-          <RangePicker 
-            value={dateRange}
-            // onChange={onHandleRangePickerChange}
-            allowClear
-          />
-        </Flex>
+      <Flex gap="small" align="center" justify='end'>
         <Flex gap="small" wrap>
         {['SHIPPED', 'IN_DELIVERY', 'DELIVERED'].map((status) => (
           <StatusCard 
             key={status} 
             title={getStatusText(status)} 
             count={statusCount[status] || 0} 
+            color={getStatusColor(status)}
           />
         ))}
         </Flex>
       </Flex>
       <br />
-      <Flex gap='small' align='center' justify='space-between'>
-        <Flex gap="small" wrap>
-          {/* <Button >Clear Filter</Button> */}
-          {/* <Button onClick={onClearFilters}>Clear Filter</Button> */}
-          <Button onClick={onHandleReset}>Clear Filter</Button>
+      <Flex className={style.fullScreen}>
+        <Flex gap='large' align='center' justify='space-between'>
+          <Flex gap="small" >
+            <Flex gap='small'> 
+              <Space align="center">검색기간</Space>
+              <RangePicker 
+                value={dateRange}
+                onChange={onHandleRangePickerChange}
+                allowClear
+              />
+            </Flex>
+            <Button onClick={onHandleReset}>Clear Filter</Button>
+          </Flex>
+          <Flex gap="small" >
+            <Space align="center">출고상태변경</Space>
+            <StatusChangeButton 
+              title={"배송시작"}
+            />
+            <StatusChangeButton 
+              title={"배송완료"}
+            />
+          </Flex>
         </Flex>
-        {/* <Flex gap="small" wrap>
-          <Space align="center">출고상태변경</Space>
-          <StatusChangeButton 
-            title={"출고완료"}
-            onClick={() => onHandleStatusChange('SHIPPED')}
-          />
-          <StatusChangeButton 
-            title={"배송중"}
-            onClick={() => onHandleStatusChange('IN_DELIVERY')}
-          />
-          <StatusChangeButton 
-            title={"배송완료"}
-            onClick={() => onHandleStatusChange('DELIVERED')}
-          />
-        </Flex> */}
-        <br/>
       </Flex>
       <br/>
       <Table

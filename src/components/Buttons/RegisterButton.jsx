@@ -5,9 +5,9 @@ const RegisterButton = ({title, onClick}) => {
   return (
     <div>
       <Button 
-        type='primary' 
+        // type='primary' 
         icon={<PlusCircleOutlined  style={{fontWeight: 'bold' }}/>}
-        style={{width: '110px', height: '55px'}} 
+        style={{width: '110px', height: '55px', backgroundColor: '#FFFFFF', color: '#EF9C66', borderColor: '#EF9C66'}} 
         onClick={onClick}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}> 
           <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{title}</span> 

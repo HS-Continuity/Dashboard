@@ -6,7 +6,7 @@ const ApplyButton = ({title, onClick}) => {
     <div>
       <Button 
         icon={<HourglassOutlined  style={{fontWeight: 'bold' }}/>}
-        style={{width: '110px', height: '55px', backgroundColor: '#ffa39e'}} 
+        style={{width: '110px', height: '55px', backgroundColor: '#FFFFFF', color:'#4793AF', borderColor: '#4793AF'}} 
         onClick={onClick}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}> 
           <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{title}</span> 

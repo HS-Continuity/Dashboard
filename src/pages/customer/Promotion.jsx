@@ -269,11 +269,11 @@ const Promotion = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      PENDING: 'green',
-      APPROVE: 'orange',
-      IN_PROGRESS: 'cyan',
-      ENDED_EVENT: 'pink',
-      CANCELED: 'red'
+      PENDING: '#E2860A',
+      APPROVE: '#447E7A',
+      IN_PROGRESS: '#D6737A',
+      ENDED_EVENT: '#4D7D9E',
+      CANCELED: '#878987'
     };
     return colors[status] || 'default';
   };
@@ -296,9 +296,25 @@ const Promotion = () => {
           <h2>상단 노출 관리</h2>
         </Flex>
       </Flex>
-      <Flex gap="small" align="center" justify='space-between'>
+      <Flex gap="small" align="center" justify='end'>
+        <Flex gap="small" wrap>
+          {/* <StatusCard 
+            title="광고진행중" 
+            count={advertisements.filter(ad => ad.serviceStatus === 'IN_PROGRESS').length} />
+          <StatusCard title="광고마감" count={advertisements.filter(ad => ad.serviceStatus === 'ENDED_EVENT').length} /> */}
+          {['PENDING', 'APPROVE', 'IN_PROGRESS', 'ENDED_EVENT', 'CANCELED'].map((status) => (
+          <StatusCard 
+            key={status} 
+            title={getStatusText(status)} 
+            count={advertisements.filter(ad => ad.serviceStatus === 'ENDED_EVENT').length}
+            color={getStatusColor(status)}
+          />
+        ))}
+        </Flex>
+      </Flex>
       <Flex gap="small" wrap>
-        <Space align="center">검색기간</Space>
+        <Flex gap="small" wrap>
+          <Space align="center">검색기간</Space>
           <RangePicker 
             value={dateRange}
             onChange={onHandleDateRangeChange}
@@ -309,15 +325,9 @@ const Promotion = () => {
               }
             }}
           />
-        </Flex>
-        <Flex gap="small" wrap>
-          <StatusCard title="광고진행중" count={advertisements.filter(ad => ad.serviceStatus === 'IN_PROGRESS').length} />
-          <StatusCard title="광고마감" count={advertisements.filter(ad => ad.serviceStatus === 'ENDED_EVENT').length} />
-        </Flex>
+          </Flex>
+        <Button onClick={onHandleReset}>Clear Filter</Button>
       </Flex>
-      <Flex gap="small" wrap>
-          <Button onClick={onHandleReset}>Clear Filter</Button>
-        </Flex>
       <br />
       <Table
         className={styles.customTable}

@@ -404,6 +404,7 @@ const Shipment = () => {
       key: 'orderId',
       filteredValue: joinForm.orderId ? [joinForm.orderId] : null,
       ...getColumnSearchProps('orderId'),
+      width: '15%'
     },
     {
       title: '회원ID',
@@ -461,12 +462,14 @@ const Shipment = () => {
     },
   ];
 
+  
+  
   const getStatusColor = (status) => {
     const colors = {
-      AWAITING_RELEASE: 'green',
-      HOLD_RELEASE: 'orange',
-      RELEASE_COMPLETED: 'cyan',
-      COMBINED_PACKAGING_COMPLETED: 'pink'
+      AWAITING_RELEASE: '#C77C1B',
+      HOLD_RELEASE: '#4D7D9E',
+      RELEASE_COMPLETED: '#878987',
+      COMBINED_PACKAGING_COMPLETED: '#427870'
     };
     return colors[status] || 'default';
   };
@@ -488,18 +491,15 @@ const Shipment = () => {
           <h2>출고관리</h2>
         </Flex>
       </Flex>
-      <Flex gap="small" align="center" justify='space-between'>
+      <Flex gap="small" align="center" justify='end'>
         <Flex gap="small" wrap>
-          <Space align="center">검색기간</Space>
-          <RangePicker 
-            value={dateRange}
-            onChange={onHandleRangePickerChange}
-            allowClear
+        {['AWAITING_RELEASE', 'HOLD_RELEASE', 'RELEASE_COMPLETED', 'COMBINED_PACKAGING_COMPLETED'].map((status) => (
+          <StatusCard 
+            key={status} 
+            title={getStatusText(status)} 
+            count={statusCount[status] || 0} 
+            color={getStatusColor(status)}
           />
-        </Flex>
-        <Flex gap="small" wrap>
-        {statusCount && Object.keys(statusCount).map((tag) => (
-          <StatusCard key={tag} title={getStatusText(tag)} count={statusCount[tag]} />
         ))}
         </Flex>
       </Flex>
@@ -508,8 +508,14 @@ const Shipment = () => {
         
         <Flex gap='small' align='center' justify='space-between'>
         <Flex gap="small" wrap>
-          {/* <Button >Clear Filter</Button> */}
-          {/* <Button onClick={onClearFilters}>Clear Filter</Button> */}
+          <Flex gap='small'> 
+            <Space align="center">검색기간</Space>
+            <RangePicker 
+              value={dateRange}
+              onChange={onHandleRangePickerChange}
+              allowClear
+            />
+          </Flex>
           <Button onClick={onHandleReset}>Clear Filter</Button>
         </Flex>
         <Flex gap="small" wrap>
@@ -543,7 +549,18 @@ const Shipment = () => {
         scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
       />
       </Flex>
-      <Button onClick={onHandleCombinedPackaging}>합포장 요청</Button>
+      <Button 
+        onClick={onHandleCombinedPackaging}
+        // color='#FFE88F'
+        style={{ 
+          backgroundColor: '#FFEDB1', 
+          opacity: 0.8,
+          border: '1px solid #FFF4D0',
+          color: '#F09534'  
+        }}
+      >
+        합포장 요청
+      </Button>
       
     </div>
   )
