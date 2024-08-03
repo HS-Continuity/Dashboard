@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { LeftOutlined, SearchOutlined, HourglassOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import styles from './Table.module.css';
+import useAuthStore from "../../stores/useAuthStore";
 
 const Inventory = () => {
   const [searchText, setSearchText] = useState('');  //  검색 정보 저장
@@ -29,6 +30,7 @@ const Inventory = () => {
   const [drawerSortedInfo, setDrawerSortedInfo] = useState({});
   const [drawerSearchText, setDrawerSearchText] = useState('');
   const [drawerSearchedColumn, setDrawerSearchedColumn] = useState('');
+  const { username } = useAuthStore();
 
   useEffect(() => {
     fetchInventorySummaryData();
@@ -38,6 +40,7 @@ const Inventory = () => {
   const fetchInventorySummaryData = async () => {
     setLoading(true);
     try {
+      // customerId: String(username),
       const customerId = 1;
       const response = await fetchInventorySummary(customerId, pagination.current - 1, pagination.pageSize);
       setInventorySummary(response.content);

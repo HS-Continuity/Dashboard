@@ -1,8 +1,7 @@
 import { updateDeliveryDate, updateReleaseMemo, updateReleaseHoldReason } from '../../apis/apisShipments';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { Flex, Form, Input, Button, Table, Typography, Row, Col, message, Tag, DatePicker } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Table, Typography, Row, Col, message, Tag, DatePicker, Card, Space } from 'antd';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import { LeftOutlined } from '@ant-design/icons';
@@ -15,24 +14,22 @@ const ShipmentDetail = () => {
   const { shipmentDetail, productOrderList } = location.state || {};
   const [memo, setMemo] = useState(shipmentDetail?.memo || '');
   const [holdReason, setHoldReason] = useState(shipmentDetail?.holdReason || '');
-  const [isHoldReasonEnabled, setIsHoldReasonEnabled] = useState(false);
   const [startDeliveryDate, setStartDeliveryDate] = useState(shipmentDetail?.startDeliveryDate ? moment(shipmentDetail.startDeliveryDate) : null);
 
-
   const navigate = useNavigate();
+  const [form] = Form.useForm();
 
   useEffect(() => {
-    console.log('Received shipment detail:', shipmentDetail);
-    console.log('Received product order list:', productOrderList);
-  }, [shipmentDetail, productOrderList]);
-
-  useEffect(() => {
-    setIsHoldReasonEnabled(shipmentDetail?.orderStatus === 'HOLD_RELEASE');
-  }, [shipmentDetail]);
+    if (shipmentDetail) {
+      form.setFieldsValue({
+        ...shipmentDetail,
+        startDeliveryDate: startDeliveryDate,
+      });
+    }
+  }, [shipmentDetail, form, startDeliveryDate]);
 
   const columns = [
     { title: '주문번호', dataIndex: 'productId', key: 'productId' },
-    // { title: '카테고리', dataIndex: 'name', key: 'name' },
     { title: '상품명', dataIndex: 'name', key: 'name' },
     { title: '수량', dataIndex: 'quantity', key: 'quantity' },
     { title: '원가', dataIndex: 'originPrice', key: 'originPrice' },
@@ -55,8 +52,7 @@ const ShipmentDetail = () => {
 
     if (newMemo) {
       try {
-        const response = await updateReleaseMemo(shipmentDetail.orderId, newMemo);
-        console.log('Memo update response:', response);
+        await updateReleaseMemo(shipmentDetail.orderId, newMemo);
         setMemo(newMemo);
         message.success('출고메모가 등록되었습니다.');
       } catch (error) {
@@ -82,8 +78,7 @@ const ShipmentDetail = () => {
 
     if (newHoldReason) {
       try {
-        const response = await updateReleaseHoldReason(shipmentDetail.orderId, newHoldReason);
-        console.log('Hold reason update response:', response);
+        await updateReleaseHoldReason(shipmentDetail.orderId, newHoldReason);
         setHoldReason(newHoldReason);
         message.success('출고보류사유가 등록되었습니다.');
       } catch (error) {
@@ -94,7 +89,7 @@ const ShipmentDetail = () => {
   };
 
   const onHandleBackClick = () => {
-    navigate(-1); // 이전 페이지로 이동
+    navigate(-1);
   };
 
   const onHandleDateChange = async (date, dateString) => {
@@ -133,95 +128,121 @@ const ShipmentDetail = () => {
     return texts[status] || status;
   };
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <Flex gap="small" justify='flex-start'> 
-        <LeftOutlined onClick={onHandleBackClick}/>
-        <Title level={3}>출고 상세 정보</Title>
-      </Flex>
-      <br/>
-      <Form layout="vertical">
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item label="주문번호">
-              <Input value={shipmentDetail?.orderId} disabled />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="회원번호">
-              <Input value={shipmentDetail?.memberId} disabled />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="출고상태">
-              <Tag color={getStatusColor(shipmentDetail?.orderStatus)}>
-                {getStatusText(shipmentDetail?.orderStatus)}
-              </Tag>
-            </Form.Item>
-          </Col>
-        </Row>
-        <br/>
-        <Table
-          columns={columns}
-          dataSource={productOrderList}
-          rowKey="productId"
-          pagination={false}
-          style={{ marginBottom: '20px' }}
-        />
-        <br/>   
-        <Row gutter={16}>
-          <Col span={6}>
-            <Form.Item label="배송시작일">
-              {/* <Input value={shipmentDetail?.startDeliveryDate ? moment(shipmentDetail.startDeliveryDate).format('YYYY-MM-DD') : '미정'} disabled /> */}
-              <DatePicker 
-                value={startDeliveryDate}
-                onChange={onHandleDateChange}
-                style={{ width: '100%' }}
-                format="YYYY-MM-DD"
-              />
-            </Form.Item>
-          </Col>
-          <Col span={24}>
-            <Form.Item label="배송지">
-              <Input value={shipmentDetail?.recipientAddress || '배송지 정보 없음'} disabled />
-            </Form.Item>
-          </Col>
-        </Row>  
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item label="주문메모">
-              {memo ? (
-                <>
-                  <TextArea rows={4} value={memo} onChange={(e) => setMemo(e.target.value)} />
-                  <Button type="primary" onClick={onMemoSubmit} style={{ marginTop: '10px' }}>수정</Button>
-                </>
-              ) : (
-                <Button onClick={onMemoSubmit} style={{ marginTop: '10px' }}>출고 메모 등록</Button>
-              )}
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item label="보류사유">
-              {shipmentDetail?.orderStatus === "HOLD_RELEASE" && holdReason ? (
-                <>
-                  <TextArea rows={4} value={holdReason} onChange={(e) => setHoldReason(e.target.value)} />
-                  <Button type="primary" onClick={onHoldReasonSubmit} style={{ marginTop: '10px' }}>수정</Button>
-                </>
-              ) : (
-                shipmentDetail?.orderStatus === "HOLD_RELEASE" ? (
-                  <Button onClick={onHoldReasonSubmit} style={{ marginTop: '10px' }}>출고 보류 사유 등록</Button>
-                ) : (
-                  <div>
-                    <TextArea rows={4} value="출고 보류 상태가 아닙니다." readOnly disabled />
-                    <Button disabled style={{ marginTop: '10px' }}>출고 보류 사유 등록</Button>
-                  </div>
-                )
-              )}
-            </Form.Item>
-          </Col>
-        </Row>
+  const cardStyle = {
+    marginBottom: '16px',
+    border: '1px solid #d9d9d9',
+    borderRadius: '2px',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+  };
 
-        
+  const cardStyles = {
+    head: {
+      padding: '8px 16px'
+    },
+    body: {
+      padding: '16px'
+    }
+  };
+
+  const formItemStyle = {
+    marginBottom: '8px'
+  };
+
+  const inputStyle = {
+    fontSize: '13px',
+    width: '80%'
+  };
+
+  const greenButtonStyle = {
+    backgroundColor: '#006400',
+    borderColor: '#006400',
+  };
+
+  return (
+    <div style={{ padding: '16px', fontSize: '14px' }}>
+      <Space style={{ marginBottom: '16px' }}>
+        {/* <Button icon={<LeftOutlined />} onClick={onHandleBackClick} /> */}
+        <Button icon={<LeftOutlined />} onClick={onHandleBackClick} style={{ border: 'none', padding: 0 }} />
+        <Title level={3}>출고 상세 정보</Title>
+      </Space>
+      <Form form={form} layout="vertical">
+        <Row gutter={16}>
+          <Col span={24}>
+            <Card title="출고 정보" style={cardStyle} styles={cardStyles}>
+              <Row gutter={70} align="middle">
+                <Col span={5}>
+                  <Form.Item name="orderId" label="주문번호" style={formItemStyle}>
+                    <Input disabled style={{width: '100%'}} />
+                  </Form.Item>
+                </Col>
+                <Col span={5}>
+                  <Form.Item name="memberId" label="회원번호" style={formItemStyle}>
+                    <Input disabled style={{width: '100%'}} />
+                  </Form.Item>
+                </Col>
+                <Col span={5}>
+                  <Form.Item name="orderStatus" label="출고상태" style={formItemStyle}>
+                    <Tag color={getStatusColor(shipmentDetail?.orderStatus)}>
+                      {getStatusText(shipmentDetail?.orderStatus)}
+                    </Tag>
+                  </Form.Item>
+                </Col>
+                <Col span={5}>
+                  <Form.Item name="startDeliveryDate" label="배송시작일" style={formItemStyle}>
+                    <DatePicker 
+                      value={startDeliveryDate}
+                      onChange={onHandleDateChange}
+                      style={{ width: '100%' }}
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={24}>
+                <Col span={24}>
+                  <Form.Item name="recipientAddress" label="배송지" style={formItemStyle}>
+                    <Input disabled style={{width: '100%'}} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+        {/* ... (나머지 카드들은 그대로 유지) */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Card title="출고 메모" style={cardStyle} styles={cardStyles}>
+              <TextArea
+                rows={4}
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                style={{ marginBottom: '8px' }}
+              />
+              <Button type="primary" onClick={onMemoSubmit} style={greenButtonStyle}>
+                {memo ? '수정' : '등록'}
+              </Button>
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title="출고 보류 사유" style={cardStyle} styles={cardStyles}>
+              <TextArea
+                rows={4}
+                value={holdReason}
+                onChange={(e) => setHoldReason(e.target.value)}
+                disabled={shipmentDetail?.orderStatus !== "HOLD_RELEASE"}
+                style={{ marginBottom: '8px' }}
+              />
+              <Button
+                type="primary"
+                onClick={onHoldReasonSubmit}
+                disabled={shipmentDetail?.orderStatus !== "HOLD_RELEASE"}
+                style={greenButtonStyle}
+              >
+                {holdReason ? '수정' : '등록'}
+              </Button>
+            </Card>
+          </Col>
+        </Row>
       </Form>
     </div>
   );

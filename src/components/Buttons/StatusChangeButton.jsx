@@ -3,7 +3,7 @@ import { Button } from 'antd';
 const StatusChangeButton = ({title, onClick}) => {
   return (
     <div>
-      <Button type='primary' size={'medium'} onClick={onClick}>
+      <Button  style={{ color: 'green', borderColor: 'green' }} size={'medium'} onClick={onClick}>
         {title}
       </Button>
     </div>

@@ -234,6 +234,7 @@ const ProductTimeSale = () => {
       key: 'timesaleId',
       filteredValue: filteredInfo.timesaleId || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('timesaleId'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -245,6 +246,7 @@ const ProductTimeSale = () => {
       key: 'productId',
       filteredValue: filteredInfo.productId || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('productId'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -256,6 +258,7 @@ const ProductTimeSale = () => {
       key: 'productId',
       filteredValue: filteredInfo.productName || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('productName'),
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -267,6 +270,7 @@ const ProductTimeSale = () => {
       key: 'startDateTime',
       filteredValue: filteredInfo.startDateTime || null,
       filtered: false,
+      fixed: 'left',
       ...getColumnSearchProps('startDateTime') ,
       onCell: (record) => ({
         onClick: () => handleCellClick(record),
@@ -342,11 +346,11 @@ const ProductTimeSale = () => {
 
   const getTagColor = (status) => {
     const colors = {
-      PENDING: 'cyan',
-      APPROVE: 'orange',
-      IN_PROGRESS: 'blue',
-      ENDED_EVENT: 'green',
-      CANCELED: 'gray'
+      PENDING: '#E2860A',
+      APPROVE: '#447E7A',
+      IN_PROGRESS: '#D6737A',
+      ENDED_EVENT: '#4D7D9E',
+      CANCELED: '#878987'
     };
     return colors[status] || 'default';
   };
@@ -374,14 +378,19 @@ const ProductTimeSale = () => {
       </Flex>
       <Flex gap='small' align="center" justify='space-between'>
         <Flex gap="small" wrap>
-          <Button onClick={clearFilters}>Clear Filter</Button>
+          <Button 
+            onClick={clearFilters}>Clear Filter</Button>
         </Flex>
         <Flex gap="small" wrap>
-          <StatusCard title="승인대기" count={statusCount['PENDING'] || 0} />
-          <StatusCard title="승인" count={statusCount['APPROVE'] || 0} />
-          <StatusCard title="진행중" count={statusCount['IN_PROGRESS'] || 0} />
-          <StatusCard title="마감" count={statusCount['ENDED_EVENT'] || 0} />
-          <StatusCard title="취소" count={statusCount['CANCELED'] || 0} />
+          {['PENDING', 'APPROVE', 'IN_PROGRESS', 'ENDED_EVENT', 'CANCELED'].map((status) => (
+          <StatusCard 
+            key={status} 
+            title={getTagText(status)} 
+            // count={advertisements.filter(ad => ad.serviceStatus === 'ENDED_EVENT').length}
+            count={statusCount[status] || 0}
+            color={getTagColor(status)}
+          />
+        ))}
         </Flex>
       </Flex>
       <br/>   

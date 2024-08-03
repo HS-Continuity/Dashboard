@@ -16,7 +16,6 @@ import useAuthStore from "../../stores/useAuthStore";
 
 const MemberManage = () => {
   const { username } = useAuthStore();
-  //const customerId = username;
 
   //const [isServerUnstable, setIsServerUnstable] = useState(false);
 
@@ -52,12 +51,14 @@ const MemberManage = () => {
     setLoading(true);
     try {
       const params = {
+        // customerId: String(username),
         customerId: 1,
         ...joinForm,
         page: pagination.current - 1,
         size: pagination.pageSize,
         // ...joinForm
       };
+      console.log('customerId: ', username)
 
       Object.entries(joinForm).forEach(([key, value]) => {
         if (value != null && value !== "") {

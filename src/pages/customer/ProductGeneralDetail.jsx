@@ -65,7 +65,7 @@ const ProductGeneralDetail = () => {
       const updatedData = {
         ...values,
         isPageVisibility: values.isPageVisibility ? 'T' : 'F',
-        isRegularSale: values.isRegularSale ? 'F' : 'F'
+        isRegularSale: values.isRegularSale ? 'T' : 'F'
       };
       await updateProduct(productId, updatedData);
       message.success('상품 정보가 성공적으로 수정되었습니다.');
@@ -128,8 +128,20 @@ const ProductGeneralDetail = () => {
                   <Form.Item name="baseDiscountRate" label="기본 할인율 (%)" style={formItemStyle}>
                     <InputNumber style={{ ...inputStyle, width: '100%' }} />
                   </Form.Item>
-                  <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
+                  {/* <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
                     <InputNumber style={{ ...inputStyle, width: '100%' }} />
+                  </Form.Item> */}
+                  <Form.Item
+                    noStyle
+                    shouldUpdate={(prevValues, currentValues) => prevValues.isRegularSale !== currentValues.isRegularSale}
+                  >
+                    {({ getFieldValue }) =>
+                      getFieldValue('isRegularSale') ? (
+                        <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
+                          <InputNumber style={{ ...inputStyle, width: '100%' }} />
+                        </Form.Item>
+                      ) : null
+                    }
                   </Form.Item>
                 </Col>
               </Row>
