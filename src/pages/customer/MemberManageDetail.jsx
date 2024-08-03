@@ -1,7 +1,6 @@
 import {fetchMemberAddresses, fetchMemberPaymentCards} from '../../apis/apisMembers';
-import { Flex, Tabs, Input, Tag, Avatar, List, Button } from 'antd';
-import moment from 'moment';
-import { LeftOutlined, EditOutlined, DeleteOutlined, UserOutlined, HomeOutlined, CreditCardOutlined } from '@ant-design/icons';
+import { Flex, Tabs, Input, Tag, Space, List, Typography, Card, Row, Col } from 'antd';
+import { LeftOutlined, UserOutlined, HomeOutlined, CreditCardOutlined, PhoneOutlined, MailOutlined, CalendarOutlined, IdcardOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,14 +8,14 @@ import { useEffect, useState } from 'react';
 import './MemberManageDetailModule.css';
 
 const { TabPane } = Tabs;
+const { Title } = Typography;
 
 const MemberManageDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const {member_id} = useParams();
-  const [members, setMembers] = useState(null);
+  //const [members, setMembers] = useState(null);
   const [memberData, setMemberData] = useState(null);
-  const [productForm, setProductForm] = useState({}); // 각 필드별 상태 관리
 
   const onHandleBackClick = () => {
     navigate(-1); // 이전 페이지로 이동
@@ -24,20 +23,11 @@ const MemberManageDetail = () => {
 
   useEffect(() => {
     if (location.state) {
-      console.log('Received member data in detail page:', location.state);
-
       setMemberData(location.state)
     }
   }, [location.state]);
 
-  
-  // const { data: member, isLoading: memberIsLoading, refetch: refetchMember } = useQuery({
-  //   queryKey: ["member", member_id],
-  //   queryFn: () => fetchCustomerListById(member_id),
-  //   enabled: !!member_id,
-  //   staleTime: 60 * 1000
-  // });
-
+  // 회원 주소 정보 가져오기
   const { data: addresses, isLoading: addressesLoading } = useQuery({
     queryKey: ["addresses", memberData?.memberId],
     queryFn: () => fetchMemberAddresses(memberData?.memberId),
@@ -45,6 +35,7 @@ const MemberManageDetail = () => {
     staleTime: 60 * 1000,
   });
   
+  // 회원 결제수단 정보 가져오기
   const { data: paymentCards, isLoading: paymentCardsLoading } = useQuery({
     queryKey: ["paymentCards", memberData?.memberId],
     queryFn: () => fetchMemberPaymentCards(memberData?.memberId),
@@ -53,6 +44,127 @@ const MemberManageDetail = () => {
     
   });
 
+
+  // 회원 개인 정보 렌더링
+  const renderPersonalInfo = () => {
+    if (!memberData) return <div>Loading...</div>;
+
+    const cardStyle = {
+      marginBottom: '16px',
+      border: '1px solid #d9d9d9',
+      borderRadius: '2px',
+      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+      width: '66%',
+      //height: '100%'
+    };
+
+    const cardStyles = {
+      head: {
+        padding: '16px 24px'
+      },
+      body: {
+        padding: '24px'
+      }
+    };
+
+    const formItemStyle = {
+      //marginTop: '20px',
+      marginBottom: '24px',
+      
+    };
+
+    const inputStyle = {
+      fontSize: '14px',
+      height: '32px',
+      backgroundColor: 'white', // 비활성화된 입력 필드의 배경색 변경
+      color: 'black', // 비활성화된 입력 필드의 텍스트 색상 변경
+      opacity: 1, // 비활성화된 입력 필드의 투명도 설정
+      border: '1px solid #d9d9d9', // 비활성화된 입력 필드의 테두리 설정
+    };
+
+    const labelStyle = {
+      marginRight: '16px',
+      fontWeight: 'bold',
+    };
+  
+    const iconStyle = {
+      fontSize: '18px',
+      marginRight: '8px',
+      color: '#1890ff',
+    };
+  
+    const containerStyle = {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '16px', // 여백 추가
+    };
+  
+    return (
+      <div style={containerStyle}>
+        <Card 
+          title="회원 정보" 
+          style={cardStyle} 
+          styles={cardStyles}
+        >
+          <Row gutter={48}>
+            <Col span={12}>
+              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <div style={formItemStyle}>
+                  <Space>
+                    <IdcardOutlined style={iconStyle} />
+                    <span style={labelStyle}>회원 ID:</span>
+                    <Input disabled value={memberData.memberId} style={inputStyle} />
+                  </Space>
+                </div>
+                <div style={formItemStyle}>
+                  <Space>
+                    <UserOutlined style={iconStyle} />
+                    <span style={labelStyle}>회원명:</span>
+                    <Input disabled value={memberData.memberName} style={inputStyle} />
+                  </Space>
+                </div>
+                <div style={formItemStyle}>
+                  <Space>
+                    <UserOutlined style={iconStyle} />
+                    <span style={labelStyle}>성별:</span>
+                    <Input disabled value={memberData.gender} style={inputStyle} />
+                  </Space>
+                </div>
+              </Space>
+            </Col>
+            <Col span={12}>
+              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <div style={formItemStyle}>
+                  <Space>
+                    <PhoneOutlined style={iconStyle} />
+                    <span style={labelStyle}>휴대전화:</span>
+                    <Input disabled value={memberData.memberPhoneNumber} style={inputStyle} />
+                  </Space>
+                </div>
+                <div style={formItemStyle}>
+                  <Space>
+                    <MailOutlined style={iconStyle} />
+                    <span style={labelStyle}>이메일:</span>
+                    <Input disabled value={memberData.memberEmail} style={inputStyle} />
+                  </Space>
+                </div>
+                <div style={formItemStyle}>
+                  <Space>
+                    <CalendarOutlined style={iconStyle} />
+                    <span style={labelStyle}>생년월일:</span>
+                    <Input disabled value={memberData.memberBirthday} style={inputStyle} />
+                  </Space>
+                </div>
+              </Space>
+            </Col>
+          </Row>
+        </Card>
+      </div>
+    );
+  };
+
+  // 회원 주소 정보 렌더링
   const renderAddresses = () => {
     if (addressesLoading) {
       return <div>주소 정보를 불러오고 있습니다...</div>;
@@ -60,9 +172,6 @@ const MemberManageDetail = () => {
     if (!addresses) {
       return <div>주소 정보를 찾을 수 없습니다.</div>
     }
-
-    // const sortedAddresses = [...addresses].sort((a, b) =>
-    // b.isDefaultAddress.localeCompare(a.isDefaultAddress))
 
     const sortedAddresses = addresses ? [...addresses].sort((a, b) => {
     if (a.is_default_address === 'ACTIVE') return -1; // 'ACTIVE'인 항목을 앞으로
@@ -94,6 +203,8 @@ const MemberManageDetail = () => {
     );
   };
 
+
+  // 회원 결제 수단 정보 렌더링
   const renderPaymentCards = () => {
     if (paymentCardsLoading) return <div>결제 수단 정보를 불러오는 중...</div>;
     if (!paymentCards) return <div>결제 수단 정보가 없습니다.</div>;
@@ -129,71 +240,6 @@ const MemberManageDetail = () => {
     );
   };
 
-  // // address 데이터 정렬
-  // const sortedAddress = address ? [...address].sort((a, b) => {
-  //   if (a.is_default_address === 'ACTIVE') return -1; // 'ACTIVE'인 항목을 앞으로
-  //   if (b.is_default_address === 'ACTIVE') return 1; // 'ACTIVE'인 항목을 앞으로
-  //   return 0; // 나머지 항목은 순서 유지
-  // }) : [];
-
-  // // address 데이터 정렬
-  // const sortedCard = card ? [...card].sort((a, b) => {
-  //   if (a.is_default_payment_card === 'ACTIVE') return -1; // 'ACTIVE'인 항목을 앞으로
-  //   if (b.is_default_payment_card === 'ACTIVE') return 1; // 'ACTIVE'인 항목을 앞으로
-  //   return 0; // 나머지 항목은 순서 유지
-  // }) : [];
-  
-
-  // useEffect(() => {
-  //   if (member_id) {
-  //     refetchMember(); // member_id가 변경될 때마다 데이터 다시 가져오기
-  //   }
-  // }, [member_id]);
-
-  // // useMutation을 사용하여 상품 정보 업데이트
-  // const mutation = useMutation({
-  //   mutationFn: (updatedMember) => updateMember(member_id, updatedMember),
-  //   onSuccess: () => {
-  //     alert('상품 정보가 성공적으로 수정되었습니다.');
-  //     navigate('/manage');
-  //   },
-  //   onError: (error) => {
-  //     console.error('Error updating member:', error);
-  //     alert('상품 정보 수정에 실패했습니다. 다시 시도해주세요.');
-  //   }
-  // });
-
-  // // 수정 버튼 클릭
-  // const onHandleUpdateClick = async () => {
-  //   try {
-  //     // productForm 데이터 유효성 검증 로직 추가
-  //     if (!productForm.productName || !productForm.productPrice || isNaN(productForm.productPrice)) {
-  //       alert('필수 항목을 모두 입력하고, 가격은 숫자로 입력해주세요.');
-  //       return;
-  //     }
-      
-  //     mutation.mutate({ productId, ...productForm });
-  //   } catch (error) {
-  //     console.error('Error updating product:', error);
-
-  //     // 에러 처리 세분화
-  //     if (error.response) {
-  //       switch (error.response.status) {
-  //         case 400:
-  //           alert('잘못된 요청입니다. 입력 값을 확인해주세요.');
-  //           break;
-  //         case 404:
-  //           alert('해당 상품을 찾을 수 없습니다.');
-  //           break;
-  //         default:
-  //           alert('상품 정보 수정에 실패했습니다. 다시 시도해주세요.');
-  //       }
-  //     } else {
-  //       alert('상품 정보 수정 중 오류가 발생했습니다.');
-  //     }
-  //   }
-  // };
-
   return (
     <div>
       <Flex gap="small" justify="flex-start">
@@ -205,18 +251,7 @@ const MemberManageDetail = () => {
         {
           label: '개인 정보',
           key: '1',
-          children: memberData ? (
-            <Flex gap="middle" vertical>
-              <Input disabled addonBefore="회원 ID" value={memberData.memberId} />
-              <Input disabled addonBefore="회원명" value={memberData.memberName} />
-              <Input disabled addonBefore="성별" value={memberData.gender} />
-              <Input disabled addonBefore="휴대전화" value={memberData.memberPhoneNumber} />
-              <Input disabled addonBefore="이메일" value={memberData.memberEmail} />
-              <Input disabled addonBefore="생년월일" value={memberData.memberBirthday} />
-            </Flex> 
-          ) : ( // members 상태가 null인 경우 로딩 메시지 표시
-            <div>Loading...</div>
-          ),
+          children: renderPersonalInfo(),
           icon: <UserOutlined />
         },
         {
