@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiDelete, PRODUCT_DB_URL } from './apisCommon';
+import { apiGet, apiPost, apiPut, apiDelete, apiPatch, PRODUCT_DB_URL } from './apisCommon';
 
 // ----------- 일반 식품 등록 ----------- 
 export const registerNormalProduct = async (normalProduct, defaultImage, detailImageList) => {
@@ -215,6 +215,19 @@ export const fetchTimeSaleDetail = async (timesaleId) => {
     return response;
   } catch (error) {
     console.error('Error fetching timesale detail:', error);
+    throw error;
+  }
+};
+
+
+// ----------- 타임세일 식품 취소 ----------- 
+export const cancelTimeSale = async (timesaleId) => {
+  try {
+    const response = await apiPatch(PRODUCT_DB_URL, `/time-sale/${timesaleId}/cancel`);
+    console.log('타임세일 취소 응답:', response);
+    return response;
+  } catch (error) {
+    console.error('타임세일 취소 중 오류 발생:', error);
     throw error;
   }
 };
