@@ -67,7 +67,7 @@ const OrderSubscription = () => {
   const fetchDailyOrders = async (date, size = 10, page = 1) => {
     setLoading(true);
     try {
-      const response = await fetchRegularOrderCountByDate(date, size, page-1);
+      const response = await fetchRegularOrderCountByDate(date, size, page);
       console.log('response: ', response)
       setDailyOrders(response.content);
       setDailyOrdersPagination({
@@ -193,7 +193,7 @@ const OrderSubscription = () => {
       fixed: 'left',
       filteredValue: filteredInfo.regularDelivaryApplicationId || null,
       filtered: false,
-      width: 135
+      width: 50
     },
     {
       title: '주문상품',
@@ -245,7 +245,7 @@ const OrderSubscription = () => {
         placement="right"
         onClose={onCloseDrawer}
         open={isDrawerVisible}
-        width={1200}
+        width={800}
       >
         {dailyOrders.length > 0 ? (
          <>

@@ -42,7 +42,10 @@ const OrderSubscriptionDetail = () => {
     navigate(-1); // Go back to the previous page
   };
 
-  const cardStyle = { marginBottom: '16px' };
+  const cardStyle = { 
+    marginBottom: '16px' ,
+    borderColor: '#d3d3d3'
+  };
   const formItemStyle = { marginBottom: '8px' };
 
   
