@@ -26,7 +26,6 @@ export const registerNormalProduct = async (normalProduct, defaultImage, detailI
     }
   });
 
-  console.log('FormData contents:');
   for (let [key, value] of formData.entries()) {
     if (value instanceof Blob) {
       console.log(key, 'Blob:', value.type, value.size);
@@ -35,7 +34,7 @@ export const registerNormalProduct = async (normalProduct, defaultImage, detailI
     }
   }
 
-  console.log(Array.from(formData.entries()));
+  console.log('AAA: ',Array.from(formData.entries()));
 
   try {
     const response = await apiPost(PRODUCT_DB_URL, '/management/product/normal', formData, {
