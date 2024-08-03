@@ -1,10 +1,11 @@
 import { registerNormalProduct, getAllCategories, getCategoryDetails, registerEcoFriendlyProduct } from '../../apis/apisProducts';
-import { Flex, Radio, Upload, message, Breadcrumb, Input, Button, Form, Cascader, Select } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Flex, Radio, Upload, message, Breadcrumb, Input, Button, Form, Cascader, Select, Typography } from 'antd';
+import { UploadOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useAuthStore from "../../stores/useAuthStore";
 
+const { Title } = Typography;
 const { TextArea } = Input;
 
 const ProductCreate = () => {
@@ -14,10 +15,16 @@ const ProductCreate = () => {
   const [certificationImage, setCertificationImage] = useState(null)
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState([]);
+  const [certificationNumber, setCertificationNumber] = useState('');
+
   const { username } = useAuthStore();
 
   const navigate = useNavigate();
   const [selectedFoodType, setSelectedFoodType] = useState('일반식품');
+
+  const onHandleBackClick = () => {
+    navigate(-1); // 이전 페이지로 이동
+  };
 
   const onHandleDefaultImageUpload = (info) => {
     const file = info.file.originFileObj || info.file;
@@ -159,15 +166,32 @@ const ProductCreate = () => {
     }
   };
 
+  const handleCertificationNumberChange = (e) => {
+    const formattedNumber = formatCertificationNumber(e.target.value);
+    setCertificationNumber(formattedNumber);
+    form.setFieldsValue({ certificationNumber: formattedNumber });
+  };
+
   return (
     <div style={{ padding: '20px' }}>
-      <Breadcrumb style={{ marginBottom: '20px' }}
+      <Flex gap="small" justify="flex-start" align="center" style={{ width: 'fit-content' }}>
+        <LeftOutlined onClick={onHandleBackClick}/>
+        <Title level={3}>식품 등록</Title>
+        {/* <Breadcrumb style={{ marginBottom: '20px' }}
+          items={[
+            { title: 'Main' },
+            { title: selectedFoodType === '일반식품' ? '일반식품관리' : '친환경식품관리' },
+            { title: `${selectedFoodType} 등록` },
+          ]}
+        /> */}
+      </Flex>
+      {/* <Breadcrumb style={{ marginBottom: '20px' }}
         items={[
           { title: 'Main' },
           { title: selectedFoodType === '일반식품' ? '일반식품관리' : '친환경식품관리' },
           { title: `${selectedFoodType} 등록` },
         ]}
-      />
+      /> */}
 
       <Radio.Group onChange={handleRadioChange} value={selectedFoodType} style={{ marginBottom: '20px' }}>
         <Radio value="일반식품">일반식품</Radio>
@@ -279,34 +303,8 @@ const ProductCreate = () => {
                   ) : null
                 }
               </Form.Item>
-              {/* <Form.Item 
-                name="regularDiscountRate" 
-                label="정기배송할인율" 
-                rules={[
-                  { required: true, message: '정기배송할인율을 입력하세요' },
-                  { pattern: /^[0-9]*$/, message: '숫자를 입력하세요' }
-                ]} 
-                style={{ width: '30%' }}>
-                <Input />
-              </Form.Item> */}
-
             </Flex>
-
-            {/* <Flex gap="middle">
-              <Form.Item name="isRegularSale" label="정기구매지원여부" rules={[{ required: true }]} style={{ width: '30%' }}>
-                <Select>
-                  <Select.Option value="T">O</Select.Option>
-                  <Select.Option value="F">X</Select.Option>
-                </Select>
-              </Form.Item>
-              <Form.Item name="isPageVisibility" label="페이지노출여부" rules={[{ required: true }]} style={{ width: '30%' }}>
-                <Select>
-                  <Select.Option value="T">O</Select.Option>
-                  <Select.Option value="F">X</Select.Option>
-                </Select>
-              </Form.Item>
-            </Flex> */}
-
+            
             {selectedFoodType === '친환경식품' && (
               <Flex gap="middle">
                 <Form.Item name="certificationName" label="인증서명" rules={[{ required: true, message: '인증서명을 입력하세요' }]} style={{ width: '30%' }}>
@@ -326,13 +324,8 @@ const ProductCreate = () => {
                     }
                   ]} 
                   style={{ width: '30%' }}>
-                  <Input />
-                </Form.Item>
-                <Form.Item label="인증서" style={{ width: '30%' }}>
-                  <Upload beforeUpload={() => false} onChange={onHandleCertificationImageUpload}>
-                    <Button icon={<UploadOutlined />}>인증서업로드</Button>
-                  </Upload>
-                </Form.Item>
+                  <Input value={certificationNumber} onChange={handleCertificationNumberChange} />
+                  </Form.Item>
               </Flex>
             )}
 

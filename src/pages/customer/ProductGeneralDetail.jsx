@@ -1,8 +1,9 @@
 import { deleteProduct, fetchProductDetail, updateProduct } from '../../apis/apisProducts';
 import { useState, useEffect } from 'react';
+import { LeftOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, InputNumber, Switch, Card, Row, Col, Typography, Button, Space, message } from 'antd';
+import { Flex, Form, Input, InputNumber, Switch, Card, Row, Col, Typography, Button, Space, message } from 'antd';
 
 const { Title } = Typography;
 
@@ -87,9 +88,23 @@ const ProductGeneralDetail = () => {
     }
   };
 
+  const onHandleBackClick = () => {
+    navigate(-1); // 이전 페이지로 이동
+  };
+
   return (
     <div style={{ padding: '16px', fontSize: '14px' }}>
-      <Title level={3} style={{ marginBottom: '16px' }}>상품 상세 정보</Title>
+      <Flex gap="small" justify="flex-start" align="center" style={{ width: 'fit-content' }}>
+        <LeftOutlined onClick={onHandleBackClick}/>
+        <Title level={3}>식품 등록</Title>
+        {/* <Breadcrumb style={{ marginBottom: '20px' }}
+          items={[
+            { title: 'Main' },
+            { title: selectedFoodType === '일반식품' ? '일반식품관리' : '친환경식품관리' },
+            { title: `${selectedFoodType} 등록` },
+          ]}
+        /> */}
+      </Flex>
       <Form form={form} layout="vertical">
         <Row gutter={16}>
           <Col span={24}>
