@@ -11,6 +11,8 @@ import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import styles from './Table.module.css';
 const { RangePicker } = DatePicker;
 
+import useAuthStore from "../../stores/useAuthStore";
+
 const Shipment = () => {
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [releases, setReleases] = useState([]);
@@ -30,6 +32,8 @@ const Shipment = () => {
   const tableRef = useRef();
   const navigate = useNavigate();
 
+  const { username } = useAuthStore();
+
   useEffect(() => {
     fetchShipments();
     fetchStatusCounts();
@@ -46,6 +50,7 @@ const Shipment = () => {
     setLoading(true);
     try {
       const params = {
+        // customerId: String(username),
         customerId: 1,
         page: pagination.current - 1,
         size: pagination.pageSize,

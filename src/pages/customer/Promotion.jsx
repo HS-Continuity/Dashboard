@@ -6,6 +6,8 @@ import StatusCard from '../../components/Cards/StatusCard';
 import styles from './Table.module.css';
 const { RangePicker } = DatePicker;
 
+import useAuthStore from "../../stores/useAuthStore";
+
 
 const Promotion = () => {
   // ***************
@@ -23,7 +25,7 @@ const Promotion = () => {
   const [joinForm, setJoinForm] = useState({});
   const searchInput = useRef(null);
   const tableRef = useRef(null);
-
+  const { username } = useAuthStore();
 
   useEffect(() => {
     fetchAdvertisementData();
@@ -33,6 +35,7 @@ const Promotion = () => {
     setLoading(true);
     try {
       const params = {
+        // customerId: String(username),
         customerId: 1, // 실제 사용시 로그인한 고객의 ID를 사용해야 함
         startPage: pagination.current - 1,
         pageSize: pagination.pageSize,

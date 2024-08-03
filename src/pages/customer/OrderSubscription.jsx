@@ -11,6 +11,7 @@ import 'dayjs/locale/ko'; // 한국어 locale 파일 import
 // import StatusCard from '../../components/Cards/StatusCard';
 // import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import './OrderSubscriptionModule.css';
+import useAuthStore from "../../stores/useAuthStore";
 
 // const orderStatusTags = ['결제완료', '주문승인', '배송준비중','배송중', '배송완료'];
 // const tagColors = {
@@ -40,14 +41,18 @@ const OrderSubscription = () => {
   //const [selectedDateOrders, setSelectedDateOrders] = useState([]);
   const [panelDate, setPanelDate] = useState(dayjs()); // 현재 패널 날짜 상태 추가
   //const [selectedRowKeys, setSelectedRowKeys] = useState();
+  const { username } = useAuthStore();
 
   const fetchMonthlyOrders = async () => {
     setLoading(true);
     try {
+      //customerId: String(username),
       //const customerId = 1;  // 실제 사용시 로그인한 고객의 ID를 사용해야 함!!
+
       const response = await fetchRegularOrderCountsBetweenMonth(
         currentMonth.startOf('month'),
         currentMonth.endOf('month'),
+        //customerId
       );
       console.log('받아온 데이터: ', response)
       setMonthlyOrderCounts(response);
