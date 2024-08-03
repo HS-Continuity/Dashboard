@@ -5,7 +5,7 @@ import base64 from "base-64";
 const useAuthStore = create((set, get) => ({
   accessToken: null,
   username: null,
-  customerId: null,  //  customerId 추가
+  customerId: null, //  customerId 추가
   isAuthenticated: false,
   isInitializing: true,
   initializeAttempts: 0,
@@ -23,7 +23,7 @@ const useAuthStore = create((set, get) => ({
 
     try {
       const response = await axios.get(
-        "http://localhost:8010/memberservice/access-token",
+        "https://api.yeonieum.com/memberservice/access-token",
         { timeout: 5000 },
         { withCredentials: true }
       );
@@ -34,12 +34,12 @@ const useAuthStore = create((set, get) => ({
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
-        const customerId = payload.customerId;  //  customerId 추가
+        const customerId = payload.customerId; //  customerId 추가
 
         set({
           accessToken: token,
           username: username,
-          customerId: customerId,  //  customerId 추가
+          customerId: customerId, //  customerId 추가
           isAuthenticated: true,
           isInitializing: false,
           initializeAttempts: 0,
@@ -69,7 +69,7 @@ const useAuthStore = create((set, get) => ({
   login: async loginData => {
     try {
       const response = await axios.post(
-        "http://localhost:8010/memberservice/api/auth/login",
+        "https://api.yeonieum.com/memberservice/api/auth/login",
         loginData,
         {
           headers: {
@@ -81,14 +81,12 @@ const useAuthStore = create((set, get) => ({
       );
 
       const authHeader = response.headers["authorization"];
-      console.log('authHeader: ', authHeader)
+
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
-        console.log(username)
-        const customerId = payload.username;  // customerId 추가
-
+        const customerId = payload.customerId; // customerId 추가
         set({ 
           accessToken: token, 
           username: username, 
@@ -111,7 +109,7 @@ const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       await axios.post(
-        "http://localhost:8010/memberservice/api/auth/logout",
+        "https://api.yeonieum.com/memberservice/api/auth/logout",
         {},
         {
           withCredentials: true,
@@ -121,11 +119,12 @@ const useAuthStore = create((set, get) => ({
     } catch (error) {
       console.error("Logout failed:", error);
     }
-    set({ 
-      accessToken: null, 
-      username: null, 
-      customerId: null,  //  customerId 추가
-      isAuthenticated: false });
+    set({
+      accessToken: null,
+      username: null,
+      customerId: null, //  customerId 추가
+      isAuthenticated: false,
+    });
     delete axios.defaults.headers.common["Authorization"];
   },
 
