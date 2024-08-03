@@ -28,6 +28,7 @@ const OrderGeneral = () => {
   });
 
   const [joinForm, setJoinForm] = useState({});
+  const [fullOrders, setFullOrders] = useState([]);
   const [filteredInfo, setFilteredInfo] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [statusCount, setStatusCount] = useState({});
@@ -175,6 +176,7 @@ const OrderGeneral = () => {
       console.log('Fetching with params:', params);
       
       const response = await fetchCustomerOrders(params);
+      setFullOrders(response.content);
       console.log('받아온 주문 데이터: ', response);
       
       let isServerUnstable = false;
@@ -393,10 +395,12 @@ const OrderGeneral = () => {
   const onRow = (record) => {
     return {
       onClick: () => {
+        const fullOrderData = fullOrders.find(order => order.orderDetailId === record.orderDetailId);
         console.log("Clicked record:", record);
+        console.log('상세 페이지로 넘기는 데이터: ', fullOrderData)
         navigate('../general/${orderDetailId}', { 
           state: { 
-            orderDetail: [record],
+            orderDetail: fullOrderData,
           } 
         }); 
       },
