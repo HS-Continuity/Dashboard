@@ -181,9 +181,9 @@ const ShipmentDetail = () => {
                   </Form.Item>
                 </Col>
                 <Col span={5}>
-                  <Form.Item name="orderStatus" label="출고상태" style={formItemStyle}>
-                    <Tag color={getStatusColor(shipmentDetail?.orderStatus)}>
-                      {getStatusText(shipmentDetail?.orderStatus)}
+                  <Form.Item name="releaseStatus" label="출고상태" style={formItemStyle}>
+                    <Tag color={getStatusColor(shipmentDetail?.releaseStatus)}>
+                      {getStatusText(shipmentDetail?.releaseStatus)}
                     </Tag>
                   </Form.Item>
                 </Col>
