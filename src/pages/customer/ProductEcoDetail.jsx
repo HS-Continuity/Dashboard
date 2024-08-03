@@ -2,8 +2,8 @@ import { deleteProduct, fetchProductDetail, updateProduct, fetchProductCertifica
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Flex, Form, Input, InputNumber, Switch, Card, Row, Col, Typography, Button, Space, message, Upload } from 'antd';
-import { LeftOutlined } from '@ant-design/icons';
-import { FileOutlined } from '@ant-design/icons';
+import { LeftOutlined, FileOutlined } from '@ant-design/icons';
+import Swal from 'sweetalert2';
 
 const { Title } = Typography;
 
@@ -86,15 +86,37 @@ const ProductEcoDetail = () => {
     }
   };
 
-  const onHandleDelete = async () => {
-    try {
-      await deleteProduct(productId);
-      message.success('상품이 성공적으로 삭제되었습니다.');
-      navigate(-1);  // 상품 목록 페이지로 이동
-    } catch (error) {
-      console.error('Error deleting product: ', error);
-      message.error('상품 삭제에 실패했습니다.');
-    }
+  const onHandleDelete = () => {
+    Swal.fire({
+      title: '정말 삭제하시겠습니까?',
+      text: "이 작업은 되돌릴 수 없습니다!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '삭제하기',
+      cancelButtonText: '취소'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteProduct(productId)
+          .then(() => {
+            Swal.fire(
+              '삭제완료!',
+              '상품이 성공적으로 삭제되었습니다.',
+              'success'
+            );
+            navigate(-1);  // 상품 목록 페이지로 이동
+          })
+          .catch((error) => {
+            console.error('Error deleting product: ', error);
+            Swal.fire(
+              '삭제 실패',
+              '상품 삭제에 실패했습니다.',
+              'error'
+            );
+          });
+      }
+    });
   };
 
   const onHandleDownload = (file) => {
@@ -116,7 +138,6 @@ const ProductEcoDetail = () => {
         <LeftOutlined onClick={onHandleBackClick} />
         <Title level={3} style={{ marginBottom: '16px' }}>친환경 상품 상세 정보</Title>
       </Flex>
-      {/* <Title level={3} style={{ marginBottom: '16px' }}>친환경 상품 상세 정보</Title> */}
       <Form form={form} layout="vertical">
         <Row gutter={16}>
           <Col span={24}>
@@ -155,9 +176,6 @@ const ProductEcoDetail = () => {
                   <Form.Item name="baseDiscountRate" label="기본 할인율 (%)" style={formItemStyle}>
                     <InputNumber style={{ ...inputStyle, width: '100%' }} />
                   </Form.Item>
-                  {/* <Form.Item name="regularDiscountRate" label="정기 배송 할인율 (%)" style={formItemStyle}>
-                    <InputNumber style={{ ...inputStyle, width: '100%' }} />
-                  </Form.Item> */}
                   <Form.Item
                     noStyle
                     shouldUpdate={(prevValues, currentValues) => prevValues.isRegularSale !== currentValues.isRegularSale}
