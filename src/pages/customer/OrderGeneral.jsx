@@ -11,6 +11,8 @@ import style from './Order.module.css';
 import orderIn from '../../assets/audio/orderIn.mp3';
 import styles from './Table.module.css';
 
+import useAuthStore from "../../stores/useAuthStore";
+
 const { RangePicker } = DatePicker;
 
 const OrderGeneral = () => {
@@ -34,6 +36,7 @@ const OrderGeneral = () => {
   const navigate = useNavigate();
   const eventSourceRef = useRef(null);
   const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
+  const { username } = useAuthStore();
 
 
   const updateStatusCount = useCallback((newData) => {
@@ -50,7 +53,7 @@ const OrderGeneral = () => {
 
   useEffect(() => {
     fetchOrders();
-    
+    // customerId: String(username),
     const customerId = 1;
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
   
