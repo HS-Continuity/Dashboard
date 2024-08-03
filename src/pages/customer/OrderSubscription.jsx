@@ -64,14 +64,14 @@ const OrderSubscription = () => {
     }
   };
 
-  const fetchDailyOrders = async (date, size = 10, page = 0) => {
+  const fetchDailyOrders = async (date, size = 10, page = 1) => {
     setLoading(true);
     try {
-      const response = await fetchRegularOrderCountByDate(date, size, page);
+      const response = await fetchRegularOrderCountByDate(date, size, page-1);
       console.log('response: ', response)
       setDailyOrders(response.content);
       setDailyOrdersPagination({
-        current: page+1,
+        current: page,
         pageSize: size,
         total: response.totalElements || 0
       });
@@ -139,7 +139,7 @@ const OrderSubscription = () => {
       setSelectedDate(selectedDate);
       const formattedDate = selectedDate.format('YYYY-MM-DD');
       console.log('Fetching orders for date:', formattedDate);
-      fetchDailyOrders(formattedDate);
+      fetchDailyOrders(formattedDate, 10, 1);
       setIsDrawerVisible(true);
     } else {
       setPanelDate(selectedDate);
@@ -148,7 +148,7 @@ const OrderSubscription = () => {
   };
 
   const handleTableChange = (pagination) => {
-    fetchDailyOrders(selectedDate.format('YYYY-MM-DD', pagination.pageSize, pagination.current))
+    fetchDailyOrders(selectedDate.format('YYYY-MM-DD'), pagination.pageSize, pagination.current)
   };
 
   const onCloseDrawer = () => {
@@ -159,12 +159,19 @@ const OrderSubscription = () => {
     return {
       onClick: () => {
         console.log("Clicked record:", record);
-        navigate(`./${record.regularDelivaryApplicationId}`, {
-          state: { 
-             regularOrderId: record.regularDelivaryApplicationId,
-             record: record
+        console.log('regularOrderId: ', record.regularDelivaryApplicationId)
+        // navigate(`./${record.regularDelivaryApplicationId}`, {
+        //   state: { 
+        //      regularOrderId: record.regularDelivaryApplicationId,
+        //      record: record
+        //   }
+        // });
+        navigate(`../subscription/${record.regularDelivaryApplicationId}`, {
+          state: {
+            // regularOrderId: record.regularDelivaryApplicationId,
+            regularOrderDetail: [record]
           }
-        });
+        })
       },
     };
   };

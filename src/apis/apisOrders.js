@@ -58,7 +58,7 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
 };
 
 // ----------- 정기 주문 일별 조회 ----------- 
-export const fetchRegularOrderCountByDate = async (date, size, page) => {
+export const fetchRegularOrderCountByDate = async (date, size = 10, page = 0) => {
   try {
     const params = {
       date,
