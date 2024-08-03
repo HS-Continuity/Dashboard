@@ -30,9 +30,11 @@ export const subscribeToOrderStatusUpdates = (customerId) => {
   const url = `${ORDER_DB_URL}/order-notification/${customerId}/subscription`;
   console.log('Connecting to SSE URL:', url);
   return new EventSourcePolyfill(url, {
-    withCredentials:true
+    withCredentials:true,
+    heartbeatTimeout: 180*1000
   });
 }
+
 
 
 
@@ -56,12 +58,12 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
 };
 
 // ----------- 정기 주문 일별 조회 ----------- 
-export const fetchRegularOrderCountByDate = async (date, size, page) => {
+export const fetchRegularOrderCountByDate = async (date, size = 10, page = 1) => {
   try {
     const params = {
       date,
       size, 
-      page
+      page: page - 1
     }
     console.log('일별 조회 서버에서 보내는 params: ', params)
     const response = await apiGet(ORDER_DB_URL, `/regular-order/daily`, params)
