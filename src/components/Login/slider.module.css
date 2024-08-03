@@ -1,0 +1,37 @@
+.cardList,
+.cardListDynamic {
+  animation-duration: 45s;
+  /* animation-fill-mode: forwards; */
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.cardList {
+  animation-name: slidedown;
+}
+.cardListDynamic {
+  animation-name: slideup;
+}
+
+@keyframes slidedown {
+  0% {
+    transform: translateX(-25%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideup {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-25%);
+  }
+}
+
+.sliderWrapper {
+  width: 80%;
+  height: 80%;
+  border: 1px solid red;
+}
