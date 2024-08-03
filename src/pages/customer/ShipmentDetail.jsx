@@ -176,14 +176,14 @@ const ShipmentDetail = () => {
                   </Form.Item>
                 </Col>
                 <Col span={5}>
-                  <Form.Item name="memberId" label="회원번호" style={formItemStyle}>
+                  <Form.Item name="recipient" label="회원명" style={formItemStyle}>
                     <Input disabled style={{width: '100%'}} />
                   </Form.Item>
                 </Col>
                 <Col span={5}>
-                  <Form.Item name="orderStatus" label="출고상태" style={formItemStyle}>
-                    <Tag color={getStatusColor(shipmentDetail?.orderStatus)}>
-                      {getStatusText(shipmentDetail?.orderStatus)}
+                  <Form.Item name="releaseStatus" label="출고상태" style={formItemStyle}>
+                    <Tag color={getStatusColor(shipmentDetail?.releaseStatus)}>
+                      {getStatusText(shipmentDetail?.releaseStatus)}
                     </Tag>
                   </Form.Item>
                 </Col>
