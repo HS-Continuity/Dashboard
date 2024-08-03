@@ -1,6 +1,10 @@
 import { Form, Card, Row, Col, Typography, Image, Button } from "antd";
 import React, { useEffect, useState } from "react";
-import { getProductByManTop3, getProductByWomanTop3 } from "../../apis/apisStatistics";
+import {
+  getProductByAgeRange,
+  getProductByManTop3,
+  getProductByWomanTop3,
+} from "../../apis/apisStatistics";
 import useAuthStore from "../../stores/useAuthStore";
 import PieChart from "../../components/Chart/PieChart";
 
@@ -10,7 +14,7 @@ const Statistics = () => {
   const [form] = Form.useForm();
   const [manTop3, setManTop3] = useState([]);
   const [womanTop3, setWomanTop3] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [productsByAge, setProductsByAge] = useState({});
   //const { customerId } = useAuthStore();
   const customerId = 1;
 
@@ -29,18 +33,30 @@ const Statistics = () => {
           getProductByWomanTop3(customerId),
         ]);
 
-        setManTop3(manTop3Response); // 상태를 직접 업데이트
-        setWomanTop3(womanTop3Response); // 상태를 직접 업데이트
+        setManTop3(manTop3Response);
+        setWomanTop3(womanTop3Response);
       } catch (error) {
         console.error("Error fetching top 3 products:", error);
       }
     };
 
+    const fetchProductsByAge = async () => {
+      const ageRanges = [20, 30, 40, 50];
+      const responses = await Promise.all(
+        ageRanges.map(ageRange => getProductByAgeRange(customerId, ageRange))
+      );
+      const products = ageRanges.reduce((acc, ageRange, index) => {
+        acc[ageRange] = responses[index];
+        return acc;
+      }, {});
+      setProductsByAge(products);
+    };
+
     fetchTop3Products();
+    fetchProductsByAge();
   }, []);
 
-  console.log(manTop3);
-  console.log(womanTop3);
+  console.log(productsByAge);
 
   const cardStyle = {
     marginBottom: "16px",
@@ -115,7 +131,7 @@ const Statistics = () => {
               borderRadius: "12px",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
               alignSelf: "center",
-              marginLeft: "5%", // 이미지가 중앙에서 시작하도록 marginLeft를 5%로 설정
+              marginLeft: "5%",
               marginRight: "5%",
             }}
           />
@@ -125,7 +141,7 @@ const Statistics = () => {
               flexDirection: "column",
               justifyContent: "space-around",
               height: "80px",
-              marginLeft: "5%", // 이미지 시작점과 일치하도록 marginLeft 조정
+              marginLeft: "5%",
               marginRight: "5%",
             }}>
             <div
@@ -162,6 +178,83 @@ const Statistics = () => {
       </Col>
     );
   };
+
+  const renderAgeRangeProduct = (ageRange, products, isLastColumn) => {
+    const ageRangeColors = {
+      20: "#66CC66",
+      30: "#339933",
+      40: "#006600",
+      50: "#003300",
+    };
+
+    return (
+      <Col
+        span={12}
+        style={{
+          borderRight: isLastColumn ? "none" : "1px solid #e8e8e8",
+          padding: "10px",
+        }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ ...boxStyle, backgroundColor: ageRangeColors[ageRange] }}>
+            <h3 style={{ fontSize: "15px", color: "white" }}>{ageRange}대</h3>
+          </div>
+
+          <Row gutter={16}>
+            {products.map((product, index) => (
+              <Col span={12} key={product.productId}>
+                <div
+                  style={{
+                    ...itemStyle,
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                  }}>
+                  <div style={{ flex: "1", height: "100%", display: "flex" }}>
+                    <Image
+                      src={product.image}
+                      alt={product.productName}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "10px",
+                        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      flex: "2",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      paddingLeft: "10px",
+                    }}>
+                    <p style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: "bold" }}>
+                      {formatProductName(product.productName)}
+                    </p>
+                    <p style={{ margin: "0", fontSize: "15px" }}>주문수: {product.orderCount}</p>
+                    <p style={{ margin: "0", fontSize: "15px" }}>⭐ {product.averageScore}</p>
+                  </div>
+                </div>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </Col>
+    );
+  };
+
+  //상품이름 내려쓰기
+  function formatProductName(name) {
+    const parts = name.split(/([,!~])/g);
+    return parts.map((part, index) => (
+      <React.Fragment key={index}>
+        {part}
+        {part === "," || part === "!" ? <br /> : ""}
+      </React.Fragment>
+    ));
+  }
 
   return (
     <div style={{ padding: "16px", fontSize: "14px" }}>
@@ -211,83 +304,17 @@ const Statistics = () => {
         <Row gutter={16}>
           <Col span={24}>
             <Card title='연령대별 선호 식품' style={cardStyle}>
-              {/* 20대와 30대 */}
-              <Row gutter={16}>
-                {/* 20대 */}
-                <Col span={12}>
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ ...boxStyle, backgroundColor: "#66CC66" }}>
-                      <h3 style={{ fontSize: "15px", color: "white" }}>20대</h3>
-                    </div>
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#f0f2f5" }}>Col 1</div>
-                      </Col>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#d9d9d9" }}>Col 2</div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Col>
-
-                {/* 30대 */}
-                <Col span={12}>
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ ...boxStyle, backgroundColor: "#339933" }}>
-                      <h3 style={{ fontSize: "15px", color: "white" }}>30대</h3>
-                    </div>
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#f0f2f5" }}>Col 1</div>
-                      </Col>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#d9d9d9" }}>Col 2</div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Col>
+              <Row gutter={16} style={{ borderBottom: "1px solid #e8e8e8" }}>
+                {renderAgeRangeProduct(20, productsByAge[20])}
+                {renderAgeRangeProduct(30, productsByAge[30])}
               </Row>
-
-              {/* 40대와 50대 */}
               <Row gutter={16}>
-                {/* 40대 */}
-                <Col span={12}>
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ ...boxStyle, backgroundColor: "#006600" }}>
-                      <h3 style={{ fontSize: "15px", color: "white" }}>40대</h3>
-                    </div>
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#f0f2f5" }}>Col 1</div>
-                      </Col>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#d9d9d9" }}>Col 2</div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Col>
-
-                {/* 50대 */}
-                <Col span={12}>
-                  <div>
-                    <div style={{ ...boxStyle, backgroundColor: "#003300" }}>
-                      <h3 style={{ fontSize: "15px", color: "white" }}>50대</h3>
-                    </div>
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#f0f2f5" }}>Col 1</div>
-                      </Col>
-                      <Col span={12}>
-                        <div style={{ ...itemStyle, backgroundColor: "#d9d9d9" }}>Col 2</div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Col>
+                {renderAgeRangeProduct(40, productsByAge[40])}
+                {renderAgeRangeProduct(50, productsByAge[50])}
               </Row>
             </Card>
           </Col>
         </Row>
-
         <Row gutter={8}>
           <Col span={12}>
             <Card title='일반주문 판매량' style={cardStyle}>

@@ -5,17 +5,17 @@ export const getProductByManTop3 = async customerId => {
   try {
     const response = await apiGet(
       PRODUCT_DB_URL,
-      `/management/ranking/gender-product?customerId=${customerId}&gender=MALE`
+      `/management/ranking/statistics-product?customerId=${customerId}&gender=MALE`
     );
-    console.log("API Response:", response); // 응답 로그 추가
+    console.log("API Response:", response);
     if (Array.isArray(response)) {
-      return response; // 직접 배열 반환
+      return response;
     } else {
       throw new Error("Invalid API response");
     }
   } catch (error) {
     console.error("Error in getProductByManTop3:", error);
-    throw error; // 오류를 다시 throw하여 상위 호출자가 처리할 수 있게 함
+    throw error;
   }
 };
 
@@ -24,16 +24,37 @@ export const getProductByWomanTop3 = async customerId => {
   try {
     const response = await apiGet(
       PRODUCT_DB_URL,
-      `/management/ranking/gender-product?customerId=${customerId}&gender=FEMALE`
+      `/management/ranking/statistics-product?customerId=${customerId}&gender=FEMALE`
     );
-    console.log("API Response:", response); // 응답 로그 추가
+    console.log("API Response:", response);
     if (Array.isArray(response)) {
-      return response; // 직접 배열 반환
+      return response;
     } else {
       throw new Error("Invalid API response");
     }
   } catch (error) {
     console.error("Error in getProductByManTop3:", error);
-    throw error; // 오류를 다시 throw하여 상위 호출자가 처리할 수 있게 함
+    throw error;
+  }
+};
+
+// ----------- 연령별 선호 상품 조회 -----------
+export const getProductByAgeRange = async (customerId, ageRange) => {
+  try {
+    const response = await apiGet(
+      PRODUCT_DB_URL,
+      `/management/ranking/statistics-product?customerId=${customerId}&ageRange=${ageRange}`
+    );
+    console.log("API Full Response:", response);
+
+    if (Array.isArray(response)) {
+      return response;
+    } else {
+      console.error("API Response is invalid: ", response);
+      throw new Error(`Invalid API response: Expected an array, but got ${typeof response}`);
+    }
+  } catch (error) {
+    console.error("Error in getProductByAgeRange:", error);
+    throw error;
   }
 };
