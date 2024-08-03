@@ -114,7 +114,7 @@ const ProductEcoDetail = () => {
     <div style={{ padding: '16px', fontSize: '14px' }}>
       <Flex gap="small" justify="flex-start">
         <LeftOutlined onClick={onHandleBackClick} />
-        <Title level={3} style={{ marginBottom: '16px' }}>친환경 상품 상세 정보</Title>
+        <Title level={3} style={{ marginBottom: '16px' }}>친환경 식품 상세 정보</Title>
       </Flex>
       {/* <Title level={3} style={{ marginBottom: '16px' }}>친환경 상품 상세 정보</Title> */}
       <Form form={form} layout="vertical">
