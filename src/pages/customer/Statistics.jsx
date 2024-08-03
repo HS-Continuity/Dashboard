@@ -2,11 +2,14 @@ import { Form, Card, Row, Col, Typography, Image, Button } from "antd";
 import React, { useEffect, useState } from "react";
 import {
   getProductByAgeRange,
+  getProductByGeneral,
   getProductByManTop3,
+  getProductByRegular,
   getProductByWomanTop3,
 } from "../../apis/apisStatistics";
 import useAuthStore from "../../stores/useAuthStore";
 import PieChart from "../../components/Chart/PieChart";
+import BarChart from "../../components/Chart/BarChart";
 
 const { Title } = Typography;
 
@@ -15,15 +18,20 @@ const Statistics = () => {
   const [manTop3, setManTop3] = useState([]);
   const [womanTop3, setWomanTop3] = useState([]);
   const [productsByAge, setProductsByAge] = useState({});
+  const [productsByGeneral, setProductsByGeneral] = useState([]);
+  const [productsByRegular, setProductsByRegular] = useState([]);
   //const { customerId } = useAuthStore();
   const customerId = 1;
 
-  const data = [
-    { id: "java", label: "Java", value: 20 },
-    { id: "javascript", label: "JavaScript", value: 40 },
-    { id: "ruby", label: "Ruby", value: 10 },
-    { id: "python", label: "Python", value: 30 },
-  ];
+  //파이차트 데이터
+  const transformData = data => {
+    const total = data.reduce((acc, item) => acc + item.orderCount, 0);
+    return data.map(item => ({
+      id: item.productName,
+      label: item.productName,
+      value: item.orderCount,
+    }));
+  };
 
   useEffect(() => {
     const fetchTop3Products = async () => {
@@ -52,11 +60,27 @@ const Statistics = () => {
       setProductsByAge(products);
     };
 
+    const fetchProductsByOrderType = async () => {
+      try {
+        const [generalResponse, regularResponse] = await Promise.all([
+          getProductByGeneral(customerId),
+          getProductByRegular(customerId),
+        ]);
+
+        setProductsByGeneral(generalResponse);
+        setProductsByRegular(regularResponse);
+      } catch (error) {
+        console.error("Error fetching top 3 products:", error);
+      }
+    };
+
     fetchTop3Products();
     fetchProductsByAge();
+    fetchProductsByOrderType();
   }, []);
 
-  console.log(productsByAge);
+  console.log(productsByGeneral);
+  console.log(productsByRegular);
 
   const cardStyle = {
     marginBottom: "16px",
@@ -131,7 +155,7 @@ const Statistics = () => {
               borderRadius: "12px",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
               alignSelf: "center",
-              marginLeft: "5%",
+              marginLeft: "5%", // 이미지가 중앙에서 시작하도록 marginLeft를 5%로 설정
               marginRight: "5%",
             }}
           />
@@ -141,7 +165,7 @@ const Statistics = () => {
               flexDirection: "column",
               justifyContent: "space-around",
               height: "80px",
-              marginLeft: "5%",
+              marginLeft: "5%", // 이미지 시작점과 일치하도록 marginLeft 조정
               marginRight: "5%",
             }}>
             <div
@@ -186,6 +210,18 @@ const Statistics = () => {
       40: "#006600",
       50: "#003300",
     };
+
+    if (!products || products.length === 0) {
+      return (
+        <Col span={12}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ ...boxStyle, backgroundColor: ageRangeColors[ageRange] }}>
+              <h3 style={{ fontSize: "15px", color: "white" }}>{ageRange}대 - 데이터 없음</h3>
+            </div>
+          </div>
+        </Col>
+      );
+    }
 
     return (
       <Col
@@ -318,12 +354,12 @@ const Statistics = () => {
         <Row gutter={8}>
           <Col span={12}>
             <Card title='일반주문 판매량' style={cardStyle}>
-              <PieChart data={data} />
+              <PieChart data={transformData(productsByGeneral)} />
             </Card>
           </Col>
           <Col span={12}>
             <Card title='정기주문 판매량' style={cardStyle}>
-              <PieChart data={data} />
+              <PieChart data={transformData(productsByRegular)} />
             </Card>
           </Col>
         </Row>

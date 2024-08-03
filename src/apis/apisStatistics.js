@@ -1,5 +1,4 @@
 import { apiGet, PRODUCT_DB_URL } from "./apisCommon";
-
 // ----------- 남성 선호 상품 TOP 3 조회 -----------
 export const getProductByManTop3 = async customerId => {
   try {
@@ -7,14 +6,12 @@ export const getProductByManTop3 = async customerId => {
       PRODUCT_DB_URL,
       `/management/ranking/statistics-product?customerId=${customerId}&gender=MALE`
     );
-    console.log("API Response:", response);
     if (Array.isArray(response)) {
       return response;
     } else {
-      throw new Error("Invalid API response");
+      throw new Error("유효하지 않은 API 응답입니다.");
     }
   } catch (error) {
-    console.error("Error in getProductByManTop3:", error);
     throw error;
   }
 };
@@ -26,14 +23,12 @@ export const getProductByWomanTop3 = async customerId => {
       PRODUCT_DB_URL,
       `/management/ranking/statistics-product?customerId=${customerId}&gender=FEMALE`
     );
-    console.log("API Response:", response);
     if (Array.isArray(response)) {
       return response;
     } else {
-      throw new Error("Invalid API response");
+      throw new Error("유효하지 않은 API 응답입니다.");
     }
   } catch (error) {
-    console.error("Error in getProductByManTop3:", error);
     throw error;
   }
 };
@@ -45,16 +40,46 @@ export const getProductByAgeRange = async (customerId, ageRange) => {
       PRODUCT_DB_URL,
       `/management/ranking/statistics-product?customerId=${customerId}&ageRange=${ageRange}`
     );
-    console.log("API Full Response:", response);
-
     if (Array.isArray(response)) {
       return response;
     } else {
-      console.error("API Response is invalid: ", response);
-      throw new Error(`Invalid API response: Expected an array, but got ${typeof response}`);
+      throw new Error("유효하지 않은 API 응답입니다.");
     }
   } catch (error) {
-    console.error("Error in getProductByAgeRange:", error);
+    throw error;
+  }
+};
+
+// ----------- 일반구매 상품 조회 -----------
+export const getProductByGeneral = async customerId => {
+  try {
+    const response = await apiGet(
+      PRODUCT_DB_URL,
+      `/management/ranking/statistics-product?customerId=${customerId}&orderType=General`
+    );
+    if (Array.isArray(response)) {
+      return response;
+    } else {
+      throw new Error("유효하지 않은 API 응답입니다.");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ----------- 정기구매 상품 조회 -----------
+export const getProductByRegular = async customerId => {
+  try {
+    const response = await apiGet(
+      PRODUCT_DB_URL,
+      `/management/ranking/statistics-product?customerId=${customerId}&orderType=Regular`
+    );
+    if (Array.isArray(response)) {
+      return response;
+    } else {
+      throw new Error("유효하지 않은 API 응답입니다.");
+    }
+  } catch (error) {
     throw error;
   }
 };
