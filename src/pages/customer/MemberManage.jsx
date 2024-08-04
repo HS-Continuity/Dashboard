@@ -51,8 +51,8 @@ const MemberManage = () => {
     setLoading(true);
     try {
       const params = {
-        // customerId: String(username),
-        customerId: 1,
+        customerId: String(username),
+        // customerId: 1,
         ...joinForm,
         page: pagination.current - 1,
         size: pagination.pageSize,

@@ -17,6 +17,8 @@ const { RangePicker } = DatePicker;
 
 const OrderGeneral = () => {
 
+  const { username } = useAuthStore();
+
   const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -40,7 +42,6 @@ const OrderGeneral = () => {
   const navigate = useNavigate();
   const eventSourceRef = useRef(null);
   const prevStatusCountRef = useRef({});
-  const { username } = useAuthStore();
 
 
   const updateStatusCount = useCallback((newData) => {
@@ -71,7 +72,8 @@ const OrderGeneral = () => {
 
   useEffect(() => {
     fetchOrders();
-    const customerId = 1;
+    // const customerId = 1;
+    const customerId = String(username);
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
 
     eventSourceRef.current.onopen = () => {

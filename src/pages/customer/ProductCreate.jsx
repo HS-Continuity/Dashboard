@@ -1,5 +1,5 @@
 import { registerNormalProduct, getAllCategories, getCategoryDetails, registerEcoFriendlyProduct } from '../../apis/apisProducts';
-import { Flex, Radio, Upload, message, Breadcrumb, Input, Button, Form, Cascader, Select, Typography } from 'antd';
+import { Flex, Radio, Upload, message, Breadcrumb, Input, Button, Form, Cascader, InputNumber, Typography } from 'antd';
 import { UploadOutlined, LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -86,22 +86,34 @@ const ProductCreate = () => {
       let response;
       if (selectedFoodType === '일반식품') {
         response = await registerNormalProduct(product, defaultImage, detailImages);
+        //----
+        if(response === null) {
+          message.success('일반식품이 성공적으로 등록되었습니다.');
+          navigate('/product/general');
+        }
+        //----
       } else {
         if (!certificationImage) {
           message.error('인증서 이미지를 업로드해주세요.');
           return;
         }
         response = await registerEcoFriendlyProduct(product, defaultImage, certificationImage, detailImages);
+        //----
+        if(response === null) {
+          message.success('친환경식품이 성공적으로 등록되었습니다.');
+          navigate('/product/eco');
+        }
+        //----
       }
   
-      console.log(response);
-      if(response === null) {
-        message.success('상품이 성공적으로 등록되었습니다.');
-        navigate('/product/general');
-      }
+      // console.log(response);
+      // if(response === null) {
+      //   message.success('식품이 성공적으로 등록되었습니다.');
+      //   navigate('/product/general');
+      // }
   
     } catch (error) {
-      message.error('상품 등록에 실패했습니다.');
+      message.error('식품 등록에 실패했습니다.');
       console.error(error);
     }
   };
@@ -192,7 +204,7 @@ const ProductCreate = () => {
           { title: `${selectedFoodType} 등록` },
         ]}
       /> */}
-
+      <br/>
       <Radio.Group onChange={handleRadioChange} value={selectedFoodType} style={{ marginBottom: '20px' }}>
         <Radio value="일반식품">일반식품</Radio>
         <Radio value="친환경식품">친환경식품</Radio>
@@ -222,13 +234,13 @@ const ProductCreate = () => {
 
           <Flex vertical gap="middle" style={{ width: '70%' }}>
             <Flex gap="middle">
-              <Form.Item 
+              {/* <Form.Item 
                 name="customerId" 
                 label="고객ID" 
                 rules={[{ required: true }]} 
                 style={{ width: '30%' }}>
                 <Input disabled style={inputStyle} />
-              </Form.Item>
+              </Form.Item> */}
               <Form.Item label="카테고리" style={{ width: '30%' }}>
                 <Cascader options={categories} onChange={onHandleCategoryChange} placeholder="카테고리 선택" />
               </Form.Item>
@@ -246,7 +258,11 @@ const ProductCreate = () => {
                   { pattern: /^[0-9]*$/, message: '숫자를 입력하세요' }
                 ]} 
                 style={{ width: '30%' }}>
-                <Input suffix= '원'/>
+                <InputNumber 
+                    style={{ ...inputStyle, width: '100%' }} 
+                    formatter={value => `₩ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/\₩\s?|(,*)/g, '')}
+                  />
               </Form.Item>
               <Form.Item name="origin" label="원산지" rules={[{ required: true, message: '원산지를 입력하세요' }]} style={{ width: '30%' }}>
                 <Input />
@@ -258,17 +274,28 @@ const ProductCreate = () => {
             </Form.Item>
 
             <Flex gap="middle">
-            <Form.Item name="isRegularSale" label="정기구매지원여부" rules={[{ required: true }]} style={{ width: '30%' }}>
-                <Select>
-                  <Select.Option value="T">O</Select.Option>
-                  <Select.Option value="F">X</Select.Option>
-                </Select>
+              <Form.Item
+                name="isRegularSale"
+                label="정기구매지원여부"
+                rules={[{ required: true }]}
+                style={{ width: '30%' }}
+              >
+                <Radio.Group>
+                  <Radio.Button value="T">O</Radio.Button>
+                  <Radio.Button value="F">X</Radio.Button>
+                </Radio.Group>
               </Form.Item>
-              <Form.Item name="isPageVisibility" label="페이지노출여부" rules={[{ required: true }]} style={{ width: '30%' }}>
-                <Select>
-                  <Select.Option value="T">O</Select.Option>
-                  <Select.Option value="F">X</Select.Option>
-                </Select>
+
+              <Form.Item
+                name="isPageVisibility"
+                label="페이지노출여부"
+                rules={[{ required: true }]}
+                style={{ width: '30%' }}
+              >
+                <Radio.Group>
+                  <Radio.Button value="T">O</Radio.Button>
+                  <Radio.Button value="F">X</Radio.Button>
+                </Radio.Group>
               </Form.Item>
             </Flex>
 
