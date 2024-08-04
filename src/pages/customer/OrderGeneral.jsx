@@ -156,7 +156,7 @@ const OrderGeneral = () => {
     setLoading(true);
     try {
       const params = {
-        customerId: 1,
+        customerId: String(username),
         page: pagination.current - 1,
         size: pagination.pageSize,
         ...joinForm
@@ -185,6 +185,13 @@ const OrderGeneral = () => {
       
       const transformedOrders = response.content.map(order => {
 
+        const isMemberInfoAvailable = order.availableMemberInformation;
+        const isProductInfoAvailable = order.availableProductInformation;
+
+        if (!isMemberInfoAvailable || !isProductInfoAvailable) {
+          isServerUnstable = true;
+        }
+
 
         //   // 서버 연결 상태 확인
         //   isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
@@ -199,12 +206,18 @@ const OrderGeneral = () => {
       
         return {
           orderDetailId: order.orderDetailId?.toString() || '',
-          memberId: order.memberInfo?.memberId?.toString() || '',
+          // memberId: order.memberInfo?.memberId?.toString() || '',
+          memberId: isMemberInfoAvailable ? order.memberInfo?.memberId?.toString() || '' : '가져오는 중...',
           orderDateTime: order.orderDateTime?.toString() || '',
           deliveryAddress: order.recipient?.recipientAddress?.toString() || '',
           recipient: order.recipient?.recipient?.toString() || '',
           orderStatusCode: order.orderStatusCode?.toString() || '',
           //productName: order.productOrderList?.length > 0 ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` : '',
+          productName: isProductInfoAvailable 
+          ? (order.productOrderList?.length > 0 
+              ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` 
+              : '')
+          : '가져오는 중...',
         }
       });
 
@@ -384,13 +397,18 @@ const OrderGeneral = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (!fetchOrders.length > 0) {
+  //     if (isServerUnstable) {
+  //       message.warning('일부 주문에서 서버 연결이 불안정합니다.');
+  //     } else {
+  //       //message.success('주문 데이터를 성공적으로 불러왔습니다.');
+  //     }
+  //   }
+  // }, [isServerUnstable]);
   useEffect(() => {
-    if (!fetchOrders.length > 0) {
-      if (isServerUnstable) {
-        message.warning('일부 주문에서 서버 연결이 불안정합니다.');
-      } else {
-        //message.success('주문 데이터를 성공적으로 불러왔습니다.');
-      }
+    if (isServerUnstable) {
+      message.warning('일부 서비스에 연결할 수 없습니다. 데이터가 부분적으로 표시될 수 있습니다.');
     }
   }, [isServerUnstable]);
 
@@ -567,7 +585,7 @@ const OrderGeneral = () => {
                 allowClear
               />
             </Flex>
-            <Button onClick={onHandleReset}>Clear Filter</Button>
+            <Button onClick={onHandleReset}>초기화</Button>
           </Flex>
           <Flex gap="small" >
             <Flex gap="small" align='center'>
@@ -579,12 +597,14 @@ const OrderGeneral = () => {
                 onChange={(checked) => setIsSoundOn(checked)}
               />
             </Flex>
-            <Space align="center">출고상태변경</Space>
+            <Space align="center">주문상태변경</Space>
             <StatusChangeButton 
-              title={"배송시작"}
+              title={"주문승인"}
+              onClick={() => onHandleStatusChange('PREPARING_PRODUCT')}
             />
             <StatusChangeButton 
-              title={"배송완료"}
+              title={"출고대기"}
+              onClick={() => onHandleStatusChange('AWAITING_RELEASE')}
             />
           </Flex>
         </Flex>
