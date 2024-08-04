@@ -1,0 +1,29 @@
+.eachOrderItem {
+  color: rgb(128, 67, 67);
+  font-weight: 900;
+  font-size: large;
+}
+
+.eachOrderItem2 {
+  color: #ea1818;
+  font-weight: 900;
+  font-size: large;
+}
+
+.events li {
+  list-style: none;
+  /* font-size: 20px; */
+}
+
+/* .table_background {
+  background-color: aqua;
+} */
+
+
+.card_calendar {
+  width: 100%;
+  max-height: 800px;
+  max-width: 1200px;
+  margin: auto;
+  border: 1.5px solid #d3d3d3;
+}

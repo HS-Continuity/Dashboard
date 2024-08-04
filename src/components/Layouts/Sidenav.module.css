@@ -1,0 +1,28 @@
+.customMenu {
+  background-color: #f1f5ed; /* 원하는 배경색 */
+  height: 100%; /* 메뉴의 높이 설정 */
+  border-top-right-radius: 10px; /* 오른쪽 위 모서리의 border-radius */
+  border-bottom-right-radius: 10px; /* 오른쪽 아래 모서리의 border-radius */
+}
+
+.customMenu :global(.ant-menu-sub .ant-menu-item-selected) {
+  background-color: #00800046 !important; /* 서브메뉴 아이템용 다른 초록색 */
+  color: #000000;
+}
+
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title),
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover) {
+  color: #006400 !important; /* 진한 초록색 */
+}
+
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon),
+.customMenu
+  :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover .ant-menu-item-icon) {
+  color: #006400 !important; /* 아이콘 색상도 변경 */
+}
+
+.customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow),
+.customMenu
+  :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover .ant-menu-submenu-arrow) {
+  color: #006400 !important; /* 화살표 색상도 변경 */
+}

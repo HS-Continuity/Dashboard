@@ -1,0 +1,4 @@
+{
+  "/api/v1": "product.json",
+  "/api/v2": "timeAttack.json"
+}

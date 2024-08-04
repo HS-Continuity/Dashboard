@@ -1,0 +1,4 @@
+.fullScreen {
+  flex-direction: column;
+  justify-content: space-between;
+}

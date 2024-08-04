@@ -1,0 +1,15 @@
+.fullScreen {
+  /* display: flex; */
+  flex-direction: column;
+}
+
+.header {
+  justify-content: space-between
+}
+
+
+
+.cards {
+  justify-items: end;
+  gap: 10px;
+}
