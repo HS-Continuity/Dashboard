@@ -146,7 +146,14 @@ function App() {
 
           {/* Customer routes */}
           <Route path='/member'>
-            <Route index element={<MemberManage />} />
+            <Route 
+              index 
+              element={
+                <ProtectedRoute>
+                  <MemberManage />
+                </ProtectedRoute>
+                } 
+              />
             <Route 
               path=':member_id' 
               element={

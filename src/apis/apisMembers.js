@@ -41,7 +41,7 @@ export const fetchMemberAddresses = async (memberId, isDefault = false) => {
       memberId,
       isDefault
     });
-    console.log('보내는 데이터: ', response)
+    console.log('서버에서 보내는 주소 데이터: ', response)
     return response;
   } catch (error) {
     console.error('Error fetching member addresses:', error);

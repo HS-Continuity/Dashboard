@@ -170,7 +170,7 @@ const MemberManageDetail = () => {
       return <div>주소 정보를 불러오고 있습니다...</div>;
     }
     if (!addresses) {
-      return <div>주소 정보를 찾을 수 없습니다.</div>
+      return <div>등록된 주소지가 없습니다.</div>
     }
 
     const sortedAddresses = addresses ? [...addresses].sort((a, b) => {
