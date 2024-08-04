@@ -52,6 +52,7 @@ const ProductGeneral = () => {
   }, [])
 
   const rowSelection = {
+    type: 'radio',
     selectedRowKeys,
     onChange: (selectedRowKeys) => {
       setSelectedRowKeys(selectedRowKeys);
@@ -651,7 +652,7 @@ const ProductGeneral = () => {
       </Flex>
       <Flex gap='small' align='center' justify='space-between'>
         <Flex gap="small" wrap>
-          <Button onClick={onHandleReset} className={styles.smallButton} >Clear Filter</Button>
+          <Button onClick={onHandleReset} className={styles.smallButton} >초기화</Button>
           {/* <Button onClick={clearAll}>Clear filters and sorters</Button> */}
         </Flex>
         <Flex gap="small" wrap>

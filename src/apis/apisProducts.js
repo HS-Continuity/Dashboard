@@ -137,7 +137,7 @@ export const registerEcoFriendlyProduct = async (product, defaultImage, certific
 
 // ----------- 일반 식품 조회 ----------- 
 export const fetchProductItems = async (params) => {
-  const queryString = Object.entries(params)
+  const queryString = Object.entries({...params, isEcoFriend: 'INACTIVE' })
     .filter(([_, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
     .join('&');
