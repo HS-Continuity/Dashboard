@@ -329,7 +329,7 @@ const MemberManage = () => {
       </Flex>
       <br />
       <Flex gap='small' justify='flex-end'>
-        <Button onClick={clearFilters}>Clear Filter</Button>
+        <Button onClick={clearFilters}>초기화</Button>
       </Flex>
       <br />
       <Table
