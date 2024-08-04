@@ -22,11 +22,10 @@ const useAuthStore = create((set, get) => ({
     set({ initializeAttempts: initializeAttempts + 1 });
 
     try {
-      const response = await axios.get(
-        "https://api.yeonieum.com/memberservice/access-token",
-        { timeout: 5000 },
-        { withCredentials: true }
-      );
+      const response = await axios.get("https://api.yeonieum.com/memberservice/access-token", {
+        timeout: 5000,
+        withCredentials: true,
+      });
 
       const authHeader = response.headers["authorization"];
 
