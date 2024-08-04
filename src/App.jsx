@@ -144,9 +144,17 @@ function App() {
             />
           </Route>
 
+
           {/* Customer routes */}
           <Route path='/member'>
-            <Route index element={<MemberManage />} />
+            <Route 
+              index 
+              element={
+                <ProtectedRoute>
+                  <MemberManage />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path=':member_id' 
               element={
@@ -336,6 +344,8 @@ function App() {
           <Route path='delivery' element={<Delivery />} />
           <Route path='promotion' element={<Promotion />} />
         </Route>
+        
+        <Route path='*' element={<Main />} />
       </Routes>
     </div>
   );
