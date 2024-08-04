@@ -20,8 +20,9 @@ const Statistics = () => {
   const [productsByAge, setProductsByAge] = useState({});
   const [productsByGeneral, setProductsByGeneral] = useState([]);
   const [productsByRegular, setProductsByRegular] = useState([]);
-  //const { customerId } = useAuthStore();
-  const customerId = 1;
+  const { username } = useAuthStore();
+  const customerId = String(username);
+  console.log(customerId);
 
   //파이차트 데이터
   const transformData = data => {

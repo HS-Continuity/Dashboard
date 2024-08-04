@@ -23,6 +23,11 @@ jobs:
 
       - name: Build application
         run: npx vite build
+        env:
+          VITE_MEMBER_DB_URL: ${{ secrets.VITE_MEMBER_DB_URL }}
+          VITE_PRODUCT_DB_URL: ${{ secrets.VITE_PRODUCT_DB_URL }}
+          VITE_ORDER_DB_URL: ${{ secrets.VITE_ORDER_DB_URL }}
+          VITE_CONFIG: ${{ secrets.VITE_CONFIG }}
 
       - name: Sync files to S3
         uses: jakejarvis/s3-sync-action@v0.5.1
