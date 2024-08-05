@@ -1,6 +1,7 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { apiGet, apiPatch, ORDER_DB_URL } from './apisCommon';
 import 'event-source-polyfill';
+import axios from 'axios';
 
 // [ 일반 주문 페이지 ]
 // ----------- 일반 주문 조회 ----------- 
@@ -29,9 +30,13 @@ export const updateBulkOrderStatus = async (orderIds, orderStatusCode) => {
 export const subscribeToOrderStatusUpdates = (customerId) => {
   const url = `${ORDER_DB_URL}/order-notification/${customerId}/subscription`;
   console.log('Connecting to SSE URL:', url);
+  console.log('token:', axios.defaults.headers.common['Authorization']);
   return new EventSourcePolyfill(url, {
     withCredentials:true,
-    heartbeatTimeout: 180*1000
+    heartbeatTimeout: 180*1000,
+    headers : {
+      "Authorization" : axios.defaults.headers.common['Authorization']
+    }
   });
 }
 

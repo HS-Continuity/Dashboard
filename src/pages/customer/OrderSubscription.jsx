@@ -45,7 +45,7 @@ const OrderSubscription = () => {
       setMonthlyOrderCounts(response);
     } catch (error) {
       console.error('Failed to fetch monthly orders:', error);
-      message.error('주문 데이터를 불러오는데 실패했습니다.');
+      //message.error('주문 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ const OrderSubscription = () => {
       });
     } catch (error) {
         console.error('Failed to fetch daily orders: ', error);
-        message.error('일별 주문 데이터를 불러오는데 실패했습니다');
+        //message.error('일별 주문 데이터를 불러오는데 실패했습니다');
     } finally {
       setLoading(false);
     }

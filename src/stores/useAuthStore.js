@@ -48,18 +48,18 @@ const useAuthStore = create((set, get) => ({
       }
     } catch (error) {
       console.error("Failed to refresh token:", error);
-      if (error.code === "ECONNREFUSED") {
-        console.log("Server is not responding. Retrying in 5 seconds...");
-        setTimeout(() => get().initializeAuth(), 5000);
-      } else {
-        set({
-          accessToken: null,
-          username: null,
-          isAuthenticated: false,
-          isInitializing: false,
-        });
-        delete axios.defaults.headers.common["Authorization"];
-      }
+      // if (error.code === "ECONNREFUSED") {
+      //   console.log("Server is not responding. Retrying in 5 seconds...");
+      //   setTimeout(() => get().initializeAuth(), 5000);
+      // } else {
+      //   set({
+      //     accessToken: null,
+      //     username: null,
+      //     isAuthenticated: false,
+      //     isInitializing: false,
+      //   });
+      //   delete axios.defaults.headers.common["Authorization"];
+      // }
     }
     return false;
   },

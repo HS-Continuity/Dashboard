@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import style from './Order.module.css';
-import orderIn from '../../assets/audio/orderIn.mp3';
+import newVoice2 from '../../assets/audio/newVoice2.m4a';
 import styles from './Table.module.css';
 
 import useAuthStore from "../../stores/useAuthStore";
@@ -19,7 +19,7 @@ const OrderGeneral = () => {
 
   const { username } = useAuthStore();
 
-  const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
+  const audioRef = useRef(new Audio(newVoice2)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -232,7 +232,7 @@ const OrderGeneral = () => {
       
     } catch (error) {
       //console.error('Failed to fetch orders:', error);
-      message.error('주문 데이터를 불러오는데 실패했습니다.');
+      //message.error('주문 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -621,7 +621,7 @@ const OrderGeneral = () => {
         rowSelection={rowSelection}
         onRow={onRow}
         style={{ width: '100%', height: '300px' }} // 전체 테이블 크기 조정
-        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
+        scroll={{ x: '100%', y: 300,}}// 가로 스크롤과 세로 스크롤 설정
       />
       
     </div>

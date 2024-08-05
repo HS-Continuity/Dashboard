@@ -91,7 +91,7 @@ const Delivery = () => {
       })
       
     } catch (error) {
-      message.error('배송 데이터를 불러오는데 실패했습니다.');
+      //message.error('배송 데이터를 불러오는데 실패했습니다.');
       setIsServerUnstable(true);
     } finally {
       setLoading(false);
@@ -114,7 +114,7 @@ const Delivery = () => {
       }
     } catch (error) {
       console.error('Failed to fetch status counts:', error);
-      message.error('상태별 개수를 불러오는데 실패했습니다.');
+      //message.error('상태별 개수를 불러오는데 실패했습니다.');
     }
   };
 
@@ -344,7 +344,7 @@ const Delivery = () => {
                 allowClear
               />
             </Flex>
-            <Button onClick={onHandleReset}>Clear Filter</Button>
+            <Button onClick={onHandleReset}>초기화</Button>
           </Flex>
           <Flex gap="small" >
             <Space align="center">출고상태변경</Space>
