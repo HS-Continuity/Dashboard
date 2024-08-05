@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Card, Form, Row, Col, Space, Button, Typography } from 'antd';
+import { useEffect, useState } from 'react';
+import { Card, Form, Row, Col, Space, Button, Typography, message } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import './OrderSubscriptionDetailModule.css';
 
@@ -11,12 +11,19 @@ const OrderSubscriptionDetail = () => {
   const { regularOrderDetail } = location.state || {};
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [isServerUnstable, setIsServerUnstable] = useState(false);
+
 
   console.log('상세 받아온 데이터: ', regularOrderDetail)
 
   useEffect(() => {
     if (regularOrderDetail && regularOrderDetail[0]) {
       const data = regularOrderDetail[0];
+      const isMemberInfoAvailable = data.availableMemberService;
+      const isProductInfoAvailable = data.availableProductService;
+
+      setIsServerUnstable(!isMemberInfoAvailable || !isProductInfoAvailable);
+
       form.setFieldsValue({
         availableMemberService: data.availableMemberService,
         availableProductService: data.availableProductService,
@@ -24,10 +31,10 @@ const OrderSubscriptionDetail = () => {
         deliveryDayOfWeeks: data.deliveryDayOfWeeks,
         deliveryPeriod: data.deliveryPeriod,
         endDate: data.endDate,
-        memberId: data.memberId,
+        memberId: isMemberInfoAvailable ? data.memberId : '불러오는 중..',
         nextDeliveryDate: data.nextDeliveryDate,
-        productId: data.productId,
-        productName: data.productName,
+        productId: isProductInfoAvailable ? data.productId : '불러오는 중..',
+        productName: isProductInfoAvailable ? data.productName : '불러오는 중..',
         regularDelivaryApplicationId: data.regularDelivaryApplicationId,
         reservationCount: data.reservationCount,
         startDate: data.startDate,
@@ -36,6 +43,12 @@ const OrderSubscriptionDetail = () => {
       });
     }
   }, [regularOrderDetail, form]);
+
+  useEffect(() => {
+    if (isServerUnstable) {
+      message.warning('일부 서비스에 연결할 수 없습니다. 데이터가 부분적으로 표시될 수 있습니다.');
+    }
+  }, [isServerUnstable]);
 
   const onHandleBackClick = () => {
     navigate(-1);

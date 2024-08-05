@@ -1,6 +1,6 @@
-import { Tag, DatePicker, Form, Button, Table, Typography, Row, Col, Card, Space } from 'antd';
+import { Tag, message, Form, Button, Table, Typography, Row, Col, Card, Space } from 'antd';
 import moment from 'moment';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { LeftOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -11,6 +11,8 @@ const OrderGeneralDetail = () => {
   const { orderDetail } = location.state || {};
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [isServerUnstable, setIsServerUnstable] = useState(false);
+
 
   const onHandleBackClick = () => {
     navigate(-1);
@@ -38,7 +40,7 @@ const OrderGeneralDetail = () => {
       title: '상품명', 
       dataIndex: 'name', 
       key: 'name',
-      render: (name) => name || <span style={{ color: 'gray' }}>미정</span>,
+      render: (name) => name || <span style={{ color: 'gray' }}>불러오는 중..</span>,
     },
     { title: '수량', dataIndex: 'quantity', key: 'quantity' },
     { title: '할인액', dataIndex: 'discountAmount', key: 'discountAmount' },
@@ -56,25 +58,40 @@ const OrderGeneralDetail = () => {
   ];
 
   useEffect(() => {
-    form.setFieldsValue({
-      orderDetailId: orderDetail?.orderDetailId,
-      memberId: orderDetail?.memberInfo?.memberId,
-      orderDateTime: orderDetail?.orderDateTime ? moment(orderDetail.orderDateTime) : null,
-      recipient: orderDetail?.recipient?.recipient,
-      deliveryAddress: orderDetail?.recipient?.recipientAddress,
-      orderMemo: orderDetail?.orderMemo
-    });
+    if (orderDetail) {
+      const isMemberInfoAvailable = orderDetail.availableMemberInformation;
+      const isProductInfoAvailable = orderDetail.availableProductInformation;
+
+      setIsServerUnstable(!isMemberInfoAvailable || !isProductInfoAvailable);
+
+      form.setFieldsValue({
+        orderDetailId: orderDetail?.orderDetailId,
+        memberId: isMemberInfoAvailable ? orderDetail.memberInfo?.memberId : '불러오는 중..',
+        orderDateTime: orderDetail?.orderDateTime ? moment(orderDetail.orderDateTime) : null,
+        recipient: orderDetail?.recipient?.recipient,
+        deliveryAddress: orderDetail?.recipient?.recipientAddress,
+        orderMemo: orderDetail?.orderMemo
+      });
+    }
   }, [orderDetail, form]);
 
-  const productData = orderDetail?.productOrderList?.productOrderList.map((product, index) => ({
-    key: index,
-    no: index + 1,
-    name: product.name,
-    quantity: product.quantity,
-    discountAmount: product.discountAmount,
-    finalPrice: product.finalPrice,
-    status: product.status,
-  })) || [];
+  useEffect(() => {
+    if (isServerUnstable) {
+      message.warning('일부 서비스에 연결할 수 없습니다. 데이터가 부분적으로 표시될 수 있습니다.');
+    }
+  }, [isServerUnstable]);
+
+  const productData = orderDetail?.availableProductInformation ? 
+    orderDetail?.productOrderList?.productOrderList.map((product, index) => ({
+      key: index,
+      no: index + 1,
+      name: product.name,
+      quantity: product.quantity,
+      discountAmount: product.discountAmount,
+      finalPrice: product.finalPrice,
+      status: product.status,
+    })) || []
+  : [{ key: 0, name: '불러오는 중..' }];
 
   const textStyle = {
     display: 'block',

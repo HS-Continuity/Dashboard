@@ -207,7 +207,7 @@ const OrderGeneral = () => {
         return {
           orderDetailId: order.orderDetailId?.toString() || '',
           // memberId: order.memberInfo?.memberId?.toString() || '',
-          memberId: isMemberInfoAvailable ? order.memberInfo?.memberId?.toString() || '' : '가져오는 중...',
+          memberId: isMemberInfoAvailable ? order.memberInfo?.memberId?.toString() || '' : '불러오는 중..',
           orderDateTime: order.orderDateTime?.toString() || '',
           deliveryAddress: order.recipient?.recipientAddress?.toString() || '',
           recipient: order.recipient?.recipient?.toString() || '',
@@ -217,7 +217,7 @@ const OrderGeneral = () => {
           ? (order.productOrderList?.length > 0 
               ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` 
               : '')
-          : '가져오는 중...',
+          : '불러오는 중..',
         }
       });
 
