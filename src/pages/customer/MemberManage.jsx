@@ -99,7 +99,7 @@ const MemberManage = () => {
       });
     } catch (error) {
       console.error("Failed to fetch members:", error);
-      message.error("회원 데이터를 불러오는데 실패했습니다.");
+      //message.error("회원 데이터를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }

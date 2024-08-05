@@ -138,7 +138,7 @@ const Inventory = () => {
       //console.log('modifyData: ', modifyData)
       const response = await modifyProductInventory(productInventoryId, modifyData);
 
-      if (response && response.resultCode === "200") {
+      // if (response.resultCode == null) {
         message.success('재고가 성공적으로 변경되었습니다.');
         
         // 로컬 상태 업데이트
@@ -158,12 +158,12 @@ const Inventory = () => {
               : item
           )
         );
-      } else {
-        message.error('재고 변경에 실패했습니다: ' + (response ? response.resultMsg : '알 수 없는 오류'));
-      }
+      // } else {
+      //   //message.error('재고 변경에 실패했습니다: ' + (response ? response.resultMsg : '알 수 없는 오류'));
+      // }
     } catch (error) {
-      console.error('재고 변경 오류:', error);
-      message.error('재고 변경에 실패했습니다: ' + error.message);
+      // console.error('재고 변경 오류:', error);
+      // message.error('재고 변경에 실패했습니다: ' + error.message);
     }
   };
 
@@ -206,7 +206,6 @@ const Inventory = () => {
 
   // 재고 등록
   const onHandleInventoryCreate = async (productId, warehouseDate, quantity, expirationDate) => {
-    try {
       const registerData = {
         productId,
         warehouseDate,
@@ -214,16 +213,10 @@ const Inventory = () => {
         expirationDate
       };
       const response = await registerProductInventory(registerData);
-      if (response && response.successCode === SuccessCode.INSERT_SUCCESS) {
-        message.success('재고가 성공적으로 등록되었습니다.');
-        fetchInventorySummaryData(); // 재고 요약 데이터 새로고침
-      } else {
-        message.error('재고 등록에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('재고 등록 오류:', error);
-      message.error('재고 등록에 실패했습니다.');
-    }
+      //console.log('registerData가 뭐여?: ', registerData)
+      message.success('재고가 성공적으로 등록되었습니다.');
+
+      fetchInventorySummaryData(); // 재고 요약 데이터 새로고침
   };
 
 
@@ -422,7 +415,7 @@ const Inventory = () => {
           sortDirections={['descend', 'ascend', 'descend']}
         /> */}
         <Flex gap="small" wrap>
-          <Button onClick={onHandleDrawerReset}>Clear Filter</Button>
+          <Button onClick={onHandleDrawerReset}>초기화</Button>
         </Flex>
         <br/>
         <Table 

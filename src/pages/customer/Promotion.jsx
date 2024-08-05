@@ -35,8 +35,8 @@ const Promotion = () => {
     setLoading(true);
     try {
       const params = {
-        // customerId: String(username),
-        customerId: 1, // 실제 사용시 로그인한 고객의 ID를 사용해야 함
+        customerId: String(username),
+        //customerId: 1, // 실제 사용시 로그인한 고객의 ID를 사용해야 함
         startPage: pagination.current - 1,
         pageSize: pagination.pageSize,
         ...joinForm
@@ -227,14 +227,14 @@ const Promotion = () => {
       render: (discountRate) => `${discountRate} %`,
       ...getColumnSearchProps('discountRate'),
     },
-    {
-      title: '상품이미지',
-      dataIndex: 'productImage',
-      key: 'productImage',
-      filteredValue: filteredInfo.discoauntRate || null,
-      filtered: false,
-      ...getColumnSearchProps('productImage'),
-    },
+    // {
+    //   title: '상품이미지',
+    //   dataIndex: 'productImage',
+    //   key: 'productImage',
+    //   filteredValue: filteredInfo.discoauntRate || null,
+    //   filtered: false,
+    //   ...getColumnSearchProps('productImage'),
+    // },
     {
       title: '광고 시작일',
       dataIndex: 'startDate',
@@ -329,7 +329,7 @@ const Promotion = () => {
             }}
           />
           </Flex>
-        <Button onClick={onHandleReset}>Clear Filter</Button>
+        <Button onClick={onHandleReset}>초기화</Button>
       </Flex>
       <br />
       <Table

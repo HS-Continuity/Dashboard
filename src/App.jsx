@@ -35,6 +35,8 @@ import Shipment from "./pages/customer/Shipment";
 import ShipmentDetail from "./pages/customer/ShipmentDetail";
 import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
+import NotFound from "./pages/customer/NotFound";
+
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";
 import { useLargeCursorStore } from "./stores/largeCursorStore";
@@ -336,6 +338,9 @@ function App() {
           <Route path='delivery' element={<Delivery />} />
           <Route path='promotion' element={<Promotion />} />
         </Route>
+
+        {/* 허용되지 않은 URL */}
+        <Route path='*' element={<NotFound />} />
       </Routes>
     </div>
   );
