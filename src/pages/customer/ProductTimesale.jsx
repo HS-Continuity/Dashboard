@@ -51,6 +51,7 @@ const ProductTimeSale = () => {
   }, [])
 
   const rowSelection = {
+    type: 'radio',
     selectedRowKeys,
     onChange: (selectedRowKeys) => {
       setSelectedRowKeys(selectedRowKeys);
@@ -373,13 +374,13 @@ const ProductTimeSale = () => {
     <div>
       <Flex gap='small' align="center" justify='space-between'>
         <Flex gap="small" wrap>
-          <h2>타임어택식품관리</h2>
+          <h2>타임세일 식품관리</h2>
         </Flex>
       </Flex>
       <Flex gap='small' align="center" justify='space-between'>
         <Flex gap="small" wrap>
           <Button 
-            onClick={clearFilters}>Clear Filter</Button>
+            onClick={clearFilters}>초기화</Button>
         </Flex>
         <Flex gap="small" wrap>
           {['PENDING', 'APPROVE', 'IN_PROGRESS', 'ENDED_EVENT', 'CANCELED'].map((status) => (

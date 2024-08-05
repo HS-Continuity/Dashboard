@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 //import googleLogo from "../../assets/images/google_icon.png";
 //import naverLogo from "../../assets/images/naver_icon.png";
 import logo from "../../assets/images/logo.png";
-import { handleSocialLogin } from "../../apis/apisLogIn";
+//import { handleSocialLogin } from "../../apis/apisLogIn";
 import styled from "styled-components";
 
 import useAuthStore from "../../stores/useAuthStore";
