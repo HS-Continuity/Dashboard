@@ -26,8 +26,17 @@ import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
+// const menuItems = [
+//   {
+//     key: 'logout',
+//     icon: <LogoutOutlined />,
+//     label: 'Logout',
+//     onClick: handleLogout
+//   },
+// ];
+
 const MainHeader = ({ collapsed, onCollapse }) => {
-  const { username } = useAuthStore();
+  const { username, logout } = useAuthStore();
   console.log("username: ", username);
 
   const { fontSize, setFontSize } = useFontSizeStore();
@@ -42,26 +51,24 @@ const MainHeader = ({ collapsed, onCollapse }) => {
     setFontSize(value);
   };
 
-  // const {
-  //   token: { colorBgContainer },
-  // } = theme.useToken();
-  const menu = (
-    <Menu>
-      {/* <Menu.Item key="profile" icon={<UserOutlined />}>
-        Profile
-      </Menu.Item> */}
-      {/* <Menu.Item key="settings" icon={<SettingOutlined />}>
-        Settings
-      </Menu.Item> */}
-      <Menu.Item key='logout' icon={<LogoutOutlined />}>
-        Logout
-      </Menu.Item>
-    </Menu>
-  );
-
+  
   const handleEasyViewMode = () => {
     navigate(`/easy${location.pathname}`);
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const menuItems = [
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Logout',
+      onClick: handleLogout
+    },
+  ];
 
   return (
     <Header
@@ -85,10 +92,12 @@ const MainHeader = ({ collapsed, onCollapse }) => {
             height: 50,
           }}
         />
-        <Flex>
+        <Flex align='center' gap='large'>
+          <Button onClick={handleEasyViewMode}>쉽게보기</Button>
+          <Flex>
           <span style={{ marginRight: "10px" }}>{username}님</span>
           <Space style={{ marginRight: "16px" }}>
-            <Dropdown menu={{ items: menu.children }} trigger={["click"]}>
+            <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
               <Badge dot>
                 <Avatar
                   size='large'
@@ -102,23 +111,24 @@ const MainHeader = ({ collapsed, onCollapse }) => {
               </Badge>
             </Dropdown>
           </Space>
+          </Flex>
+          {/* <span style={{ marginRight: "10px" }}>{username}님</span>
+          <Space style={{ marginRight: "16px" }}>
+            <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+              <Badge dot>
+                <Avatar
+                  size='large'
+                  max={{
+                    count: 2,
+                    style: { color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" },
+                    popover: { trigger: "click" },
+                  }}>
+                  <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
+                </Avatar>
+              </Badge>
+            </Dropdown>
+          </Space> */}
         </Flex>
-        {/* <Space style={{ marginRight: "16px" }}>
-          <Dropdown overlay={userMenu} trigger={['click']}>
-            <Badge dot>
-              <Avatar
-                size="large"
-                max={{
-                  count: 2,
-                  style: { color: '#f56a00', backgroundColor: '#fde3cf', cursor: 'pointer'},
-                  popover: { trigger: 'click' },
-                }}
-              >
-                <Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
-              </Avatar>
-            </Badge>
-          </Dropdown>
-        </Space> */}
       </Flex>
     </Header>
   );
