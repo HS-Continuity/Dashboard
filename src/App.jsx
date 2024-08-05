@@ -157,8 +157,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path=':member_id'
+            <Route 
+              path=':member_id' 
               element={
                 <ProtectedRoute>
                   <MemberManageDetail />
