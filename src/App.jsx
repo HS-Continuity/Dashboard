@@ -35,6 +35,8 @@ import Shipment from "./pages/customer/Shipment";
 import ShipmentDetail from "./pages/customer/ShipmentDetail";
 import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
+import NotFound from "./pages/customer/NotFound";
+
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";
 import { useLargeCursorStore } from "./stores/largeCursorStore";
@@ -147,7 +149,14 @@ function App() {
 
           {/* Customer routes */}
           <Route path='/member'>
-            <Route index element={<MemberManage />} />
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <MemberManage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path=':member_id'
               element={
@@ -335,6 +344,10 @@ function App() {
           <Route path='delivery' element={<Delivery />} />
           <Route path='promotion' element={<EasyPromotion />} />
         </Route>
+
+        <Route path='/' element={<Main />} />
+        {/* 허용되지 않은 URL */}
+        <Route path='*' element={<Main />} />
       </Routes>
     </div>
   );
