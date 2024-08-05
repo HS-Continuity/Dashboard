@@ -64,7 +64,7 @@ const EasyViewContent = ({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${currentStep === "main" ? 3 : subMenuItems[currentStep]?.length || 3}, 1fr)`, // gridTemplateColumns 조정
+          gridTemplateColumns: `repeat(${currentStep === "main" ? 4 : subMenuItems[currentStep]?.length || 3}, 1fr)`, // gridTemplateColumns 조정
           gap: "20px",
           justifyContent: "center",
         }}>

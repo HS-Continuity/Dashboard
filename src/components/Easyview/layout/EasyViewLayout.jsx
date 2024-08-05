@@ -126,6 +126,11 @@ const EasyViewLayout = () => {
         case "식품":
         case "식퓸":
         case "식픔":
+        case "일반식품":
+        case "일발식픔":
+        case "일반식푼":
+        case "이반식푼":
+        case "릴반식푼":
           navigate("/easy/product/general");
           setIsContentVisible(false);
           break;
@@ -134,14 +139,27 @@ const EasyViewLayout = () => {
         case "칭환경":
         case "친한경":
         case "칭항경":
+        case "친환경식품":
+        case "칭환경식품":
+        case "친한경식품":
+        case "칭항경식품":
           navigate("/easy/product/eco");
           setIsContentVisible(false);
           break;
 
         case "타임세일":
+        case "타임세인":
+        case "타인세일":
         case "타임새일":
         case "타임셰일":
         case "타임쉐일":
+        case "바짝":
+        case "반짠":
+        case "반짱":
+        case "반짝":
+        case "반짝할인":
+        case "반짝하린":
+        case "반짠하린":
           navigate("/easy/product/timesale");
           setIsContentVisible(false);
           break;
@@ -150,10 +168,17 @@ const EasyViewLayout = () => {
         case "조문":
         case "주뭄":
         case "주뭉":
+        case "일반주문":
+        case "일반조문":
+        case "일반주뭄":
+        case "일반주뭉":
           navigate("/easy/order/general");
           setIsContentVisible(false);
           break;
 
+        case "전기":
+        case "정기":
+        case "절기":
         case "전기주뭄":
         case "정기쥬문":
         case "정기주뭄":
@@ -164,6 +189,8 @@ const EasyViewLayout = () => {
           break;
 
         case "재고":
+        case "쟈고":
+        case "자고":
         case "재꼬":
         case "제고":
           navigate("/easy/inventory");
@@ -171,10 +198,48 @@ const EasyViewLayout = () => {
           break;
 
         case "배송":
+        case "바송":
+        case "배손":
+        case "애송":
+        case "배승":
         case "배성":
         case "배쏭":
         case "배숑":
           navigate("/easy/delivery");
+          setIsContentVisible(false);
+          break;
+
+        case "출고":
+        case "충고":
+        case "출구":
+        case "춘고":
+        case "추고":
+        case "촐고":
+        case "충구":
+        case "쭐고":
+          navigate("/easy/shipment");
+          setIsContentVisible(false);
+          break;
+
+        case "통계":
+        case "통개":
+        case "통게":
+        case "통께":
+        case "통예":
+        case "톤계":
+        case "톤게":
+        case "톤개":
+          navigate("/easy/statistics");
+          setIsContentVisible(false);
+          break;
+
+        case "광고":
+        case "광꼬":
+        case "강고":
+        case "강꼬":
+        case "관고":
+        case "관꼬":
+          navigate("/easy/promotion");
           setIsContentVisible(false);
           break;
 
