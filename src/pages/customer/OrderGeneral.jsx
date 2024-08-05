@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import style from './Order.module.css';
-import orderIn from '../../assets/audio/orderIn.mp3';
+import newVoice2 from '../../assets/audio/newVoice2.m4a';
 import styles from './Table.module.css';
 
 import useAuthStore from "../../stores/useAuthStore";
@@ -17,7 +17,9 @@ const { RangePicker } = DatePicker;
 
 const OrderGeneral = () => {
 
-  const audioRef = useRef(new Audio(orderIn)); // 오디오 객체 생성
+  const { username } = useAuthStore();
+
+  const audioRef = useRef(new Audio(newVoice2)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,6 @@ const OrderGeneral = () => {
   const navigate = useNavigate();
   const eventSourceRef = useRef(null);
   const prevStatusCountRef = useRef({});
-  const { username } = useAuthStore();
 
 
   const updateStatusCount = useCallback((newData) => {
@@ -71,7 +72,8 @@ const OrderGeneral = () => {
 
   useEffect(() => {
     fetchOrders();
-    const customerId = 1;
+    // const customerId = 1;
+    const customerId = String(username);
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
 
     eventSourceRef.current.onopen = () => {
@@ -154,7 +156,7 @@ const OrderGeneral = () => {
     setLoading(true);
     try {
       const params = {
-        customerId: 1,
+        customerId: String(username),
         page: pagination.current - 1,
         size: pagination.pageSize,
         ...joinForm
@@ -183,6 +185,13 @@ const OrderGeneral = () => {
       
       const transformedOrders = response.content.map(order => {
 
+        const isMemberInfoAvailable = order.availableMemberInformation;
+        const isProductInfoAvailable = order.availableProductInformation;
+
+        if (!isMemberInfoAvailable || !isProductInfoAvailable) {
+          isServerUnstable = true;
+        }
+
 
         //   // 서버 연결 상태 확인
         //   isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
@@ -197,12 +206,18 @@ const OrderGeneral = () => {
       
         return {
           orderDetailId: order.orderDetailId?.toString() || '',
-          memberId: order.memberInfo?.memberId?.toString() || '',
+          // memberId: order.memberInfo?.memberId?.toString() || '',
+          memberId: isMemberInfoAvailable ? order.memberInfo?.memberId?.toString() || '' : '불러오는 중..',
           orderDateTime: order.orderDateTime?.toString() || '',
           deliveryAddress: order.recipient?.recipientAddress?.toString() || '',
           recipient: order.recipient?.recipient?.toString() || '',
           orderStatusCode: order.orderStatusCode?.toString() || '',
           //productName: order.productOrderList?.length > 0 ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` : '',
+          productName: isProductInfoAvailable 
+          ? (order.productOrderList?.length > 0 
+              ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` 
+              : '')
+          : '불러오는 중..',
         }
       });
 
@@ -217,7 +232,7 @@ const OrderGeneral = () => {
       
     } catch (error) {
       //console.error('Failed to fetch orders:', error);
-      message.error('주문 데이터를 불러오는데 실패했습니다.');
+      //message.error('주문 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -382,13 +397,18 @@ const OrderGeneral = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (!fetchOrders.length > 0) {
+  //     if (isServerUnstable) {
+  //       message.warning('일부 주문에서 서버 연결이 불안정합니다.');
+  //     } else {
+  //       //message.success('주문 데이터를 성공적으로 불러왔습니다.');
+  //     }
+  //   }
+  // }, [isServerUnstable]);
   useEffect(() => {
-    if (!fetchOrders.length > 0) {
-      if (isServerUnstable) {
-        message.warning('일부 주문에서 서버 연결이 불안정합니다.');
-      } else {
-        //message.success('주문 데이터를 성공적으로 불러왔습니다.');
-      }
+    if (isServerUnstable) {
+      message.warning('일부 서비스에 연결할 수 없습니다. 데이터가 부분적으로 표시될 수 있습니다.');
     }
   }, [isServerUnstable]);
 
@@ -565,7 +585,7 @@ const OrderGeneral = () => {
                 allowClear
               />
             </Flex>
-            <Button onClick={onHandleReset}>Clear Filter</Button>
+            <Button onClick={onHandleReset}>초기화</Button>
           </Flex>
           <Flex gap="small" >
             <Flex gap="small" align='center'>
@@ -577,12 +597,14 @@ const OrderGeneral = () => {
                 onChange={(checked) => setIsSoundOn(checked)}
               />
             </Flex>
-            <Space align="center">출고상태변경</Space>
+            <Space align="center">주문상태변경</Space>
             <StatusChangeButton 
-              title={"배송시작"}
+              title={"주문승인"}
+              onClick={() => onHandleStatusChange('PREPARING_PRODUCT')}
             />
             <StatusChangeButton 
-              title={"배송완료"}
+              title={"출고대기"}
+              onClick={() => onHandleStatusChange('AWAITING_RELEASE')}
             />
           </Flex>
         </Flex>
@@ -599,7 +621,7 @@ const OrderGeneral = () => {
         rowSelection={rowSelection}
         onRow={onRow}
         style={{ width: '100%', height: '300px' }} // 전체 테이블 크기 조정
-        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
+        scroll={{ x: '100%', y: 300,}}// 가로 스크롤과 세로 스크롤 설정
       />
       
     </div>

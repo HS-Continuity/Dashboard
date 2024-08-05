@@ -145,12 +145,23 @@ const ShipmentDetail = () => {
   };
 
   const formItemStyle = {
-    marginBottom: '8px'
+    marginBottom: '8px',
+    
   };
 
+  // const inputStyle = {
+  //   fontSize: '13px',
+  //   width: '80%',
+  //   backgroundColor: 'white',
+  // };
   const inputStyle = {
-    fontSize: '13px',
-    width: '80%'
+    width: '100%',
+    fontSize: '14px',
+    height: '32px',
+    backgroundColor: 'white', // 비활성화된 입력 필드의 배경색 변경
+    color: 'black', // 비활성화된 입력 필드의 텍스트 색상 변경
+    opacity: 1, // 비활성화된 입력 필드의 투명도 설정
+    border: '1px solid #d9d9d9', // 비활성화된 입력 필드의 테두리 설정
   };
 
   const greenButtonStyle = {
@@ -172,12 +183,12 @@ const ShipmentDetail = () => {
               <Row gutter={70} align="middle">
                 <Col span={5}>
                   <Form.Item name="orderId" label="주문번호" style={formItemStyle}>
-                    <Input disabled style={{width: '100%'}} />
+                    <Input disabled style={inputStyle} />
                   </Form.Item>
                 </Col>
                 <Col span={5}>
                   <Form.Item name="recipient" label="회원명" style={formItemStyle}>
-                    <Input disabled style={{width: '100%'}} />
+                    <Input disabled style={inputStyle} />
                   </Form.Item>
                 </Col>
                 <Col span={5}>
@@ -192,7 +203,7 @@ const ShipmentDetail = () => {
                     <DatePicker 
                       value={startDeliveryDate}
                       onChange={onHandleDateChange}
-                      style={{ width: '100%' }}
+                      style={{ width: '100%'}}
                       format="YYYY-MM-DD"
                     />
                   </Form.Item>
@@ -201,7 +212,7 @@ const ShipmentDetail = () => {
               <Row gutter={24}>
                 <Col span={24}>
                   <Form.Item name="recipientAddress" label="배송지" style={formItemStyle}>
-                    <Input disabled style={{width: '100%'}} />
+                    <Input disabled style={inputStyle} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -216,7 +227,14 @@ const ShipmentDetail = () => {
                 rows={4}
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
-                style={{ marginBottom: '8px' }}
+                disabled
+                style={{ 
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  color: 'rgba(0, 0, 0, 0.85)',  // 텍스트 색상을 일반 텍스트와 비슷하게 설정
+                  cursor: 'default',  // 커서 스타일 변경
+                  resize: 'none'   
+                }}
               />
               <Button type="primary" onClick={onMemoSubmit} style={greenButtonStyle}>
                 {memo ? '수정' : '등록'}
@@ -229,13 +247,20 @@ const ShipmentDetail = () => {
                 rows={4}
                 value={holdReason}
                 onChange={(e) => setHoldReason(e.target.value)}
-                disabled={shipmentDetail?.orderStatus !== "HOLD_RELEASE"}
-                style={{ marginBottom: '8px' }}
+                //disabled={shipmentDetail?.releaseStatus !== "HOLD_RELEASE"}
+                disabled
+                style={{ 
+                  marginBottom: '8px',
+                  backgroundColor: 'white',
+                  color: 'rgba(0, 0, 0, 0.85)',  // 텍스트 색상을 일반 텍스트와 비슷하게 설정
+                  cursor: 'default',  // 커서 스타일 변경
+                  resize: 'none' 
+                }}
               />
               <Button
                 type="primary"
                 onClick={onHoldReasonSubmit}
-                disabled={shipmentDetail?.orderStatus !== "HOLD_RELEASE"}
+                disabled={shipmentDetail?.releaseStatus !== "HOLD_RELEASE"}
                 style={greenButtonStyle}
               >
                 {holdReason ? '수정' : '등록'}

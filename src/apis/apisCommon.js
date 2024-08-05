@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
-const PRODUCT_DB_URL = import.meta.env.VITE_PRODUCT_DB_URL || "http://localhost:8020/api";
 const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
+const PRODUCT_DB_URL = import.meta.env.VITE_PRODUCT_DB_URL;
+const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
+const config = JSON.parse(import.meta.env.VITE_CONFIG);
 const AUTH_DB_URL = import.meta.env.VITE_AUTH_DB_URL;
-const config = import.meta.env.VITE_CONFIG;
 
 // 에러 처리 공통 함수
 const handleApiError = (error, customErrorMessage) => {

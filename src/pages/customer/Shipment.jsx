@@ -134,7 +134,7 @@ const Shipment = () => {
       
     } catch (error) {
       //console.error('Failed to fetch orders:', error);
-      message.error('출고 데이터를 불러오는데 실패했습니다.');
+      //message.error('출고 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -156,7 +156,7 @@ const Shipment = () => {
       }
     } catch (error) {
       console.error('Failed to fetch status counts:', error);
-      message.error('상태별 개수를 불러오는데 실패했습니다.');
+      //message.error('상태별 개수를 불러오는데 실패했습니다.');
     }
   };
 
@@ -277,12 +277,29 @@ const Shipment = () => {
     console.log("변경할 status: ", releases.releaseStatus);
   
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
+
+    if (status === 'RELEASE_COMPLETED') {
+      const missingDeliveryDates = selectedReleases.filter(release => !release.startDeliveryDate);
+      if (missingDeliveryDates.length > 0) {
+        await Swal.fire({
+          title: '배송시작일 미입력',
+          text: '배송시작일을 선택해주세요',
+          icon: 'warning',
+          confirmButtonText: '확인'
+        });
+        return;
+      }
+    }
     
     const isValidStatus = selectedReleases.every(release => {
       console.log('현재 status: ', release.releaseStatus);
-      if (status === 'RELEASE_COMPLETED' && release.releaseStatus !== 'AWAITING_RELEASE') {
-        return false;
+      if (status === 'RELEASE_COMPLETED') {
+        if (release.releaseStatus === 'RELEASE_COMPLETED') {
+          return false;
+        }
+        return true;
       }
+    
       if (status === 'HOLD_RELEASE' && release.releaseStatus === 'RELEASE_COMPLETED') {
         return false;
       }
@@ -293,7 +310,8 @@ const Shipment = () => {
     });
   
     if (!isValidStatus) {
-      message.error(`해당 주문건의 출고 상태는 ${status} 상태로 변경할 수 없습니다.`);
+      const statusText = getStatusText(status);
+      message.error(`해당 주문건의 출고 상태는 ${statusText} 상태로 변경할 수 없습니다.`);
       return;
     }
   
@@ -374,9 +392,10 @@ const Shipment = () => {
     if (!fetchShipments.length > 0) {
       if (isServerUnstable) {
         message.warning('일부 주문에서 서버 연결이 불안정합니다.');
-      } else {
-        message.success('주문 데이터를 성공적으로 불러왔습니다.');
       }
+      // } else {
+      //   //message.success('주문 데이터를 성공적으로 불러왔습니다.');
+      // }
     }
   }, [isServerUnstable]);
 
@@ -454,8 +473,8 @@ const Shipment = () => {
       key: 'releaseStatus',
       filters: [
         { text: '출고대기', value: 'AWAITING_RELEASE' },
-        { text: '출고보류', value: 'HOLD_RELEASE' },
         { text: '출고완료', value: 'RELEASE_COMPLETED' },
+        { text: '출고보류', value: 'HOLD_RELEASE' },
         { text: '합포장완료', value: 'COMBINED_PACKAGING_COMPLETED'}
       ],
       filteredValue: joinForm.releaseStatus ? [joinForm.releaseStatus] : null,
@@ -474,8 +493,8 @@ const Shipment = () => {
   const getStatusColor = (status) => {
     const colors = {
       AWAITING_RELEASE: '#C77C1B',
-      HOLD_RELEASE: '#4D7D9E',
       RELEASE_COMPLETED: '#878987',
+      HOLD_RELEASE: '#4D7D9E',
       COMBINED_PACKAGING_COMPLETED: '#427870'
     };
     return colors[status] || 'default';
@@ -484,8 +503,8 @@ const Shipment = () => {
   const getStatusText = (status) => {
     const texts = {
       AWAITING_RELEASE: '출고대기',
-      HOLD_RELEASE: '출고보류',
       RELEASE_COMPLETED: '출고완료',
+      HOLD_RELEASE: '출고보류',
       COMBINED_PACKAGING_COMPLETED: '합포장완료'
     };
     return texts[status] || status;
@@ -500,7 +519,7 @@ const Shipment = () => {
       </Flex>
       <Flex gap="small" align="center" justify='end'>
         <Flex gap="small" wrap>
-        {['AWAITING_RELEASE', 'HOLD_RELEASE', 'RELEASE_COMPLETED', 'COMBINED_PACKAGING_COMPLETED'].map((status) => (
+        {['AWAITING_RELEASE', 'RELEASE_COMPLETED', 'HOLD_RELEASE', 'COMBINED_PACKAGING_COMPLETED'].map((status) => (
           <StatusCard 
             key={status} 
             title={getStatusText(status)} 
@@ -523,7 +542,7 @@ const Shipment = () => {
               allowClear
             />
           </Flex>
-          <Button onClick={onHandleReset}>Clear Filter</Button>
+          <Button onClick={onHandleReset}>초기화</Button>
         </Flex>
         <Flex gap="small" wrap>
           <Space align="center">출고상태변경</Space>
@@ -553,7 +572,7 @@ const Shipment = () => {
         rowSelection={rowSelection}
         onRow={onRow}
         style={{ width: '100%', height: '400px'}} // 전체 테이블 크기 조정
-        scroll={{ x: '100%', y: 400,}}// 가로 스크롤과 세로 스크롤 설정
+        scroll={{ x: '100%', y: 300,}}// 가로 스크롤과 세로 스크롤 설정
       />
       </Flex>
       <Button 

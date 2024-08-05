@@ -1,18 +1,18 @@
-import { Tag, DatePicker, Form, Input, Button, Table, Typography, Row, Col, Card, Space } from 'antd';
+import { Tag, message, Form, Button, Table, Typography, Row, Col, Card, Space } from 'antd';
 import moment from 'moment';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { LeftOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-//import { useState } from 'react';
 
-const { Title } = Typography;
-const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 const OrderGeneralDetail = () => {
   const location = useLocation();
   const { orderDetail } = location.state || {};
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [isServerUnstable, setIsServerUnstable] = useState(false);
+
 
   const onHandleBackClick = () => {
     navigate(-1);
@@ -40,7 +40,7 @@ const OrderGeneralDetail = () => {
       title: '상품명', 
       dataIndex: 'name', 
       key: 'name',
-      render: (name) => name || <span style={{ color: 'gray' }}>미정</span>,
+      render: (name) => name || <span style={{ color: 'gray' }}>불러오는 중..</span>,
     },
     { title: '수량', dataIndex: 'quantity', key: 'quantity' },
     { title: '할인액', dataIndex: 'discountAmount', key: 'discountAmount' },
@@ -58,34 +58,49 @@ const OrderGeneralDetail = () => {
   ];
 
   useEffect(() => {
-    form.setFieldsValue({
-      orderDetailId: orderDetail?.orderDetailId,
-      memberId: orderDetail?.memberInfo?.memberId,
-      orderDateTime: orderDetail?.orderDateTime ? moment(orderDetail.orderDateTime) : null,
-      recipient: orderDetail?.recipient?.recipient,
-      deliveryAddress: orderDetail?.recipient?.recipientAddress,
-      orderMemo: orderDetail?.orderMemo
-    });
+    if (orderDetail) {
+      const isMemberInfoAvailable = orderDetail.availableMemberInformation;
+      const isProductInfoAvailable = orderDetail.availableProductInformation;
+
+      setIsServerUnstable(!isMemberInfoAvailable || !isProductInfoAvailable);
+
+      form.setFieldsValue({
+        orderDetailId: orderDetail?.orderDetailId,
+        memberId: isMemberInfoAvailable ? orderDetail.memberInfo?.memberId : '불러오는 중..',
+        orderDateTime: orderDetail?.orderDateTime ? moment(orderDetail.orderDateTime) : null,
+        recipient: orderDetail?.recipient?.recipient,
+        deliveryAddress: orderDetail?.recipient?.recipientAddress,
+        orderMemo: orderDetail?.orderMemo
+      });
+    }
   }, [orderDetail, form]);
 
+  useEffect(() => {
+    if (isServerUnstable) {
+      message.warning('일부 서비스에 연결할 수 없습니다. 데이터가 부분적으로 표시될 수 있습니다.');
+    }
+  }, [isServerUnstable]);
 
-  const productData = orderDetail?.productOrderList?.productOrderList.map((product, index) => ({
-    key: index,
-    no: index + 1,
-    name: product.name,
-    quantity: product.quantity,
-    discountAmount: product.discountAmount,
-    finalPrice: product.finalPrice,
-    status: product.status,
-  })) || [];
+  const productData = orderDetail?.availableProductInformation ? 
+    orderDetail?.productOrderList?.productOrderList.map((product, index) => ({
+      key: index,
+      no: index + 1,
+      name: product.name,
+      quantity: product.quantity,
+      discountAmount: product.discountAmount,
+      finalPrice: product.finalPrice,
+      status: product.status,
+    })) || []
+  : [{ key: 0, name: '불러오는 중..' }];
 
-  const inputStyle = {
-    backgroundColor: 'white', // 비활성화된 입력 필드의 배경색 변경
-    color: 'black', // 비활성화된 입력 필드의 텍스트 색상 변경
-    opacity: 1, // 비활성화된 입력 필드의 투명도 설정
-    border: '1px solid #d9d9d9', // 비활성화된 입력 필드의 테두리 설정
+  const textStyle = {
+    display: 'block',
+    padding: '4px 11px',
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #d9d9d9',
+    borderRadius: '2px',
+    minHeight: '32px',
   };
-
 
   const cardStyle = {
     marginBottom: '16px',
@@ -120,12 +135,12 @@ const OrderGeneralDetail = () => {
               <Row gutter={70} align="middle" justify="center">
                 <Col span={6}>
                   <Form.Item name="orderDetailId" label="주문번호" style={formItemStyle}>
-                    <Input  disabled style={inputStyle}/>
+                    <Text style={textStyle}>{form.getFieldValue('orderDetailId')}</Text>
                   </Form.Item>
                 </Col>
                 <Col span={6}>
                   <Form.Item name="memberId" label="회원번호" style={formItemStyle}>
-                    <Input  disabled style={inputStyle}/>
+                    <Text style={textStyle}>{form.getFieldValue('memberId')}</Text>
                   </Form.Item>
                 </Col>
                 <Col span={4}>
@@ -137,19 +152,19 @@ const OrderGeneralDetail = () => {
                 </Col>
                 <Col span={6}>
                   <Form.Item name="orderDateTime" label="주문날짜" style={formItemStyle}>
-                    <DatePicker disabled style={{ width: '100%' }} />
+                    <Text style={textStyle}>{form.getFieldValue('orderDateTime')?.format('YYYY-MM-DD HH:mm:ss')}</Text>
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={60} justify="center">
                 <Col span={6}>
                   <Form.Item name="recipient" label="수령인" style={formItemStyle}>
-                    <Input  disabled style={inputStyle}/>
+                    <Text style={textStyle}>{form.getFieldValue('recipient')}</Text>
                   </Form.Item>
                 </Col>
                 <Col span={16}>
                   <Form.Item name="deliveryAddress" label="배송지" style={formItemStyle}>
-                    <Input  disabled style={inputStyle}/>
+                    <Text style={textStyle}>{form.getFieldValue('deliveryAddress')}</Text>
                   </Form.Item>
                 </Col>
               </Row>
@@ -169,7 +184,7 @@ const OrderGeneralDetail = () => {
           <Col span={8}>
             <Card title="배송 메모" style={cardStyle} styles={cardStyles}>
               <Form.Item name="orderMemo">
-                <TextArea disabled rows={9} />
+                <Text style={{...textStyle, minHeight: '120px', whiteSpace: 'pre-wrap'}}>{form.getFieldValue('orderMemo')}</Text>
               </Form.Item>
             </Card>
           </Col>
