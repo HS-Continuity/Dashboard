@@ -9,12 +9,12 @@ import {
 } from "../../apis/apisStatistics";
 import useAuthStore from "../../stores/useAuthStore";
 import PieChart from "../../components/Chart/PieChart";
-import BarChart from "../../components/Chart/BarChart";
 
 const { Title } = Typography;
 
 const Statistics = () => {
   const [form] = Form.useForm();
+  const [currentMonth, setCurrentMonth] = useState(3);
   const [manTop3, setManTop3] = useState([]);
   const [womanTop3, setWomanTop3] = useState([]);
   const [productsByAge, setProductsByAge] = useState({});
@@ -22,7 +22,6 @@ const Statistics = () => {
   const [productsByRegular, setProductsByRegular] = useState([]);
   const { username } = useAuthStore();
   const customerId = String(username);
-  console.log(customerId);
 
   //파이차트 데이터
   const transformData = data => {
@@ -38,8 +37,8 @@ const Statistics = () => {
     const fetchTop3Products = async () => {
       try {
         const [manTop3Response, womanTop3Response] = await Promise.all([
-          getProductByManTop3(customerId),
-          getProductByWomanTop3(customerId),
+          getProductByManTop3(customerId, currentMonth),
+          getProductByWomanTop3(customerId, currentMonth),
         ]);
 
         setManTop3(manTop3Response);
@@ -52,7 +51,7 @@ const Statistics = () => {
     const fetchProductsByAge = async () => {
       const ageRanges = [20, 30, 40, 50];
       const responses = await Promise.all(
-        ageRanges.map(ageRange => getProductByAgeRange(customerId, ageRange))
+        ageRanges.map(ageRange => getProductByAgeRange(customerId, ageRange, currentMonth))
       );
       const products = ageRanges.reduce((acc, ageRange, index) => {
         acc[ageRange] = responses[index];
@@ -64,8 +63,8 @@ const Statistics = () => {
     const fetchProductsByOrderType = async () => {
       try {
         const [generalResponse, regularResponse] = await Promise.all([
-          getProductByGeneral(customerId),
-          getProductByRegular(customerId),
+          getProductByGeneral(customerId, currentMonth),
+          getProductByRegular(customerId, currentMonth),
         ]);
 
         setProductsByGeneral(generalResponse);
@@ -78,11 +77,11 @@ const Statistics = () => {
     fetchTop3Products();
     fetchProductsByAge();
     fetchProductsByOrderType();
-  }, []);
+  }, [currentMonth]);
 
-  console.log(productsByGeneral);
-  console.log(productsByRegular);
-
+  const handleMonthChange = month => {
+    setCurrentMonth(month);
+  };
   const cardStyle = {
     marginBottom: "16px",
     border: "1px solid #d9d9d9",
@@ -131,7 +130,7 @@ const Statistics = () => {
             border: "1px solid #d9d9d9",
             borderRadius: "10px",
             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            height: "270px",
+            height: "300px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -144,8 +143,13 @@ const Statistics = () => {
               width: "100%",
             }}>
             <p style={{ margin: "0", fontSize: "28px" }}>{rankEmoji}</p>
-            <div style={boxStyle}>
-              <p style={{ margin: "0", fontSize: "13px" }}>상품ID: {product.productId}</p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <div style={boxStyle2}>
+                <p style={{ margin: "0", fontSize: "13px" }}>상품ID: {product.productId}</p>
+              </div>
+              <div style={boxStyle2}>
+                <p style={{ fontSize: "13px" }}>{product.categoryName}</p>
+              </div>
             </div>
           </div>
           <Image
@@ -156,8 +160,9 @@ const Statistics = () => {
               borderRadius: "12px",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
               alignSelf: "center",
-              marginLeft: "5%", // 이미지가 중앙에서 시작하도록 marginLeft를 5%로 설정
+              marginLeft: "5%",
               marginRight: "5%",
+              objectFit: "cover",
             }}
           />
           <div
@@ -166,7 +171,7 @@ const Statistics = () => {
               flexDirection: "column",
               justifyContent: "space-around",
               height: "80px",
-              marginLeft: "5%", // 이미지 시작점과 일치하도록 marginLeft 조정
+              marginLeft: "5%",
               marginRight: "5%",
             }}>
             <div
@@ -182,9 +187,6 @@ const Statistics = () => {
               <p style={{ fontSize: "16px", fontWeight: "bold", margin: "5px 0" }}>
                 {product.productName}
               </p>
-              <div style={boxStyle2}>
-                <p style={{ fontSize: "13px" }}>{product.categoryName}</p>
-              </div>
             </div>
             <div
               style={{
@@ -284,31 +286,51 @@ const Statistics = () => {
 
   //상품이름 내려쓰기
   function formatProductName(name) {
-    const parts = name.split(/([,!~])/g);
+    const parts = name.split(/([,!~/])/g);
     return parts.map((part, index) => (
       <React.Fragment key={index}>
         {part}
-        {part === "," || part === "!" ? <br /> : ""}
+        {part === "," || part === "!" || part === "/" ? <br /> : ""}
       </React.Fragment>
     ));
   }
 
   return (
     <div style={{ padding: "16px", fontSize: "14px" }}>
-      <Title level={3} style={{ marginBottom: "30px" }}>
+      <Title level={8} style={{ marginBottom: "30px" }}>
         통계관리
       </Title>
       <Form form={form} layout='vertical'>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginBottom: "5px" }}>
+          <Button
+            onClick={() => handleMonthChange(1)}
+            style={{ backgroundColor: "#8BC34A", borderColor: "#8BC34A", color: "white" }}>
+            최근 1개월
+          </Button>
+          <Button
+            onClick={() => handleMonthChange(3)}
+            style={{ backgroundColor: "#8BC34A", borderColor: "#8BC34A", color: "white" }}>
+            최근 3개월
+          </Button>
+        </div>
         <Row gutter={16}>
           <Col span={24}>
             <Card
-              title='성별 선호 식품 TOP 3'
               style={{
                 marginBottom: "16px",
                 border: "1px solid #d9d9d9",
                 borderRadius: "2px",
                 boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-              }}>
+                overflow: "hidden",
+              }}
+              title={
+                <div style={{ fontSize: "18px" }}>
+                  {" "}
+                  <span style={{ color: "green", fontSize: "25px" }}>성별</span>
+                  <span style={{ fontSize: "20px" }}> 선호 식품 TOP 3</span>
+                </div>
+              }>
               <Row gutter={16}>
                 <Col span={24}>
                   <div style={{ ...boxStyle, backgroundColor: "#2A52BE" }}>
@@ -324,7 +346,7 @@ const Statistics = () => {
                   <div
                     style={{
                       ...boxStyle,
-                      marginTop: "10px",
+                      marginTop: "20px",
                       backgroundColor: "#FF5C5C",
                     }}>
                     <h3 style={{ fontSize: "15px", color: "white" }}>여성 선호 식품</h3>
@@ -340,7 +362,21 @@ const Statistics = () => {
 
         <Row gutter={16}>
           <Col span={24}>
-            <Card title='연령대별 선호 식품' style={cardStyle}>
+            <Card
+              style={{
+                marginBottom: "16px",
+                border: "1px solid #d9d9d9",
+                borderRadius: "2px",
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                overflow: "hidden",
+              }}
+              title={
+                <div style={{ fontSize: "18px" }}>
+                  {" "}
+                  <span style={{ color: "green", fontSize: "25px" }}>연령대별</span>
+                  <span style={{ fontSize: "20px" }}> 선호 식품 TOP 3</span>
+                </div>
+              }>
               <Row gutter={16} style={{ borderBottom: "1px solid #e8e8e8" }}>
                 {renderAgeRangeProduct(20, productsByAge[20])}
                 {renderAgeRangeProduct(30, productsByAge[30])}
