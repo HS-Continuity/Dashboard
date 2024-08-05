@@ -33,9 +33,7 @@ const EasyViewHeader = ({
   };
 
   return (
-    <Header
-      className='bg-gradient'
-      style={{ background: "#1b75bc", padding: "0 24px", position: "relative" }}>
+    <Header className={styles.bgGradient}>
       <div
         style={{
           display: "flex",
@@ -46,7 +44,7 @@ const EasyViewHeader = ({
         <div style={{ flex: 1 }}>
           <Link to='/easy'>
             <Title level={4} style={{ margin: 0, color: "white", fontSize: "30px" }}>
-              효성CMS+ 스퀘어
+              연이음
             </Title>
           </Link>
         </div>
@@ -68,7 +66,7 @@ const EasyViewHeader = ({
               onChange={handleSpeechToggle}
             />
             <Button onClick={handleSendNormalPage} size='large'>
-              일반 방식
+              자세히 보기
             </Button>
           </Space>
         </div>
