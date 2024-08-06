@@ -108,22 +108,22 @@ const MainHeader = ({ collapsed, onCollapse }) => {
         <Flex align='center' gap='large'>
           <Button onClick={handleEasyViewMode}>쉽게보기</Button>
           <Flex>
-          <span style={{ marginRight: "10px" }}>님</span>
-          <Space style={{ marginRight: "16px" }}>
-            <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-              <Badge dot>
-                <Avatar
-                  size='large'
-                  max={{
-                    count: 2,
-                    style: { color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" },
-                    popover: { trigger: "click" },
-                  }}>
-                  <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
-                </Avatar>
-              </Badge>
-            </Dropdown>
-          </Space>
+          {customerInfo && <span style={{ marginRight: "10px" }}>{customerInfo.customerName}님</span>}
+            <Space style={{ marginRight: "16px" }}>
+              <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+                <Badge dot>
+                  <Avatar
+                    size='large'
+                    max={{
+                      count: 2,
+                      style: { color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" },
+                      popover: { trigger: "click" },
+                    }}>
+                    <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
+                  </Avatar>
+                </Badge>
+              </Dropdown>
+            </Space>
           </Flex>
         </Flex>
       </Flex>
