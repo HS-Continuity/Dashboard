@@ -27,15 +27,6 @@ import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
-// const menuItems = [
-//   {
-//     key: 'logout',
-//     icon: <LogoutOutlined />,
-//     label: 'Logout',
-//     onClick: handleLogout
-//   },
-// ];
-
 const MainHeader = ({ collapsed, onCollapse }) => {
   const { username, logout } = useAuthStore();
 

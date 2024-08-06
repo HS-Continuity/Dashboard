@@ -78,7 +78,6 @@ const Shipment = () => {
 
       const response = await fetchReleases(params);
 
-      // console.log('받아오는 출고데이터: ', response)
 
       let isServerUnstable = false;
       console.log("서버에서 받아온 데이터: ", response);
@@ -91,11 +90,9 @@ const Shipment = () => {
 
         if (productOrderList && productOrderList.length > 0) {
           productName = `${productOrderList[0].name}`;
-          // orderDateTime = `${productOrderList[0].orderDateTime}`
 
           if (productOrderList.length > 1) {
             productName += ` 외 ${productOrderList.length - 1}건`;
-            // orderDateTime += ` 외 ${productOrderList.length - 1}건`;
           }
 
           // 서버 연결 상태 확인
@@ -110,8 +107,6 @@ const Shipment = () => {
             isServerUnstable = true;
           }
         }
-        // console.log('서버에서 받아온 데이터: ', response)
-        //console.log('order: ', order)
         return {
           holdReason: order.holdReason || "",
 
@@ -120,27 +115,19 @@ const Shipment = () => {
           startDeliveryDate: order.startDeliveryDate,
           releaseStatus: order.statusName?.toString() || "",
           productOrderList: productOrderList,
-          //memberId: order.memberInfo.memberId,
           recipient: recipient.recipient,
           recipientAddress: recipient.recipientAddress,
           recipientPhoneNumber: recipient.recipientPhoneNumber,
-          // memberName: order.memberInfo.memberName,
-          //memberPhoneNumber : order.memberInfo.memberPhoneNumber,
           memo: order.memo || "",
         };
       });
-
-      //console.log('어떤 데이터를 받아오나요?: ', transformedOrders)
 
       setReleases(transformedOrders);
       setIsServerUnstable(isServerUnstable);
       setPagination({
         ...pagination,
         total: response.totalElements,
-      });
-    } catch (error) {
-      //console.error('Failed to fetch orders:', error);
-      //message.error('출고 데이터를 불러오는데 실패했습니다.');
+      }); 
     } finally {
       setLoading(false);
     }
@@ -162,7 +149,6 @@ const Shipment = () => {
       }
     } catch (error) {
       console.error("Failed to fetch status counts:", error);
-      //message.error('상태별 개수를 불러오는데 실패했습니다.');
     }
   };
 

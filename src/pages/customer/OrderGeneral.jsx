@@ -162,9 +162,7 @@ const OrderGeneral = () => {
     try {
       const params = {
         customerId: String(username),
-        // page: pagination.current - 1,
         page: page - 1,
-        // size: pagination.pageSize,
         size: pageSize,
         ...joinForm,
       };
@@ -198,16 +196,6 @@ const OrderGeneral = () => {
           isServerUnstable = true;
         }
 
-        //   // 서버 연결 상태 확인
-        //   isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
-        //   isProductInfoAvailable = productOrderList.every(product => product.availableProductInformation);
-
-        //   if (!isMemberInfoAvailable || !isProductInfoAvailable) {
-        //     isServerUnstable = true;
-        //   }
-
-        // }
-
         return {
           orderDetailId: order.orderDetailId?.toString() || "",
           // memberId: order.memberInfo?.memberId?.toString() || '',
@@ -235,9 +223,6 @@ const OrderGeneral = () => {
         pageSize: response.size,
         total: response.totalElements,
       });
-    } catch (error) {
-      //console.error('Failed to fetch orders:', error);
-      //message.error('주문 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -373,9 +358,6 @@ const OrderGeneral = () => {
     console.log("선택된 주문들:", selectedOrders);
     console.log("현재 상태들:", currentStatuses);
 
-    // console.log('내가 누른 상태 변경 버튼: ', status)
-    // console.log('선택한 행의 key값: ', selectedRowKeys)
-    // console.log("변경할 status: ", orders.selectedRowKeys.orderId);
 
     const isValidStatus = selectedOrders.every(order => {
       console.log("현재 status: ", order.orderStatusCode);
