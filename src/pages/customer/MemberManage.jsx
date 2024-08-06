@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { Input, Flex, Space, Table, Button, message } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { useQuery } from "@tanstack/react-query";
 import "./MemberManageModule.css";
 import styles from "./Table.module.css";
 
@@ -16,8 +15,6 @@ import useAuthStore from "../../stores/useAuthStore";
 
 const MemberManage = () => {
   const { username } = useAuthStore();
-
-  //const [isServerUnstable, setIsServerUnstable] = useState(false);
 
   const [joinForm, setJoinForm] = useState({});
   const [filteredInfo, setFilteredInfo] = useState({});
@@ -52,13 +49,12 @@ const MemberManage = () => {
     try {
       const params = {
         customerId: String(username),
-        // customerId: 1,
         ...joinForm,
         page: pagination.current - 1,
         size: pagination.pageSize,
         // ...joinForm
       };
-      console.log('customerId: ', username)
+      console.log("customerId: ", username);
 
       Object.entries(joinForm).forEach(([key, value]) => {
         if (value != null && value !== "") {
@@ -164,7 +160,7 @@ const MemberManage = () => {
         onKeyDown={e => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
+          placeholder={`검색할 내용을 입력해 주세요`}
           value={selectedKeys[0] || ""} // 빈 문자열도 처리
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => confirm()} //  Enter 입력 시 필터링 적용
@@ -182,7 +178,7 @@ const MemberManage = () => {
             style={{
               width: 90,
             }}>
-            Search
+            검색
           </Button>
           <Button
             onClick={() => clearFilters && handleReset(clearFilters)}
@@ -198,7 +194,7 @@ const MemberManage = () => {
             onClick={() => {
               close();
             }}>
-            close
+            닫기
           </Button>
         </Space>
       </div>
@@ -317,6 +313,7 @@ const MemberManage = () => {
       onCell: record => ({
         onClick: () => handleCellClick(record),
       }),
+      render: gender => (gender === "MALE" ? "남" : "여"),
     },
   ];
 
@@ -345,7 +342,7 @@ const MemberManage = () => {
         locale={{
           emptyText: "데이터가 없습니다",
         }}
-        style={{ width: "90%", height: "500px" }} // 전체 테이블 크기 조정
+        style={{ width: "100%", height: "500px" }} // 전체 테이블 크기 조정
         //scroll={{ x: '100%', y: 600,}}// 가로 스크롤과 세로 스크롤 설정
       />
     </div>
