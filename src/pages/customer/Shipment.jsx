@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import useAuthStore from '../../stores/useAuthStore';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import style from './Shipment.module.css';
@@ -11,9 +12,9 @@ import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import styles from './Table.module.css';
 const { RangePicker } = DatePicker;
 
-import useAuthStore from "../../stores/useAuthStore";
 
 const Shipment = () => {
+
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -50,8 +51,8 @@ const Shipment = () => {
     setLoading(true);
     try {
       const params = {
-        // customerId: String(username),
-        customerId: 1,
+        customerId: String(username),
+        // customerId: 1,
         page: pagination.current - 1,
         size: pagination.pageSize,
         ...joinForm
