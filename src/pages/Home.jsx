@@ -286,15 +286,21 @@ const Home = () => {
         <Col span={24}>
           <Card 
             title={
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: "20px" }}>상품별 판매량 비교</span>
-                <Select defaultValue={salesMonths} style={{ width: 200 }} onChange={handleSalesMonthChange} options={options} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: "18px" }}>
+                <div>
+                  <span style={{ color: "green", fontSize: "25px" }}>상품별</span>
+                  <span style={{ fontSize: "20px" }}> 판매량 비교</span>
+                </div>
+                <div>
+                  <Select defaultValue={salesMonths} style={{ width: 200 }} onChange={handleSalesMonthChange} options={options} />
+                </div>
+                
+                
               </div>
             }
             style={{ height: '400px',borderRadius: '0', border: '1px solid #d9d9d9' }}
           >
             {loading ? (
-              // <Spin size="large" />
               <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Spin size="large" />
               </div>
@@ -317,7 +323,12 @@ const Home = () => {
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <Card 
-            title={<span style={{ fontSize: '20px' }}>월별 수익 비교 (단위: 1000원)</span>}
+            title={
+              <div>
+                  <span style={{ color: "green", fontSize: "25px" }}>월별</span>
+                  <span style={{ fontSize: "20px" }}> 수익 비교</span>
+              </div>
+            }
             style={{ height: '400px', borderRadius: '0', border: '1px solid #d9d9d9', fontSize: "20px" }}
             
           >
@@ -336,7 +347,12 @@ const Home = () => {
         </Col>
         <Col span={12}>
           <Card 
-            title={<span style={{ fontSize: '20px' }}>주문 회원 수 추이 (단위: 명)</span>}
+            title={
+              <div>
+                  <span style={{ color: "green", fontSize: "25px" }}>주문 회원 수</span>
+                  <span style={{ fontSize: "20px" }}> 추이 (단위: 명)</span>
+              </div>
+            }
             style={{ height: '400px', borderRadius: '0', border: '1px solid #d9d9d9' }}
           >
             {loading ? (
