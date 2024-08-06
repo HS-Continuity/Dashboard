@@ -57,10 +57,6 @@ const ProductGeneralDetail = () => {
     marginBottom: '8px'
   };
 
-  const inputStyle = {
-    fontSize: '13px'
-  };
-
   const onHandleUpdate = async () => {
     try {
       const values = await form.validateFields();
@@ -116,11 +112,24 @@ const ProductGeneralDetail = () => {
     navigate(-1); // 이전 페이지로 이동
   };
 
+  const inputStyle = {
+    fontSize: '13px',
+  }
+
+  const inputStyle2 = {
+    fontSize: '13px',
+    backgroundColor: '#f0f0f0', // 비활성화된 입력 필드의 배경색 변경
+    color: '#000000', // 비활성화된 입력 필드의 텍스트 색상 변경
+    opacity: 1, // 비활성화된 입력 필드의 투명도 설정
+    border: '1px solid #d9d9d9', // 비활성화된 입력 필드의 테두리 설정
+  };
+
   return (
     <div style={{ padding: '16px', fontSize: '14px' }}>
       <Flex gap="small" justify="flex-start" align="center" style={{ width: 'fit-content' }}>
         <LeftOutlined onClick={onHandleBackClick}/>
         <Title level={3}>일반 식품 상세 정보</Title>
+
       </Flex>
       <Form form={form} layout="vertical">
         <Row gutter={16}>
@@ -133,21 +142,21 @@ const ProductGeneralDetail = () => {
               <Row gutter={16}>
                 <Col span={8}>
                   <Form.Item name="productId" label="상품 ID" style={formItemStyle}>
-                    <Input disabled style={inputStyle} />
+                    <Input disabled style={inputStyle2} />
                   </Form.Item>
                   <Form.Item name="productName" label="상품명" style={formItemStyle}>
                     <Input style={inputStyle} />
                   </Form.Item>
                   <Form.Item name="salesType" label="판매 유형" style={formItemStyle}>
-                    <Input disabled style={inputStyle} />
+                    <Input disabled style={inputStyle2} />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
                   <Form.Item name="categoryName" label="카테고리" style={formItemStyle}>
-                    <Input disabled style={inputStyle} />
+                    <Input disabled style={inputStyle2} />
                   </Form.Item>
                   <Form.Item name="detailCategoryName" label="상세 카테고리" style={formItemStyle}>
-                    <Input disabled style={inputStyle} />
+                    <Input disabled style={inputStyle2} />
                   </Form.Item>
                   <Form.Item name="price" label="가격" style={formItemStyle}>
                     <InputNumber 
