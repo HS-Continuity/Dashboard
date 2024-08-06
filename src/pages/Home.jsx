@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsiveLine } from '@nivo/line';
 import { Card, Row, Col, Spin, Select } from 'antd';
-import { fetchTop5ProductsMonthlySales, fetchMonthlyRevenue, fetchMemberGrowth } from '../apis/apisStatistics';
+import { fetchTop5ProductsMonthlySales, fetchMonthlyRevenue, fetchMemberGrowth, getProductNameById } from '../apis/apisStatistics';
 import useAuthStore from '../stores/useAuthStore';
 import BarChart from '../components/Chart/BarChart';
 import LineChart from '../components/Chart/LineChart';
 
 
 const options = [
-  { label: '최근 3개월', value: 3 },
-  { label: '최근 6개월', value: 6 },
+  { label: '최근 4개월', value: 3 },
+  { label: '최근 7개월', value: 6 },
   { label: '최근 12개월', value: 12 },
 ];
 
@@ -25,19 +25,16 @@ const Home = () => {
   const [salesMonths, setSalesMonths] = useState(3);
 
   useEffect(() => {
+    setSalesData([])
     if (username) {
       fetchData();
     }
   }, [username, salesMonths]);
 
   const fetchData = async () => {
-    // setLoading(true);
+    
     try {
-      // const customerId = username;
       const customerId = username;
-      // const salesResponse = await fetchTop5ProductsMonthlySales(customerId, months);
-      // const revenueResponse = await fetchMonthlyRevenue(customerId, months);
-      // const memberResponse = await fetchMemberGrowth(customerId, months);
 
       const [salesResponse, revenueResponse, memberResponse] = await Promise.all([
         fetchTop5ProductsMonthlySales(customerId, salesMonths),
@@ -45,28 +42,22 @@ const Home = () => {
         fetchMemberGrowth(customerId, months)
       ]);
 
-      console.log('Received sales data:', salesResponse);
-      console.log('Received revenue data:', revenueResponse);
-      console.log('Received member data:', memberResponse);
-
-      setSalesData(formatDataForNivo(salesResponse));
+      // setSalesData(formatDataForNivo(salesResponse));
+      // setRevenueData(formatLineData(revenueResponse, 'revenue'));
+      // setMemberData(formatLineData(memberResponse, 'members'));
+      const formattedSalesData = await formatDataForNivo(salesResponse);
+      setSalesData(formattedSalesData);
       setRevenueData(formatLineData(revenueResponse, 'revenue'));
       setMemberData(formatLineData(memberResponse, 'members'));
 
-      // const formattedData = formatDataForNivo(response);
-      // setSalesData(formattedData(response)); // ?
-      // setRevenueData(formatLineData(revenueResponse, 'revenue'));
-      // setMemberData(formatLineData(memberResponse, 'members'));
-
-      //console.log('data: ' , memberData)
-    } catch (error) {
+    } catch (error) {+
       console.error('Failed to fetch sales data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDataForNivo = (response) => {
+  const formatDataForNivo = async(response) => {
     if (!Array.isArray(response) || response.length === 0) {
       console.warn('No data available or invalid format');
       return [];
@@ -74,6 +65,14 @@ const Home = () => {
 
     // 모든 제품 ID를 추출
     const allProductIds = [...new Set(response.map(item => item.productId))];
+    const productNames = await Promise.all(
+      allProductIds.map(async id => ({
+        id,
+        name: await getProductNameById(id)
+      }))
+    );
+
+    const productNameMap = Object.fromEntries(productNames.map(item => [item.id, item.name]));
 
     const monthlyData = {};
     response.forEach(item => {
@@ -86,7 +85,8 @@ const Home = () => {
             monthlyData[monthKey][`Product ${id}`] = 0;
           });
         }
-        monthlyData[monthKey][`Product ${item.productId}`] = item.totalSales;
+        // monthlyData[monthKey][`Product ${item.productId}`] = item.totalSales;
+        monthlyData[monthKey][productNameMap[item.productId]] = item.totalSales;
       } else {
         console.warn('Invalid item format:', item);
       }
@@ -113,8 +113,9 @@ const Home = () => {
 
   const getKeys = (data) => {
     if (data.length === 0) return [];
-    const keys = Object.keys(data[0]).filter(key => key !== 'month');
-    return keys;
+    // const keys = Object.keys(data[0]).filter(key => key !== 'month');
+    // return keys;
+    return Object.keys(data[0]).filter(key => key !== 'month' && !key.startsWith('Product '));
   };
 
   const handleMonthChange = (value) => {
@@ -193,7 +194,7 @@ const Home = () => {
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <Card 
-            title="월별 수익 비교" 
+            title="월별 수익 비교 (단위: 1000원)" 
             style={{ height: '400px', borderRadius: '0', border: '1px solid #d9d9d9' }}
             
           >
@@ -213,7 +214,7 @@ const Home = () => {
         </Col>
         <Col span={12}>
           <Card 
-            title="주문 회원 수 추이" 
+            title="주문 회원 수 추이 (단위: 명)" 
             style={{ height: '400px', borderRadius: '0', border: '1px solid #d9d9d9' }}
           >
             {/* 회원 수 추이 그래프가 여기에 들어갑니다. */}

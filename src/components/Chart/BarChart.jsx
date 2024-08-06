@@ -18,7 +18,7 @@ const BarChart = ({ data, keys, indexBy }) => {
         keys={keys}
         indexBy={indexBy}
         layout="vertical"           // 바를 세로로 표시
-        margin={{ top: 0, right: 130, bottom: 130, left: 70 }} // 여백 조정
+        margin={{ top: 0, right: 400, bottom: 130, left: 70 }} // 여백 조정
         padding={0.3}
         colors={{ scheme: 'nivo' }}
         colorBy="id"
