@@ -9,14 +9,11 @@ import {
   Space,
   message,
   DatePicker,
-  Row,
-  Col,
   Slider,
   Typography,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import StatusCard from "../../../components/Cards/StatusCard";
-import styles from "../../customer/Table.module.css";
 const { Text } = Typography;
 import locale from "antd/es/date-picker/locale/ko_KR";
 const { RangePicker } = DatePicker;
@@ -25,9 +22,7 @@ import useAuthStore from "../../../stores/useAuthStore";
 import { useFontSizeStore } from "../../../stores/fontSizeStore";
 
 const Promotion = () => {
-  // ***************
   const [dateRange, setDateRange] = useState([]);
-  //****************
   const [advertisements, setAdvertisements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -55,18 +50,15 @@ const Promotion = () => {
     setLoading(true);
     try {
       const params = {
-        // customerId: String(username),
-        customerId: 1, // 실제 사용시 로그인한 고객의 ID를 사용해야 함
+        customerId: String(username),
         startPage: pagination.current - 1,
         pageSize: pagination.pageSize,
         ...joinForm,
       };
-      // ******************************
       if (dateRange && dateRange.length === 2) {
         params.startDate = dateRange[0].format("YYYY-MM-DD");
         params.endDate = dateRange[1].format("YYYY-MM-DD");
       }
-      // ******************************
 
       const response = await fetchAdvertisements(params);
 
@@ -82,17 +74,6 @@ const Promotion = () => {
           startDate: promo.startDate,
         };
       });
-
-      // ******************************
-      // if (dateRange && dateRange.length === 2) {
-      //   transformedPromoData = transformedPromoData.filter(ad => {
-      //     const adStartDate = new Date(ad.startDate);
-      //     const adEndDate = new Date(ad.endDate);
-      //     return adStartDate >= dateRange[0].startOf('day') && adEndDate <= dateRange[1].endOf('day');
-      //   });
-      // }
-
-      // ******************************
 
       setAdvertisements(transformedPromoData);
       setPagination(prev => ({
@@ -148,10 +129,6 @@ const Promotion = () => {
     setPagination(newPagination);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
-    // setJoinForm(prev => ({
-    //   ...prev,
-    //   ...filters,
-    // }));
   };
 
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -165,9 +142,7 @@ const Promotion = () => {
   const onHandleReset = () => {
     setJoinForm({});
     setFilteredInfo({});
-    // *****************************
     setDateRange([]);
-    // *****************************
     setPagination({
       current: 1,
       pageSize: 5,
@@ -180,26 +155,11 @@ const Promotion = () => {
     fetchAdvertisementData();
   };
 
-  // *****************************
-  // const onHandleDateRangeChange = (dates) => {
-  //   setDateRange(dates);
-  //   if (dates) {
-  //     const filteredData = advertisements.filter(ad => {
-  //       const adStartDate = new Date(ad.startDate);
-  //       const adEndDate = new Date(ad.endDate);
-  //       return adStartDate >= dates[0].startOf('day') && adEndDate <= dates[1].endOf('day');
-  //     });
-  //     setAdvertisements(filteredData);
-  //   } else {
-  //     fetchAdvertisementData(dates);
-  //   }
-  // };
   const onHandleDateRangeChange = dates => {
     setDateRange(dates);
-    setPagination(prev => ({ ...prev, current: 1 })); // 페이지 초기화
+    setPagination(prev => ({ ...prev, current: 1 }));
     fetchAdvertisementData();
   };
-  // *****************************
 
   const getColumns = () => [
     {
@@ -324,7 +284,7 @@ const Promotion = () => {
           <h2>상단 노출 관리</h2>
         </Flex>
       </Flex>
-      <Flex gap='small' align='center' justify='center' style={{ marginBottom: "20px" }}>
+      <Flex gap='small' align='center' justify='end' style={{ marginBottom: "20px" }}>
         {["PENDING", "APPROVE", "IN_PROGRESS", "ENDED_EVENT", "CANCELED"].map(status => (
           <StatusCard
             key={status}
@@ -334,7 +294,7 @@ const Promotion = () => {
           />
         ))}
       </Flex>
-      <Flex gap='large' align='center' justify='center' style={{ marginBottom: "20px" }}>
+      <Flex gap='large' align='flex-start' justify='space-between' style={{ marginBottom: "20px" }}>
         <Flex gap='small' align='center'>
           <Space align='center'>검색기간</Space>
           <RangePicker
@@ -348,28 +308,24 @@ const Promotion = () => {
             }}
             locale={locale}
           />
+          <Button style={getTableCellStyle()} onClick={onHandleReset}>
+            정렬 초기화
+          </Button>
         </Flex>
 
-        <Flex gap='small' align='center'>
-          <Text strong style={getTableCellStyle(16)}>
-            글꼴 크기:
-          </Text>
+        <Flex gap='small' align='center' style={{ marginRight: "560px" }}>
+          <Text strong>글꼴 크기:</Text>
           <Slider
             min={12}
             max={30}
             value={tableFontSize}
             onChange={setTableFontSize}
-            style={{ width: "100px" }}
+            style={{ width: "200px" }}
           />
         </Flex>
-
-        <Button style={getTableCellStyle()} onClick={onHandleReset}>
-          정렬 초기화
-        </Button>
       </Flex>
       {/* <br /> */}
       <Table
-        // className={styles.customTable}
         ref={tableRef}
         columns={getColumns()}
         dataSource={advertisements}
@@ -380,8 +336,8 @@ const Promotion = () => {
           onHandleTableChange(pagination, filters, sorter);
           setSortedInfo(sorter);
         }}
-        style={{ width: "100%", height: "400px", marginBottom: "100px" }} // 전체 테이블 크기 조정
-        scroll={{ x: "100%", y: 400 }} // 가로 스크롤과 세로 스크롤 설정
+        style={{ width: "100%", height: "400px", marginBottom: "100px" }}
+        scroll={{ x: "100%", y: 400 }}
       />
     </div>
   );

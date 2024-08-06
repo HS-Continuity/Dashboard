@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import {
   Input,
   Space,
@@ -10,10 +10,10 @@ import {
   Typography,
   Descriptions,
   Card,
-  message,
   List,
   Tag,
   Slider,
+  message,
 } from "antd";
 import {
   SearchOutlined,
@@ -33,14 +33,15 @@ import {
   fetchMemberPaymentCards,
 } from "../../../apis/apisMembers";
 import { useFontSizeStore } from "../../../stores/fontSizeStore";
+import useAuthStore from "../../../stores/useAuthStore";
 
 const { Text } = Typography;
 
 const EasyMemberManage = () => {
   const searchInput = useRef(null);
   const { tableFontSize, setTableFontSize } = useFontSizeStore();
+  const { username } = useAuthStore();
 
-  // State management
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [filteredInfo, setFilteredInfo] = useState({});
@@ -48,33 +49,21 @@ const EasyMemberManage = () => {
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-  // const [fontSize, setFontSize] = useState(16);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
     total: 0,
   });
 
-  // 글꼴 크기 변경 함수
-  // const handleFontSizeChange = newSize => {
-  //   setFontSize(newSize);
-  // };
-
-  // 글꼴 크기에 따라 스타일을 동적으로 생성하는 함수
-  // const getFontStyle = baseSize => ({
-  //   fontSize: `${baseSize * (fontSize / 16)}px`,
-  // });
-
   const getTableCellStyle = () => ({
     fontSize: `${tableFontSize}px`,
   });
 
-  // Fetch members
   const fetchMembers = async () => {
     setLoading(true);
     try {
       const params = {
-        customerId: 1,
+        customerId: String(username),
         page: pagination.current - 1,
         size: pagination.pageSize,
       };
@@ -96,7 +85,6 @@ const EasyMemberManage = () => {
         total: response.totalElements,
       }));
     } catch (error) {
-      console.error("Failed to fetch members:", error);
       message.error("회원 데이터를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
@@ -107,21 +95,18 @@ const EasyMemberManage = () => {
     fetchMembers();
   }, [pagination.current, pagination.pageSize]);
 
-  // Fetch member addresses
   const { data: addresses, isLoading: isAddressesLoading } = useQuery({
     queryKey: ["address", selectedMemberId],
     queryFn: () => fetchMemberAddresses(selectedMemberId),
     enabled: !!selectedMemberId,
   });
 
-  // Fetch member payment cards
   const { data: cards, isLoading: isCardsLoading } = useQuery({
     queryKey: ["card", selectedMemberId],
     queryFn: () => fetchMemberPaymentCards(selectedMemberId),
     enabled: !!selectedMemberId,
   });
 
-  // Table related functions
   const handleTableChange = (pagination, filters, sorter) => {
     setFilteredInfo(filters);
     setSortedInfo(sorter);
@@ -152,7 +137,6 @@ const EasyMemberManage = () => {
     []
   );
 
-  // Search and filtering related functions
   const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       <div style={{ padding: 8 }} onKeyDown={e => e.stopPropagation()}>
@@ -212,7 +196,6 @@ const EasyMemberManage = () => {
     setSearchedColumn(dataIndex);
   };
 
-  // Column definitions
   const getColumns = () => [
     {
       title: "회원 아이디",
@@ -220,9 +203,6 @@ const EasyMemberManage = () => {
       key: "memberId",
       ...getColumnSearchProps("memberId"),
       filteredValue: filteredInfo.memberId || null,
-      // onHeaderCell: () => ({
-      //   style: getFontStyle(16),
-      // }),
       onCell: () => ({
         style: getTableCellStyle(),
       }),
@@ -235,9 +215,6 @@ const EasyMemberManage = () => {
       filteredValue: filteredInfo.memberName || null,
       sorter: (a, b) => a.memberName.localeCompare(b.memberName),
       sortOrder: sortedInfo.columnKey === "memberName" && sortedInfo.order,
-      // onHeaderCell: () => ({
-      //   style: getFontStyle(16),
-      // }),
       onCell: () => ({
         style: getTableCellStyle(),
       }),
@@ -254,6 +231,31 @@ const EasyMemberManage = () => {
         {text}
       </Tag>
     );
+
+  // Descriptions 컴포넌트에 적용할 스타일
+  const getDescriptionsStyle = () => ({
+    ...getTableCellStyle(),
+    "& .ant-descriptions-item-label, & .ant-descriptions-item-content": {
+      ...getTableCellStyle(),
+    },
+    "& .ant-descriptions-item-label *, & .ant-descriptions-item-content *": {
+      fontSize: `${tableFontSize}px !important`,
+    },
+  });
+
+  // 모든 텍스트 요소에 폰트 크기를 적용하는 함수
+  const applyFontSize = node => {
+    if (typeof node === "string" || typeof node === "number") {
+      return <span style={getTableCellStyle()}>{node}</span>;
+    }
+    if (React.isValidElement(node)) {
+      return React.cloneElement(node, {
+        style: { ...node.props.style, ...getTableCellStyle() },
+        children: React.Children.map(node.props.children, applyFontSize),
+      });
+    }
+    return node;
+  };
 
   const AddressList = ({ addresses }) => (
     <List
@@ -346,15 +348,16 @@ const EasyMemberManage = () => {
         <Descriptions
           bordered
           column={{ xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }}
-          labelStyle={{ ...getTableCellStyle() }}
-          contentStyle={{ ...getTableCellStyle() }}>
+          labelStyle={getTableCellStyle()}
+          contentStyle={getTableCellStyle()}
+          style={getDescriptionsStyle()}>
           <Descriptions.Item
             label={
               <Space>
                 <IdcardOutlined style={getTableCellStyle()} /> 회원 ID
               </Space>
             }>
-            {selectedMemberId}
+            {applyFontSize(selectedMemberId)}
           </Descriptions.Item>
           <Descriptions.Item
             label={
@@ -362,7 +365,7 @@ const EasyMemberManage = () => {
                 <UserOutlined style={getTableCellStyle()} /> 회원명
               </Space>
             }>
-            {selectedMember?.memberName}
+            {applyFontSize(selectedMember?.memberName)}
           </Descriptions.Item>
           <Descriptions.Item
             label={
@@ -375,7 +378,7 @@ const EasyMemberManage = () => {
                 성별
               </Space>
             }>
-            {selectedMember?.gender === "MALE" ? "남" : "여"}
+            {applyFontSize(selectedMember?.gender === "MALE" ? "남" : "여")}
           </Descriptions.Item>
           <Descriptions.Item
             label={
@@ -383,7 +386,7 @@ const EasyMemberManage = () => {
                 <PhoneOutlined style={getTableCellStyle()} /> 휴대전화
               </Space>
             }>
-            {selectedMember?.memberPhoneNumber}
+            {applyFontSize(selectedMember?.memberPhoneNumber)}
           </Descriptions.Item>
           <Descriptions.Item
             label={
@@ -391,7 +394,7 @@ const EasyMemberManage = () => {
                 <MailOutlined style={getTableCellStyle()} /> 이메일
               </Space>
             }>
-            {selectedMember?.memberEmail}
+            {applyFontSize(selectedMember?.memberEmail)}
           </Descriptions.Item>
           <Descriptions.Item
             label={
@@ -399,7 +402,7 @@ const EasyMemberManage = () => {
                 <CalendarOutlined style={getTableCellStyle()} /> 생년월일
               </Space>
             }>
-            {selectedMember?.memberBirthday}
+            {applyFontSize(selectedMember?.memberBirthday)}
           </Descriptions.Item>
         </Descriptions>
       ) : (
@@ -434,19 +437,15 @@ const EasyMemberManage = () => {
             title={"회원 목록"}
             style={{ marginBottom: 16 }}
             extra={
-              <Row gutter={16} align='middle' justify='end'>
-                <Col>
-                  <Text strong style={getTableCellStyle()}>
-                    글꼴 크기:
-                  </Text>
-                </Col>
-                <Col flex='auto'>
+              <Row gutter={16} align='middle' justify='start'>
+                <Text strong>글꼴 크기:</Text>
+                <Col style={{ marginRight: "80px" }}>
                   <Slider
                     min={12}
                     max={30}
                     value={tableFontSize}
                     onChange={setTableFontSize}
-                    style={{ width: 200, marginBottom: 16 }}
+                    style={{ width: 200, marginBottom: 12 }}
                   />
                 </Col>
                 <Col>
@@ -463,7 +462,6 @@ const EasyMemberManage = () => {
                 ...pagination,
                 showSizeChanger: true,
                 pageSizeOptions: ["5", "10", "20"],
-                showTotal: (total, range) => `${range[0]}-${range[1]} / 총 ${total}개`,
                 style: getTableCellStyle(),
               }}
               onChange={handleTableChange}
