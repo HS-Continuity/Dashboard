@@ -1,7 +1,7 @@
 import React from "react";
 import { ResponsivePie } from "@nivo/pie";
 
-const PieChart = ({ data /* 차트 데이터 */ }) => (
+const PieChart = ({ data }) => (
   <div style={{ height: 400 }}>
     <ResponsivePie
       data={data}

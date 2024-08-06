@@ -1,6 +1,7 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { apiGet, apiPatch, ORDER_DB_URL } from './apisCommon';
 import 'event-source-polyfill';
+import axios from 'axios';
 
 // [ 일반 주문 페이지 ]
 // ----------- 일반 주문 조회 ----------- 
@@ -29,10 +30,16 @@ export const updateBulkOrderStatus = async (orderIds, orderStatusCode) => {
 export const subscribeToOrderStatusUpdates = (customerId) => {
   const url = `${ORDER_DB_URL}/order-notification/${customerId}/subscription`;
   console.log('Connecting to SSE URL:', url);
+  console.log('token:', axios.defaults.headers.common['Authorization']);
   return new EventSourcePolyfill(url, {
-    withCredentials:true
+    withCredentials:true,
+    heartbeatTimeout: 180*1000,
+    headers : {
+      "Authorization" : axios.defaults.headers.common['Authorization']
+    }
   });
 }
+
 
 
 
@@ -56,12 +63,12 @@ export const fetchRegularOrderCountsBetweenMonth = async (startDate, endDate) =>
 };
 
 // ----------- 정기 주문 일별 조회 ----------- 
-export const fetchRegularOrderCountByDate = async (date, size, page) => {
+export const fetchRegularOrderCountByDate = async (date, size = 10, page = 1) => {
   try {
     const params = {
       date,
       size, 
-      page
+      page: page - 1
     }
     console.log('일별 조회 서버에서 보내는 params: ', params)
     const response = await apiGet(ORDER_DB_URL, `/regular-order/daily`, params)

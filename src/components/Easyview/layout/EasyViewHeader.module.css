@@ -1,3 +1,14 @@
+.bgGradient {
+  background-color: #183f3e;
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  padding: 0 24px;
+  position: relative;
+}
+
 .largeSwitch {
   width: 200px;
   height: 40px;
@@ -10,11 +21,11 @@
 }
 
 .largeSwitch:global(.ant-switch-checked) {
-  background-color: #fad074;
+  background: linear-gradient(135deg, #ffe7b3 0%, #f6ed5d 100%);
 }
 
 .largeSwitch:global(.ant-switch-checked:hover:not(.ant-switch-disabled)) {
-  background-color: #fac656;
+  background: linear-gradient(135deg, #ffe7b3 0%, #f6ed5d 100%);
 }
 
 .largeSwitch :global(.ant-switch-handle) {
@@ -45,25 +56,19 @@
 }
 
 /* Switch의 내부 요소 위치 조정 */
-.largeSwitch:global(.ant-switch-checked) :global(.ant-switch-inner) {
-}
-
-.largeSwitch:not(:global(.ant-switch-checked)) :global(.ant-switch-inner) {
-}
-
 .largeSwitch:global(.ant-switch) :global(.ant-switch-inner) {
   margin-top: 8px;
-
   align-items: center;
   justify-content: center;
   height: 100%;
 }
 
-/* 체크되지 않은 상태의 텍스트 위치 조정 */
-.largeSwitch:not(:global(.ant-switch-checked)) :global(.ant-switch-inner-unchecked) {
-}
-
 /* 체크된 상태의 텍스트 위치 조정 */
 .largeSwitch:global(.ant-switch-checked) :global(.ant-switch-inner-checked) {
   color: white;
+}
+
+/* 추가: 그라데이션 트랜지션 효과 */
+.largeSwitch:global(.ant-switch) {
+  transition: background 0.3s ease;
 }

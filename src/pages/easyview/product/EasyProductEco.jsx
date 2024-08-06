@@ -1,0 +1,733 @@
+import {
+  fetchEcoProductItems,
+  registerTimesale,
+  registerAdvertisement,
+} from "../../../apis/apisProducts";
+import { registerProductInventory } from "../../../apis/apisInventory";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Flex,
+  Space,
+  Table,
+  Tag,
+  Button,
+  Input,
+  message,
+  ConfigProvider,
+  Slider,
+  Typography,
+} from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import Swal from "sweetalert2";
+import moment from "moment-timezone";
+import RegisterButton from "../../../components/Buttons/RegisterButton";
+import ApplyButton from "../../../components/Buttons/ApplyButton";
+import PromotionApplyButton from "../../../components/Buttons/PromotionApplyButton";
+import EasyProductEcoDetail from "./EasyProductEcoDetail";
+import { useFontSizeStore } from "../../../stores/fontSizeStore";
+import styles from "../../customer/Table.module.css";
+
+const { Text } = Typography;
+
+const EasyProductEco = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
+
+  const [joinForm, setJoinForm] = useState({});
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [dateRange, setDateRange] = useState([]);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const searchInput = useRef(null);
+  const tableRef = useRef();
+  const navigate = useNavigate();
+  const { tableFontSize, setTableFontSize } = useFontSizeStore();
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const getTableCellStyle = () => ({
+    fontSize: `${tableFontSize}px`,
+  });
+
+  const rowSelection = {
+    type: "radio",
+    selectedRowKeys,
+    onChange: selectedRowKeys => {
+      setSelectedRowKeys(selectedRowKeys);
+    },
+  };
+
+  const fetchProducts = async (
+    page = pagination.current,
+    pageSize = pagination.pageSize,
+    form = joinForm
+  ) => {
+    setLoading(true);
+    try {
+      const params = {
+        startPage: page - 1,
+        pageSize: pageSize,
+        ...form,
+      };
+
+      Object.entries(joinForm).forEach(([key, value]) => {
+        if (value != null && value !== "") {
+          if (value instanceof Date) {
+            params[key] = value.toISOString().split("T")[0];
+          } else if (Array.isArray(value)) {
+            params[key] = value.join(",");
+          } else {
+            params[key] = value;
+          }
+        }
+      });
+
+      const response = await fetchEcoProductItems(params);
+
+      const transformedProducts = response.content.map(product => {
+        return {
+          baseDiscountRate: product.baseDiscountRate,
+          description: product.description,
+          detailCategoryName: product.detailCategoryName,
+          isEcoFriendly: product.isEcoFriendly,
+          isPageVisibility: product.isPageVisibility,
+          isRegularSale: product.isRegularSale,
+          origin: product.origin,
+          price: product.price,
+          productId: product.productId,
+          productName: product.productName,
+          regularDiscountRate: product.regularDiscountRate,
+        };
+      });
+      setProducts(transformedProducts);
+      setPagination(prev => ({
+        ...prev,
+        current: page,
+        pageSize: pageSize,
+        total: response.totalElements,
+      }));
+    } catch (error) {
+      message.error("식품 데이터를 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(true);
+    }
+  };
+
+  const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setJoinForm(prev => ({
+      ...prev,
+      [dataIndex]: selectedKeys[0] ? [selectedKeys[0]] : null,
+    }));
+  };
+
+  const onHandleReset = () => {
+    setJoinForm({});
+    setFilteredInfo({});
+    setDateRange([]);
+    if (tableRef.current) {
+      tableRef.current.clearFilters();
+    }
+    fetchProducts();
+  };
+
+  // 상단 노출 신청
+  const onHandlePromotionApply = async () => {
+    if (selectedRowKeys.length !== 1) {
+      message.warning("상단 노출을 신청할 상품을 하나만 선택해주세요.");
+      return;
+    }
+
+    const selectedProduct = products.find(product => product.productId === selectedRowKeys[0]);
+
+    const { value: formValues } = await Swal.fire({
+      title: "상단 노출 신청",
+      html:
+        '<div style="text-align: left; margin-bottom: 20px;">' +
+        '<label for="swal-input1" style="display: inline-block; width: 150px; font-weight: bold;">상품 아이디</label>' +
+        `<input id="swal-input1" class="swal2-input" value="${selectedProduct.productId}" readonly style="width: 230px;">` +
+        "</div>" +
+        '<div style="text-align: left; margin-bottom: 20px;">' +
+        '<label for="swal-input2" style="display: inline-block; width: 150px; font-weight: bold;">상품명</label>' +
+        `<input id="swal-input2" class="swal2-input" value="${selectedProduct.productName}" readonly style="width: 230px;">` +
+        "</div>" +
+        '<div style="text-align: left; margin-bottom: 5px;">' +
+        '<label for="swal-input3" style="display: inline-block; width: 150px; font-weight: bold;">노출 시작일</label>' +
+        '<input id="swal-input3" class="swal2-input" type="date" style="width: 300px;">' +
+        "</div>" +
+        '<div id="swal-input3-error" style="color: red; margin-left: 150px; margin-bottom: 15px;"></div>' +
+        '<div style="text-align: left; margin-bottom: 20px;">' +
+        '<label for="swal-input4" style="display: inline-block; width: 150px; font-weight: bold;">노출 종료일</label>' +
+        '<input id="swal-input4" class="swal2-input" type="date" readonly style="width: 300px;">' +
+        "</div>",
+      confirmButtonText: "신청하기",
+      focusConfirm: false,
+      preConfirm: () => {
+        const startDate = document.getElementById("swal-input3").value;
+        let isValid = true;
+
+        if (!startDate) {
+          document.getElementById("swal-input3-error").textContent = "노출 시작일을 선택해주세요.";
+          isValid = false;
+        } else {
+          const selectedDate = moment(startDate);
+          if (selectedDate.day() !== 1) {
+            document.getElementById("swal-input3-error").textContent =
+              "노출 시작일은 월요일이어야 합니다.";
+            isValid = false;
+          } else {
+            document.getElementById("swal-input3-error").textContent = "";
+          }
+        }
+
+        if (!isValid) {
+          return false;
+        }
+
+        const endDate = moment(startDate).endOf("week").format("YYYY-MM-DD");
+        document.getElementById("swal-input4").value = endDate;
+
+        return [
+          document.getElementById("swal-input1").value,
+          document.getElementById("swal-input2").value,
+          startDate,
+          endDate,
+        ];
+      },
+      didOpen: () => {
+        const startInput = document.getElementById("swal-input3");
+        startInput.addEventListener("change", e => {
+          const selectedDate = moment(e.target.value);
+          if (selectedDate.day() === 1) {
+            const endDate = selectedDate.endOf("week").format("YYYY-MM-DD");
+            document.getElementById("swal-input4").value = endDate;
+            document.getElementById("swal-input3-error").textContent = "";
+          } else {
+            document.getElementById("swal-input3-error").textContent =
+              "노출 시작일은 월요일이어야 합니다.";
+            document.getElementById("swal-input4").value = "";
+          }
+        });
+      },
+    });
+
+    if (formValues) {
+      const [productId, productName, startDate, endDate] = formValues;
+
+      try {
+        const advertisementData = {
+          productId: parseInt(productId),
+          productName,
+          startDate,
+          endDate,
+        };
+
+        await registerAdvertisement(advertisementData);
+        message.success("상단 노출 신청이 완료되었습니다");
+      } catch (error) {
+        console.error("Error: ", error);
+        message.error("상단 노출 신청에 실패했습니다.");
+      }
+    }
+  };
+
+  // 재고 등록 버튼
+  const onHandleInventoryRegister = (event, record) => {
+    event.stopPropagation();
+    Swal.fire({
+      title: "재고 등록",
+      html:
+        '<div class="swal2-input-group">' +
+        '<label for="swal-input1" class="swal2-input-label">입고날짜:</label>' +
+        '<input id="swal-input1" class="swal2-input" type="date">' +
+        "</div>" +
+        '<div class="swal2-input-group">' +
+        '<label for="swal-input2" class="swal2-input-label">재고수량:</label>' +
+        '<input id="swal-input2" class="swal2-input" type="number">' +
+        "</div>" +
+        '<div class="swal2-input-group">' +
+        '<label for="swal-input3" class="swal2-input-label">소비기한:</label>' +
+        '<input id="swal-input3" class="swal2-input" type="date">' +
+        "</div>",
+      focusConfirm: false,
+      preConfirm: () => {
+        return {
+          warehouseDate: document.getElementById("swal-input1").value,
+          quantity: document.getElementById("swal-input2").value,
+          expirationDate: document.getElementById("swal-input3").value,
+        };
+      },
+    }).then(result => {
+      if (result.isConfirmed) {
+        const { warehouseDate, quantity, expirationDate } = result.value;
+        if (!warehouseDate || !quantity || !expirationDate) {
+          Swal.fire("오류", "모든 필드를 입력해주세요.", "error");
+          return;
+        }
+        onHandleInventoryCreate(
+          record.productId,
+          warehouseDate,
+          parseInt(quantity),
+          expirationDate
+        );
+      }
+    });
+  };
+
+  // 재고 등록
+  const onHandleInventoryCreate = async (productId, warehouseDate, quantity, expirationDate) => {
+    try {
+      const registerData = {
+        productId,
+        warehouseDate,
+        quantity,
+        expirationDate,
+      };
+      const response = await registerProductInventory(registerData);
+      if (response && response.successCode === "INSERT_SUCCESS") {
+        message.success("재고가 성공적으로 등록되었습니다.");
+      } else {
+        message.error("재고 등록에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("재고 등록 오류:", error);
+      message.error("재고 등록에 실패했습니다.");
+    }
+  };
+
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={searchInput}
+          placeholder={`검색할 내용을 입력해 주세요.`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+        <Space>
+          <Button
+            type='primary'
+            onClick={() => onHandleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size='small'
+            style={{ width: 90 }}>
+            검색
+          </Button>
+          <Button
+            onClick={() => onHandleReset(clearFilters, dataIndex)}
+            size='small'
+            style={{ width: 90 }}>
+            초기화
+          </Button>
+          <Button
+            type='link'
+            size='small'
+            onClick={() => {
+              close();
+            }}>
+            닫기
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
+    onFilter: (value, record) => {
+      if (record[dataIndex] == null) return false;
+
+      const itemValue = record[dataIndex];
+      const filterValue = value;
+
+      // 날짜 처리
+      if (itemValue instanceof Date) {
+        const dateValue = itemValue.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+        return dateValue.includes(filterValue);
+      }
+
+      // 그 외의 경우
+      const stringItemValue = String(itemValue).toLowerCase();
+      const stringFilterValue = String(filterValue).toLowerCase();
+
+      return stringItemValue.includes(stringFilterValue);
+    },
+    onFilterDropdownOpenChange: visible => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
+  const onHandleTableChange = (newPagination, filters) => {
+    setPagination(newPagination);
+    setFilteredInfo(filters);
+
+    const newJoinForm = { ...joinForm };
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) {
+        newJoinForm[key] = filters[key][0]; // 첫 번째 필터 값만 사용
+      } else {
+        delete newJoinForm[key]; // 필터가 제거된 경우
+      }
+    });
+
+    setJoinForm(newJoinForm);
+    if (
+      newPagination.current !== pagination.current ||
+      newPagination.pageSize !== pagination.pageSize
+    ) {
+      fetchProducts(newPagination.current, newPagination.pageSize, newJoinForm);
+    }
+  };
+
+  const onRow = record => {
+    return {
+      onClick: event => {
+        if (event.target.tagName !== "BUTTON") {
+          setSelectedProductId(record.productId);
+          setDrawerVisible(true);
+        }
+      },
+    };
+  };
+
+  const onCloseDrawer = () => {
+    setDrawerVisible(false);
+    setSelectedProductId(null);
+  };
+
+  const onHandleTimesaleApply = async () => {
+    if (selectedRowKeys.length !== 1) {
+      message.warning("타임세일을 신청할 상품을 하나만 선택해주세요.");
+      return;
+    }
+
+    const selectedProductId = selectedRowKeys[0];
+    const now = moment();
+
+    const { value: formValues } = await Swal.fire({
+      title: "타임세일 신청",
+      html:
+        '<div style="text-align: left; margin-bottom: 20px;">' +
+        '<label for="swal-input1" style="display: inline-block; width: 150px; font-weight: bold;">상품 아이디</label>' +
+        `<input id="swal-input1" class="swal2-input" value="${selectedProductId}" readonly style="width: 230px;">` +
+        "</div>" +
+        '<div style="text-align: left; margin-bottom: 5px;">' +
+        '<label for="swal-input2" style="display: inline-block; width: 150px; font-weight: bold;">타임세일 시작</label>' +
+        `<input id="swal-input2" class="swal2-input" type="datetime-local" min="${now.format("YYYY-MM-DDTHH:mm")}" style="width: 300px;" placeholder="날짜와 시간을 선택하세요">` +
+        "</div>" +
+        '<div id="swal-input2-error" style="color: red; margin-left: 150px; margin-bottom: 15px;"></div>' +
+        '<div style="text-align: left; margin-bottom: 20px;">' +
+        '<label for="swal-input3" style="display: inline-block; width: 150px; font-weight: bold;">타임세일 종료</label>' +
+        '<input id="swal-input3" class="swal2-input" type="datetime-local" readonly style="width: 300px;">' +
+        "</div>" +
+        '<div style="text-align: left; margin-bottom: 5px;">' +
+        '<label for="swal-input4" style="display: inline-block; width: 150px; font-weight: bold;">타임세일 할인율</label>' +
+        '<div style="display: inline-block; position: relative; width: 230px;">' +
+        '<input id="swal-input4" class="swal2-input" type="number" min="0" max="100" style="width: 100%;">' +
+        '<span style="position: absolute; right: 10px; top: 60%; transform: translateY(-50%); font-weight: bold;">%</span>' +
+        "</div>" +
+        "</div>" +
+        '<div id="swal-input4-error" style="color: red; margin-left: 150px;"></div>',
+      focusConfirm: false,
+      confirmButtonText: "신청하기",
+      showCloseButton: true,
+      width: "700px",
+      padding: "20px",
+      preConfirm: () => {
+        const startTime = document.getElementById("swal-input2").value;
+        const discountRate = document.getElementById("swal-input4").value;
+        let isValid = true;
+
+        // 타임세일 시작 시간 검증
+        if (!startTime) {
+          document.getElementById("swal-input2-error").textContent =
+            "타임세일 시작 시간을 선택해주세요.";
+          isValid = false;
+        } else {
+          document.getElementById("swal-input2-error").textContent = "";
+        }
+
+        // 할인율 검증
+        if (!discountRate) {
+          document.getElementById("swal-input4-error").textContent = "할인율을 입력해주세요.";
+          isValid = false;
+        } else {
+          document.getElementById("swal-input4-error").textContent = "";
+        }
+
+        if (!isValid) {
+          return false; // 폼 제출 방지
+        }
+
+        const endTime = moment(startTime).add(3, "hours").format("YYYY-MM-DDTHH:mm");
+        document.getElementById("swal-input3").value = endTime;
+        return [document.getElementById("swal-input1").value, startTime, endTime, discountRate];
+      },
+      didOpen: () => {
+        const startInput = document.getElementById("swal-input2");
+        startInput.addEventListener("change", e => {
+          const endInput = document.getElementById("swal-input3");
+          const endTime = moment(e.target.value).add(3, "hours").format("YYYY-MM-DDTHH:mm");
+          endInput.value = endTime;
+        });
+      },
+    });
+
+    if (formValues) {
+      const [productId, startTime, endTime, discountRate] = formValues;
+
+      try {
+        const timesaleData = {
+          productId: parseInt(productId),
+          startTime: moment.tz(startTime, "Asia/Seoul").add(9, "hours"),
+          endTime: moment.tz(endTime, "Asia/Seoul").add(9, "hours"),
+          discountRate: parseInt(discountRate),
+        };
+
+        await registerTimesale(timesaleData);
+        message.success("타임세일 신청이 완료되었습니다");
+      } catch (error) {
+        console.error("Error: ", error);
+        message.error("타임세일 신청에 실패했습니다.");
+      }
+    }
+  };
+
+  const onClickCreate = () => {
+    navigate("../create");
+  };
+
+  const columns = [
+    {
+      title: "식품 아이디",
+      dataIndex: "productId",
+      key: "productId",
+      width: "7%",
+      fixed: "left",
+      filteredValue: joinForm.productId ? [joinForm.productId] : null,
+      ...getColumnSearchProps("productId"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "상세카테고리",
+      dataIndex: "detailCategoryName",
+      key: "detailCategoryName",
+      fixed: "left",
+      filteredValue: joinForm.detailCategoryName ? [joinForm.detailCategoryName] : null,
+      ...getColumnSearchProps("detailCategoryName"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "식품명",
+      dataIndex: "productName",
+      key: "productName",
+      fixed: "left",
+      width: "17%",
+      filteredValue: joinForm.productName ? [joinForm.productName] : null,
+      ...getColumnSearchProps("productName"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "가격",
+      dataIndex: "price",
+      key: "price",
+      render: price =>
+        price.toLocaleString("ko-KR", { style: "currency", currency: "KRW" }).replace("₩", "₩ "),
+      filteredValue: joinForm.price ? [joinForm.price] : null,
+      ...getColumnSearchProps("price"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "기본할인율",
+      dataIndex: "baseDiscountRate",
+      key: "baseDiscountRate",
+      render: baseDiscountRate => `${baseDiscountRate}%`,
+      filteredValue: joinForm.baseDiscountRate ? [joinForm.baseDiscountRate] : null,
+      ...getColumnSearchProps("baseDiscountRate"),
+      sorter: (a, b) => a.baseDiscountRate - b.baseDiscountRate,
+      sortDirections: ["ascend", "descend"],
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "정기배송할인율",
+      dataIndex: "regularDiscountRate",
+      key: "regularDiscountRate",
+      width: "10%",
+      render: (regularDiscountRate, record) =>
+        record.isRegularSale === "ACTIVE" ? `${regularDiscountRate}%` : "-",
+      filteredValue: joinForm.regularDiscountRate ? [joinForm.regularDiscountRate] : null,
+      ...getColumnSearchProps("regularDiscountRate"),
+      sorter: (a, b) => {
+        if (a.isRegularSale === "INACTIVE" && b.isRegularSale === "INACTIVE") return 0;
+        if (a.isRegularSale === "INACTIVE") return 1;
+        if (b.isRegularSale === "INACTIVE") return -1;
+        return a.regularDiscountRate - b.regularDiscountRate;
+      },
+      sortDirections: ["ascend", "descend"],
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "정기배송",
+      dataIndex: "isRegularSale",
+      key: "isRegularSale",
+      filters: [
+        { text: "O", value: "ACTIVE" },
+        { text: "X", value: "INACTIVE" },
+      ],
+      width: "6%",
+      filteredValue: joinForm.isRegularSale ? [joinForm.isRegularSale] : null,
+      onFilter: (value, record) => record.isRegularSale === value,
+      render: status => (
+        <Tag className={styles.largeTag} color={getTagColor(status)}>
+          {getTagText(status)}
+        </Tag>
+      ),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+
+    {
+      title: "페이지노출",
+      dataIndex: "isPageVisibility",
+      key: "isPageVisibility",
+      filters: [
+        { text: "O", value: "ACTIVE" },
+        { text: "X", value: "INACTIVE" },
+      ],
+      width: "7%",
+      filteredValue: joinForm.isPageVisibility ? [joinForm.isPageVisibility] : null,
+      onFilter: (value, record) => record.isPageVisibility === value,
+      render: status => (
+        <Tag className={styles.largeTag} color={getTagColor(status)}>
+          {getTagText(status)}
+        </Tag>
+      ),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
+    },
+    {
+      title: "재고 등록",
+      key: "register",
+      render: (_, record) => (
+        <Button onClick={event => onHandleInventoryRegister(event, record)}>재고 등록</Button>
+      ),
+    },
+  ];
+
+  const getTagColor = status => {
+    const colors = {
+      ACTIVE: "cyan",
+      INACTIVE: "gray",
+    };
+    return colors[status] || "default";
+  };
+
+  const getTagText = status => {
+    const texts = {
+      ACTIVE: "O",
+      INACTIVE: "X",
+    };
+    return texts[status] || status;
+  };
+  // --------------------------------------------------------------------------
+
+  return (
+    <div>
+      <Flex gap='small' align='center' justify='space-between'>
+        <Flex gap='small' wrap>
+          <h2>친환경식품관리</h2>
+        </Flex>
+      </Flex>
+      <Flex gap='small' align='center' justify='space-between'>
+        <Button onClick={onHandleReset} style={getTableCellStyle()}>
+          정렬 초기화
+        </Button>
+        <Flex gap='small' align='center' style={{ marginLeft: "240px" }}>
+          <Text strong>글꼴 크기:</Text>
+          <Slider
+            min={12}
+            max={30}
+            value={tableFontSize}
+            onChange={setTableFontSize}
+            style={{ width: "200px" }}
+          />
+        </Flex>
+        <Flex gap='small' wrap>
+          <RegisterButton
+            title={"친환경 식품"}
+            onClick={onClickCreate}
+            style={getTableCellStyle()}
+          />
+          <ApplyButton
+            title={"타임세일"}
+            onClick={onHandleTimesaleApply}
+            style={getTableCellStyle()}
+          />
+          <PromotionApplyButton
+            title={"상단 노출"}
+            onClick={onHandlePromotionApply}
+            style={getTableCellStyle()}
+          />
+        </Flex>
+      </Flex>
+      <br />
+      <ConfigProvider
+        theme={{
+          token: {
+            fontSizeSM: `${tableFontSize}px`,
+          },
+        }}>
+        <Table
+          columns={columns}
+          dataSource={products}
+          pagination={pagination}
+          onChange={onHandleTableChange}
+          rowSelection={rowSelection}
+          onRow={onRow}
+          rowKey='productId'
+          style={{
+            width: "100%",
+            height: "400px",
+            marginBottom: "130px",
+            ...getTableCellStyle(),
+          }}
+          scroll={{ x: "100%", y: 400 }}
+        />
+        <EasyProductEcoDetail
+          visible={drawerVisible}
+          onClose={onCloseDrawer}
+          productId={selectedProductId}
+        />
+      </ConfigProvider>
+    </div>
+  );
+};
+
+export default EasyProductEco;

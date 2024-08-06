@@ -69,18 +69,33 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       "/admin/category": "4-3",
       "/admin/review": "5",
       "/admin/statistics": "6",
-      "/member": "12-1",
+      "/member": "12",
       "/product/general": "13-1",
+      "/product/general/": "13-1",
       "/product/eco": "13-2",
       "/product/timesale": "13-3",
       "/order/general": "14-1",
       "/order/subscription": "14-2",
-      "/inventory": "15-1",
-      "/statistics": "16-1",
-      "/shipment": "17-1",
-      "/delivery": "18-1",
+      "/inventory": "15",
+      "/statistics": "16",
+      "/shipment": "17",
+      "/delivery": "18",
       "/promotion": "19",
     };
+
+    if (pathname.startsWith("/product/general")) {
+      return "13-1";
+    } else if (pathname.startsWith("/product/eco")) {
+      return "13-2";
+    } else if (pathname.startsWith("/product/timesale")) {
+      return "13-3";
+    } else if (pathname.startsWith("/order/general")) {
+      return "14-1";
+    } else if (pathname.startsWith("/order/subscription")) {
+      return "14-2";
+    } else if (pathname.startsWith("/shipment")) {
+      return "17";
+    }
     return pathToKey[pathname] || "1";
   };
 
@@ -140,13 +155,7 @@ const Sidenav = ({ collapsed, onCollapse }) => {
     {
       key: "12",
       icon: <UserOutlined />,
-      label: "회원",
-      children: [
-        {
-          key: "12-1",
-          label: <Link to='/member'>회원 관리</Link>,
-        },
-      ],
+      label: <Link to='/member'>회원</Link>,
     },
     {
       key: "13",
@@ -168,6 +177,11 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       ],
     },
     {
+      key: "15",
+      icon: <InboxOutlined />,
+      label: <Link to='/inventory'>재고</Link>,
+    },
+    {
       key: "14",
       icon: <OrderedListOutlined />,
       label: "주문",
@@ -183,48 +197,19 @@ const Sidenav = ({ collapsed, onCollapse }) => {
       ],
     },
     {
-      key: "15",
-      icon: <InboxOutlined />,
-      label: "재고",
-      children: [
-        {
-          key: "15-1",
-          label: <Link to='/inventory'>재고 관리</Link>,
-        },
-      ],
-    },
-    {
-      key: "16",
-      icon: <BarChartOutlined />,
-      label: "통계",
-      children: [
-        {
-          key: "16-1",
-          label: <Link to='/statistics'>통계 관리</Link>,
-        },
-      ],
-    },
-    {
       key: "17",
       icon: <TruckOutlined />,
-      label: "출고",
-      children: [
-        {
-          key: "17-1",
-          label: <Link to='/shipment'>출고 상태 관리</Link>,
-        },
-      ],
+      label: <Link to='/shipment'>출고</Link>,
     },
     {
       key: "18",
       icon: <CarOutlined />,
-      label: "배송",
-      children: [
-        {
-          key: "18-1",
-          label: <Link to='/delivery'>배송 관리</Link>,
-        },
-      ],
+      label: <Link to='/delivery'>배송</Link>,
+    },
+    {
+      key: "16",
+      icon: <BarChartOutlined />,
+      label: <Link to='/statistics'>통계</Link>,
     },
     {
       key: "19",

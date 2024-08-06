@@ -22,11 +22,10 @@ const useAuthStore = create((set, get) => ({
     set({ initializeAttempts: initializeAttempts + 1 });
 
     try {
-      const response = await axios.get(
-        "https://api.yeonieum.com/memberservice/access-token",
-        { timeout: 5000 },
-        { withCredentials: true }
-      );
+      const response = await axios.get("https://api.yeonieum.com/memberservice/access-token", {
+        timeout: 5000,
+        withCredentials: true,
+      });
 
       const authHeader = response.headers["authorization"];
 
@@ -49,18 +48,18 @@ const useAuthStore = create((set, get) => ({
       }
     } catch (error) {
       console.error("Failed to refresh token:", error);
-      if (error.code === "ECONNREFUSED") {
-        console.log("Server is not responding. Retrying in 5 seconds...");
-        setTimeout(() => get().initializeAuth(), 5000);
-      } else {
-        set({
-          accessToken: null,
-          username: null,
-          isAuthenticated: false,
-          isInitializing: false,
-        });
-        delete axios.defaults.headers.common["Authorization"];
-      }
+      // if (error.code === "ECONNREFUSED") {
+      //   console.log("Server is not responding. Retrying in 5 seconds...");
+      //   setTimeout(() => get().initializeAuth(), 5000);
+      // } else {
+      //   set({
+      //     accessToken: null,
+      //     username: null,
+      //     isAuthenticated: false,
+      //     isInitializing: false,
+      //   });
+      //   delete axios.defaults.headers.common["Authorization"];
+      // }
     }
     return false;
   },
@@ -87,11 +86,11 @@ const useAuthStore = create((set, get) => ({
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
         const customerId = payload.customerId; // customerId 추가
-        set({ 
-          accessToken: token, 
-          username: username, 
-          customerId: customerId,   //  customerId 추가
-          isAuthenticated: true 
+        set({
+          accessToken: token,
+          username: username,
+          customerId: customerId, //  customerId 추가
+          isAuthenticated: true,
         });
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         return true;

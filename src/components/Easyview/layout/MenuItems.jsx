@@ -7,16 +7,19 @@ import {
   BarChartOutlined,
   CarOutlined,
   GiftOutlined,
+  DollarOutlined,
+  CodeSandboxOutlined,
 } from "@ant-design/icons";
 
 export const mainMenuItems = [
   { key: "member", icon: <UserOutlined className='easyIcon' />, label: "회원" },
   { key: "product", icon: <ShopOutlined className='easyIcon' />, label: "식품" },
-  { key: "order", icon: <OrderedListOutlined className='easyIcon' />, label: "주문" },
   { key: "inventory", icon: <InboxOutlined className='easyIcon' />, label: "재고" },
-  { key: "statistics", icon: <BarChartOutlined className='easyIcon' />, label: "통계" },
-  { key: "delivery", icon: <CarOutlined className='easyIcon' />, label: "배송" },
   { key: "promotion", icon: <GiftOutlined className='easyIcon' />, label: "광고" },
+  { key: "order", icon: <DollarOutlined className='easyIcon' />, label: "주문" },
+  { key: "shipment", icon: <CodeSandboxOutlined className='easyIcon' />, label: "출고" },
+  { key: "delivery", icon: <CarOutlined className='easyIcon' />, label: "배송" },
+  { key: "statistics", icon: <BarChartOutlined className='easyIcon' />, label: "통계" },
 ];
 
 export const subMenuItems = {

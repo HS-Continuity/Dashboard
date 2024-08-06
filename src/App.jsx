@@ -35,17 +35,30 @@ import Shipment from "./pages/customer/Shipment";
 import ShipmentDetail from "./pages/customer/ShipmentDetail";
 import Delivery from "./pages/customer/Delivery";
 import Promotion from "./pages/customer/Promotion";
+import NotFound from "./pages/customer/NotFound";
+
 import { useFontSizeStore } from "./stores/fontSizeStore";
 import { useEffect } from "react";
 import { useLargeCursorStore } from "./stores/largeCursorStore";
 
 // 쉽게보기
-import EasyMemberManage from "./pages/easyview/EasyMemberManage";
-// import EasyMemberDetail from "./pages/easyview/EasyMemberDetail";
-import EasyProductGeneral from "./pages/easyview/EasyProductGeneral";
+import EasyMemberManage from "./pages/easyview/member/EasyMemberManage";
+import EasyProductGeneral from "./pages/easyview/product/EasyProductGeneral";
+import EasyStatistics from "./pages/easyview/statistics/EasyStatistics";
+
 import EasyViewLayout from "./components/Easyview/layout/EasyViewLayout";
 import useAuthStore from "./stores/useAuthStore";
 import ProtectedRoute from "./components/Login/ProtectedRoute";
+import EasyPromotion from "./pages/easyview/promotion/EasyPromotion";
+import EasyProductEco from "./pages/easyview/product/EasyProductEco";
+import EasyProductTimeSale from "./pages/easyview/product/EasyProductTimeSale";
+import EasyOrderGeneral from "./pages/easyview/order/EasyOrderGeneral";
+import EasyShipment from "./pages/easyview/shipment/EasyShipment";
+import EasyInventory from "./pages/easyview/inventory/EasyInventory";
+import EasyDelivery from "./pages/easyview/delivery/EasyDelivery";
+import EasyOrderGeneralDetail from "./pages/easyview/order/EasyOrderGeneralDetail";
+import EasyOrderSubscription from "./pages/easyview/order/EasyOrderSubscription";
+import EasyOrderSubscriptionDetail from "./pages/easyview/order/EasyOrderSubscriptionDetail";
 
 function App() {
   const { fontSize } = useFontSizeStore();
@@ -57,10 +70,6 @@ function App() {
     setupInterceptors();
     initializeAuth();
   }, []);
-
-  useEffect(() => {
-    document.documentElement.style.fontSize = `${fontSize}px`;
-  }, [fontSize]);
 
   useEffect(() => {
     // '/easy' 경로를 벗어나면 큰 커서 상태를 초기화
@@ -87,255 +96,270 @@ function App() {
 
           {/* Admin routes */}
           <Route path='/admin'>
-            <Route 
-              path='member' 
+            <Route
+              path='member'
               element={
                 <ProtectedRoute>
                   <AdminMember />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='customer' 
+            <Route
+              path='customer'
               element={
                 <ProtectedRoute>
                   <AdminCustomer />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='product' 
+            <Route
+              path='product'
               element={
                 <ProtectedRoute>
                   <AdminProduct />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='approval' 
+            <Route
+              path='approval'
               element={
                 <ProtectedRoute>
                   <AdminApproval />
                 </ProtectedRoute>
-              } />
-            <Route 
-              path='category' 
+              }
+            />
+            <Route
+              path='category'
               element={
-                <ProtectedRoute>      
+                <ProtectedRoute>
                   <AdminCategory />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='review' 
+            <Route
+              path='review'
               element={
                 <ProtectedRoute>
                   <AdminReview />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='statistics' 
+            <Route
+              path='statistics'
               element={
                 <ProtectedRoute>
                   <AdminStatistics />
                 </ProtectedRoute>
-              } 
+              }
             />
           </Route>
 
           {/* Customer routes */}
           <Route path='/member'>
-            <Route index element={<MemberManage />} />
-            <Route 
-              path=':member_id' 
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <MemberManage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path=':member_id'
               element={
                 <ProtectedRoute>
                   <MemberManageDetail />
                 </ProtectedRoute>
-              } 
+              }
             />
           </Route>
           <Route path='/product'>
-            <Route 
-              path='general' 
+            <Route
+              path='general'
               element={
                 <ProtectedRoute>
                   <ProductGeneral />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='general/:productId' 
+            <Route
+              path='general/:productId'
               element={
                 <ProtectedRoute>
                   <ProductGeneralDetail />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='eco' 
+            <Route
+              path='eco'
               element={
                 <ProtectedRoute>
                   <ProductEco />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='eco/:productId' 
+            <Route
+              path='eco/:productId'
               element={
                 <ProtectedRoute>
                   <ProductEcoDetail />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='timesale' 
+            <Route
+              path='timesale'
               element={
                 <ProtectedRoute>
                   <ProductTimeSale />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='timesale/:timesaleId' 
+            <Route
+              path='timesale/:timesaleId'
               element={
                 <ProtectedRoute>
                   <ProductTimeSaleDetail />
                 </ProtectedRoute>
               }
             />
-            <Route 
-              path='create' 
+            <Route
+              path='create'
               element={
                 <ProtectedRoute>
                   <ProductCreate />
                 </ProtectedRoute>
-              } 
+              }
             />
           </Route>
           <Route path='/order'>
-            <Route 
-              path='general' 
+            <Route
+              path='general'
               element={
                 <ProtectedRoute>
                   <OrderGeneral />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='general/:orderDetailId' 
+            <Route
+              path='general/:orderDetailId'
               element={
                 <ProtectedRoute>
                   <OrderGeneralDetail />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='subscription' 
+            <Route
+              path='subscription'
               element={
                 <ProtectedRoute>
                   <OrderSubscription />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path='subscription/:regularOrderId' 
+            <Route
+              path='subscription/:regularOrderId'
               element={
                 <ProtectedRoute>
                   <OrderSubscriptionDetail />
                 </ProtectedRoute>
-              } 
+              }
             />
           </Route>
-          <Route 
-            path='/inventory' 
+          <Route
+            path='/inventory'
             element={
               <ProtectedRoute>
                 <Inventory />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path='/inventory/:productName' 
+          <Route
+            path='/inventory/:productName'
             element={
               <ProtectedRoute>
                 <InventoryDetail />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path='/statistics' 
+          <Route
+            path='/statistics'
             element={
               <ProtectedRoute>
                 <Statistics />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path='/shipment' 
+          <Route
+            path='/shipment'
             element={
               <ProtectedRoute>
                 <Shipment />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path='shipment/:orderDetailId' 
+          <Route
+            path='shipment/:orderDetailId'
             element={
               <ProtectedRoute>
                 <ShipmentDetail />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path='/delivery' 
+          <Route
+            path='/delivery'
             element={
               <ProtectedRoute>
-               <Delivery />
+                <Delivery />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path='/promotion' 
+          <Route
+            path='/promotion'
             element={
               <ProtectedRoute>
                 <Promotion />
               </ProtectedRoute>
-            } 
+            }
           />
         </Route>
 
         {/* 쉽게 보기 */}
-        <Route path='/easy' element={<EasyViewLayout />}>
+        <Route
+          path='/easy'
+          element={
+            <ProtectedRoute>
+              <EasyViewLayout />
+            </ProtectedRoute>
+          }>
           <Route index element={<Home />} />
           <Route path='member'>
             <Route index element={<EasyMemberManage />} />
           </Route>
           <Route path='product'>
-            <Route path='general' element={<ProductGeneral />} />
-            <Route path='general/:productId' element={<ProductGeneralDetail />} />
-            <Route path='eco' element={<ProductEco />} />
-            <Route path='eco/:productId' element={<ProductEcoDetail />} />
-            <Route path='timesale' element={<ProductTimeSale />} />
-            <Route path='timesale/:timesaleId' element={<ProductTimeSaleDetail />} />
+            <Route path='general' element={<EasyProductGeneral />} />
+            <Route path='eco' element={<EasyProductEco />} />
+            <Route path='timesale' element={<EasyProductTimeSale />} />
             <Route path='create' element={<ProductCreate />} />
           </Route>
 
           <Route path='order'>
-            <Route path='general' element={<OrderGeneral />} />
-            <Route path='generalDetail' element={<OrderGeneralDetail />} />
-            <Route path='subscription' element={<OrderSubscription />} />
-            <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} />
+            <Route path='general' element={<EasyOrderGeneral />} />
+            <Route path='generalDetail' element={<EasyOrderGeneralDetail />} />
+            <Route path='subscription' element={<EasyOrderSubscription />} />
+            <Route path='subscription/:regularOrderId' element={<EasyOrderSubscriptionDetail />} />
+            {/* <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} /> */}
           </Route>
 
-          <Route path='inventory' element={<Inventory />} />
-          <Route path='inventory/:productName' element={<InventoryDetail />} />
-          {/* <Route path='inventory/*' element={<Inventory />} /> */}
-          <Route path='statistics' element={<Statistics />} />
-          <Route path='delivery' element={<Delivery />} />
-          <Route path='promotion' element={<Promotion />} />
+          <Route path='inventory' element={<EasyInventory />} />
+          <Route path='statistics' element={<EasyStatistics />} />
+          <Route path='delivery' element={<EasyDelivery />} />
+          <Route path='shipment' element={<EasyShipment />} />
+          <Route path='promotion' element={<EasyPromotion />} />
         </Route>
+
+        <Route path='/' element={<Main />} />
+        {/* 허용되지 않은 URL */}
+        <Route path='*' element={<Main />} />
       </Routes>
     </div>
   );
