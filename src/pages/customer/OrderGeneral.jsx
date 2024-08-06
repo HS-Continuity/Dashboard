@@ -157,13 +157,15 @@ const OrderGeneral = () => {
     },
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = pagination.current, pageSize = pagination.pageSize) => {
     setLoading(true);
     try {
       const params = {
         customerId: String(username),
-        page: pagination.current - 1,
-        size: pagination.pageSize,
+        // page: pagination.current - 1,
+        page: page - 1,
+        // size: pagination.pageSize,
+        size: pageSize,
         ...joinForm,
       };
 
@@ -332,6 +334,7 @@ const OrderGeneral = () => {
       ...prev,
       orderStatusCode: filters.orderStatusCode ? filters.orderStatusCode[0] : null,
     }));
+    fetchOrders(newPagination.current, newPagination.pageSize);
   };
 
   const onHandleRangePickerChange = dates => {
