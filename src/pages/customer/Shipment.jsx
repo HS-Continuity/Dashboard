@@ -2,7 +2,7 @@
 import { fetchReleases, updateReleaseStatus, updateBulkReleaseStatus, requestCombinedPackaging, fetchReleaseStatusCounts} from '../../apis/apisShipments';
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from 'antd';
+import { Table, Flex, Space, DatePicker, Button, message, Tag, Input, Tooltip } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import useAuthStore from '../../stores/useAuthStore';
 import Swal from 'sweetalert2';
@@ -11,6 +11,7 @@ import style from './Shipment.module.css';
 import StatusCard from '../../components/Cards/StatusCard';
 import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
 import styles from './Table.module.css';
+
 
 const { RangePicker } = DatePicker;
 
@@ -352,6 +353,18 @@ const Shipment = () => {
 
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
 
+    // 배송시작일이 없는 주문 확인
+    const missingDeliveryDates = selectedReleases.filter(release => !release.startDeliveryDate);
+    if (missingDeliveryDates.length > 0) {
+      Swal.fire({
+        title: "배송시작일 미입력",
+        text: "배송시작일을 선택해주세요",
+        icon: "warning",
+        confirmButtonText: "확인"
+      });
+      return;
+    }
+
     // 선택된 주문들의 회원 ID, 배송 시작일, 배송지, 주문 상태가 모두 동일한지 확인
     const isValid = selectedReleases.every(
       (release, _, arr) =>
@@ -557,7 +570,7 @@ const Shipment = () => {
                 value={dateRange}
                 onChange={onHandleRangePickerChange}
                 allowClear
-                locale={locale}
+                //locale={locale}
               />
             </Flex>
             <Button onClick={onHandleReset}>초기화</Button>

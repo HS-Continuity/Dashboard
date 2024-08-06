@@ -108,7 +108,7 @@ const MainHeader = ({ collapsed, onCollapse }) => {
         <Flex align='center' gap='large'>
           <Button onClick={handleEasyViewMode}>쉽게보기</Button>
           <Flex>
-          <span style={{ marginRight: "10px" }}>{customerInfo.customerName}님</span>
+          <span style={{ marginRight: "10px" }}>님</span>
           <Space style={{ marginRight: "16px" }}>
             <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
               <Badge dot>
