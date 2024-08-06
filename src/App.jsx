@@ -52,6 +52,13 @@ import ProtectedRoute from "./components/Login/ProtectedRoute";
 import EasyPromotion from "./pages/easyview/promotion/EasyPromotion";
 import EasyProductEco from "./pages/easyview/product/EasyProductEco";
 import EasyProductTimeSale from "./pages/easyview/product/EasyProductTimeSale";
+import EasyOrderGeneral from "./pages/easyview/order/EasyOrderGeneral";
+import EasyShipment from "./pages/easyview/shipment/EasyShipment";
+import EasyInventory from "./pages/easyview/inventory/EasyInventory";
+import EasyDelivery from "./pages/easyview/delivery/EasyDelivery";
+import EasyOrderGeneralDetail from "./pages/easyview/order/EasyOrderGeneralDetail";
+import EasyOrderSubscription from "./pages/easyview/order/EasyOrderSubscription";
+import EasyOrderSubscriptionDetail from "./pages/easyview/order/EasyOrderSubscriptionDetail";
 
 function App() {
   const { fontSize } = useFontSizeStore();
@@ -157,8 +164,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route 
-              path=':member_id' 
+            <Route
+              path=':member_id'
               element={
                 <ProtectedRoute>
                   <MemberManageDetail />
@@ -317,7 +324,13 @@ function App() {
         </Route>
 
         {/* 쉽게 보기 */}
-        <Route path='/easy' element={<EasyViewLayout />}>
+        <Route
+          path='/easy'
+          element={
+            <ProtectedRoute>
+              <EasyViewLayout />
+            </ProtectedRoute>
+          }>
           <Route index element={<Home />} />
           <Route path='member'>
             <Route index element={<EasyMemberManage />} />
@@ -326,22 +339,21 @@ function App() {
             <Route path='general' element={<EasyProductGeneral />} />
             <Route path='eco' element={<EasyProductEco />} />
             <Route path='timesale' element={<EasyProductTimeSale />} />
-            <Route path='timesale/:timesaleId' element={<ProductTimeSaleDetail />} />
             <Route path='create' element={<ProductCreate />} />
           </Route>
 
           <Route path='order'>
-            <Route path='general' element={<OrderGeneral />} />
-            <Route path='generalDetail' element={<OrderGeneralDetail />} />
-            <Route path='subscription' element={<OrderSubscription />} />
-            <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} />
+            <Route path='general' element={<EasyOrderGeneral />} />
+            <Route path='generalDetail' element={<EasyOrderGeneralDetail />} />
+            <Route path='subscription' element={<EasyOrderSubscription />} />
+            <Route path='subscription/:regularOrderId' element={<EasyOrderSubscriptionDetail />} />
+            {/* <Route path='subscriptionDetail' element={<OrderSubscriptionDetail />} /> */}
           </Route>
 
-          <Route path='inventory' element={<Inventory />} />
-          <Route path='inventory/:productName' element={<InventoryDetail />} />
-          {/* <Route path='inventory/*' element={<Inventory />} /> */}
+          <Route path='inventory' element={<EasyInventory />} />
           <Route path='statistics' element={<EasyStatistics />} />
-          <Route path='delivery' element={<Delivery />} />
+          <Route path='delivery' element={<EasyDelivery />} />
+          <Route path='shipment' element={<EasyShipment />} />
           <Route path='promotion' element={<EasyPromotion />} />
         </Route>
 
