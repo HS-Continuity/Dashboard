@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Drawer,
   Form,
@@ -71,8 +71,8 @@ const EasyProductGeneralDetail = ({ visible, onClose, productId }) => {
 
   const disabledInputStyle = {
     ...inputStyle,
-    color: "rgba(0, 0, 0, 0.85)", // 더 진한 색상으로 변경
-    backgroundColor: "#f5f5f5", // 배경색 추가
+    color: "rgba(0, 0, 0, 0.85)",
+    backgroundColor: "#f5f5f5",
   };
 
   const onHandleUpdate = async () => {
