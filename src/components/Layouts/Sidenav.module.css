@@ -5,11 +5,6 @@
   border-bottom-right-radius: 10px; /* 오른쪽 아래 모서리의 border-radius */
 }
 
-.customMenu :global(.ant-menu-sub .ant-menu-item-selected) {
-  background-color: #00800046 !important; /* 서브메뉴 아이템용 다른 초록색 */
-  color: #000000;
-}
-
 .customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title),
 .customMenu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover) {
   color: #006400 !important; /* 진한 초록색 */
@@ -25,4 +20,22 @@
 .customMenu
   :global(.ant-menu-submenu-selected > .ant-menu-submenu-title:hover .ant-menu-submenu-arrow) {
   color: #006400 !important; /* 화살표 색상도 변경 */
+}
+
+.customMenu :global(.ant-menu-sub .ant-menu-item-selected),
+.customMenu :global(.ant-menu-item-selected) {
+  background-color: #00800046 !important; /* 초록색 배경 */
+  color: #000000;
+}
+
+/* 호버 상태에 대한 스타일 (선택 사항) */
+.customMenu :global(.ant-menu-item:hover),
+.customMenu :global(.ant-menu-sub .ant-menu-item:hover) {
+  background-color: #00800030 !important; /* 호버 시 더 연한 초록색 */
+}
+
+/* 활성 상태에 대한 스타일 (선택 사항) */
+.customMenu :global(.ant-menu-item-active),
+.customMenu :global(.ant-menu-sub .ant-menu-item-active) {
+  background-color: #00800060 !important; /* 활성 상태일 때 더 진한 초록색 */
 }
