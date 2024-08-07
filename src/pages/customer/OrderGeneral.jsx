@@ -77,7 +77,6 @@ const OrderGeneral = () => {
 
   useEffect(() => {
     fetchOrders();
-    // const customerId = 1;
     const customerId = String(username);
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
 
@@ -157,13 +156,13 @@ const OrderGeneral = () => {
     },
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = pagination.current, pageSize = pagination.pageSize) => {
     setLoading(true);
     try {
       const params = {
         customerId: String(username),
-        page: pagination.current - 1,
-        size: pagination.pageSize,
+        page: page - 1,
+        size: pageSize,
         ...joinForm,
       };
 
@@ -196,19 +195,8 @@ const OrderGeneral = () => {
           isServerUnstable = true;
         }
 
-        //   // 서버 연결 상태 확인
-        //   isMemberInfoAvailable = productOrderList.every(product => product.availableMemberInformation);  //  모든 상품에 대해...
-        //   isProductInfoAvailable = productOrderList.every(product => product.availableProductInformation);
-
-        //   if (!isMemberInfoAvailable || !isProductInfoAvailable) {
-        //     isServerUnstable = true;
-        //   }
-
-        // }
-
         return {
           orderDetailId: order.orderDetailId?.toString() || "",
-          // memberId: order.memberInfo?.memberId?.toString() || '',
           memberId: isMemberInfoAvailable
             ? order.memberInfo?.memberId?.toString() || ""
             : "불러오는 중..",
@@ -216,7 +204,6 @@ const OrderGeneral = () => {
           deliveryAddress: order.recipient?.recipientAddress?.toString() || "",
           recipient: order.recipient?.recipient?.toString() || "",
           orderStatusCode: order.orderStatusCode?.toString() || "",
-          //productName: order.productOrderList?.length > 0 ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` : '',
           productName: isProductInfoAvailable
             ? order.productOrderList?.length > 0
               ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ""}`
@@ -233,9 +220,6 @@ const OrderGeneral = () => {
         pageSize: response.size,
         total: response.totalElements,
       });
-    } catch (error) {
-      //console.error('Failed to fetch orders:', error);
-      //message.error('주문 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -332,6 +316,7 @@ const OrderGeneral = () => {
       ...prev,
       orderStatusCode: filters.orderStatusCode ? filters.orderStatusCode[0] : null,
     }));
+    fetchOrders(newPagination.current, newPagination.pageSize);
   };
 
   const onHandleRangePickerChange = dates => {
@@ -444,8 +429,6 @@ const OrderGeneral = () => {
       render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1, //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
       width: "5%",
       fixed: "left",
-      //width: '5%',
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
       title: "주문ID",
@@ -457,7 +440,6 @@ const OrderGeneral = () => {
       ...getColumnSearchProps("orderDetailId"),
       width: "15%",
       render: text => text || "null",
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
       title: "회원ID",
@@ -468,9 +450,6 @@ const OrderGeneral = () => {
       filtered: false,
       ...getColumnSearchProps("memberId"),
       width: "15%",
-      // render: (text) => text || 'null',
-      // render: (text) => text === '로딩중' ? <span style={{ color: 'orange' }}>로딩중</span> : (text || 'null'),
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
       title: "주문날짜",
@@ -508,18 +487,6 @@ const OrderGeneral = () => {
       width: "10%",
       render: text => text || "null",
     },
-    // {
-    //   title: '주문상품',
-    //   dataIndex: 'productName',
-    //   key: 'productName',
-    //   fixed: 'left',
-    //   filteredValue: filteredInfo.productName || null,
-    //   filtered: false,
-    //   ...getColumnSearchProps('productName'),
-    //   width: '10%',
-    //   // render: (text) => text || 'null',
-    //   // render: (text) => text === '확인중' ? <span style={{ color: 'orange' }}>확인중</span> : (text || 'null'),
-    // },
     {
       title: "주문 상태",
       dataIndex: "orderStatusCode",
@@ -539,10 +506,7 @@ const OrderGeneral = () => {
   const getStatusColor = status => {
     const colors = {
       PAYMENT_COMPLETED: "#E2860A",
-      // ORDER_APPROVED: 'blue',
       PREPARING_PRODUCT: "#447E7A",
-      // IN_DELIVERY: 'purple',
-      // DELIVERY_COMPLETED: 'cyan',
       AWAITING_RELEASE: "#D6737A",
     };
     return colors[status] || "default";
@@ -561,8 +525,6 @@ const OrderGeneral = () => {
     };
     return texts[status] || status;
   };
-
-  //const statusTags = ['결제완료', '상품준비중', '출고대기중'];
 
   return (
     <div>
