@@ -2,7 +2,7 @@
 import { fetchReleases, updateReleaseStatus, updateBulkReleaseStatus, requestCombinedPackaging, fetchReleaseStatusCounts} from '../../apis/apisShipments';
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from 'antd';
+import { Table, Flex, Space, DatePicker, Button, message, Tag, Input, Tooltip } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import useAuthStore from '../../stores/useAuthStore';
 import Swal from 'sweetalert2';
@@ -90,11 +90,9 @@ const Shipment = () => {
 
         if (productOrderList && productOrderList.length > 0) {
           productName = `${productOrderList[0].name}`;
-          // orderDateTime = `${productOrderList[0].orderDateTime}`
 
           if (productOrderList.length > 1) {
             productName += ` 외 ${productOrderList.length - 1}건`;
-            // orderDateTime += ` 외 ${productOrderList.length - 1}건`;
           }
 
           // 서버 연결 상태 확인
@@ -109,8 +107,7 @@ const Shipment = () => {
             isServerUnstable = true;
           }
         }
-        // console.log('서버에서 받아온 데이터: ', response)
-        //console.log('order: ', order)
+
         return {
           holdReason: order.holdReason || "",
 
@@ -119,17 +116,12 @@ const Shipment = () => {
           startDeliveryDate: order.startDeliveryDate,
           releaseStatus: order.statusName?.toString() || "",
           productOrderList: productOrderList,
-          //memberId: order.memberInfo.memberId,
           recipient: recipient.recipient,
           recipientAddress: recipient.recipientAddress,
           recipientPhoneNumber: recipient.recipientPhoneNumber,
-          // memberName: order.memberInfo.memberName,
-          //memberPhoneNumber : order.memberInfo.memberPhoneNumber,
           memo: order.memo || "",
         };
       });
-
-      //console.log('어떤 데이터를 받아오나요?: ', transformedOrders)
 
       setReleases(transformedOrders);
       setIsServerUnstable(isServerUnstable);
@@ -137,9 +129,6 @@ const Shipment = () => {
         ...pagination,
         total: response.totalElements,
       });
-    } catch (error) {
-      //console.error('Failed to fetch orders:', error);
-      //message.error('출고 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -161,7 +150,6 @@ const Shipment = () => {
       }
     } catch (error) {
       console.error("Failed to fetch status counts:", error);
-      //message.error('상태별 개수를 불러오는데 실패했습니다.');
     }
   };
 
@@ -224,8 +212,6 @@ const Shipment = () => {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
-    // onFilter: (value, record) =>
-    //   record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : '',
     onFilter: (value, record) => {
       if (record[dataIndex] == null) return false;
 
@@ -352,6 +338,18 @@ const Shipment = () => {
 
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
 
+    // 배송시작일이 없는 주문 확인
+    const missingDeliveryDates = selectedReleases.filter(release => !release.startDeliveryDate);
+    if (missingDeliveryDates.length > 0) {
+      Swal.fire({
+        title: "배송시작일 미입력",
+        text: "배송시작일을 선택해주세요",
+        icon: "warning",
+        confirmButtonText: "확인"
+      });
+      return;
+    }
+
     // 선택된 주문들의 회원 ID, 배송 시작일, 배송지, 주문 상태가 모두 동일한지 확인
     const isValid = selectedReleases.every(
       (release, _, arr) =>
@@ -410,9 +408,6 @@ const Shipment = () => {
       if (isServerUnstable) {
         message.warning("일부 주문에서 서버 연결이 불안정합니다.");
       }
-      // } else {
-      //   //message.success('주문 데이터를 성공적으로 불러왔습니다.');
-      // }
     }
   }, [isServerUnstable]);
 
@@ -450,13 +445,6 @@ const Shipment = () => {
       ...getColumnSearchProps("orderId"),
       width: "15%",
     },
-    // {
-    //   title: '회원ID',
-    //   dataIndex: 'memberId',
-    //   key: 'orderId',
-    //   filteredValue: joinForm.memberId ? [joinForm.memberId] : null,
-    //   ...getColumnSearchProps('memberId'),
-    // },
     {
       title: "회원명",
       dataIndex: "recipient",
@@ -557,7 +545,7 @@ const Shipment = () => {
                 value={dateRange}
                 onChange={onHandleRangePickerChange}
                 allowClear
-                locale={locale}
+                //locale={locale}
               />
             </Flex>
             <Button onClick={onHandleReset}>초기화</Button>
@@ -597,7 +585,6 @@ const Shipment = () => {
       </Flex>
       <Button
         onClick={onHandleCombinedPackaging}
-        // color='#FFE88F'
         style={{
           backgroundColor: "#FFEDB1",
           opacity: 0.8,
