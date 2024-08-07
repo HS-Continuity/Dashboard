@@ -20,7 +20,7 @@ import {
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
-import moment from "moment";
+import moment from "moment-timezone";
 import RegisterButton from "../../../components/Buttons/RegisterButton";
 import ApplyButton from "../../../components/Buttons/ApplyButton";
 import PromotionApplyButton from "../../../components/Buttons/PromotionApplyButton";
@@ -42,7 +42,6 @@ const EasyProductEco = () => {
   const [joinForm, setJoinForm] = useState({});
   const [filteredInfo, setFilteredInfo] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  //const [statusCount, setStatusCount] = useState({});
   const [dateRange, setDateRange] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -50,18 +49,6 @@ const EasyProductEco = () => {
   const tableRef = useRef();
   const navigate = useNavigate();
   const { tableFontSize, setTableFontSize } = useFontSizeStore();
-
-  const [state, setState] = useState({
-    isModalOpen: false,
-    selectedRowKeys: [],
-    filteredInfo: {},
-    tableParams: {
-      pagination: {
-        current: 1,
-        pageSize: 20,
-      },
-    },
-  });
 
   useEffect(() => {
     fetchProducts();
@@ -95,23 +82,18 @@ const EasyProductEco = () => {
       Object.entries(joinForm).forEach(([key, value]) => {
         if (value != null && value !== "") {
           if (value instanceof Date) {
-            params[key] = value.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
+            params[key] = value.toISOString().split("T")[0];
           } else if (Array.isArray(value)) {
-            params[key] = value.join(","); // 배열을 쉼표로 구분된 문자열로 변환
+            params[key] = value.join(",");
           } else {
             params[key] = value;
           }
         }
       });
 
-      // console.log('Sending params:', params);
-      // console.log('Fetching with params:', params);
-
       const response = await fetchEcoProductItems(params);
 
       const transformedProducts = response.content.map(product => {
-        //console.log('product: ', product)
-
         return {
           baseDiscountRate: product.baseDiscountRate,
           description: product.description,
@@ -126,12 +108,7 @@ const EasyProductEco = () => {
           regularDiscountRate: product.regularDiscountRate,
         };
       });
-
-      //console.log('어떤 데이터를 받아오나요?d: ', response)
-      console.log("어떤 데이터를 받아오나요?d: ", transformedProducts);
-
       setProducts(transformedProducts);
-      console.log("찐막 데이터: ", products);
       setPagination(prev => ({
         ...prev,
         current: page,
@@ -145,8 +122,6 @@ const EasyProductEco = () => {
     }
   };
 
-  // ----------------------------------------------------------------------------------
-
   const onHandleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setJoinForm(prev => ({
@@ -156,7 +131,6 @@ const EasyProductEco = () => {
   };
 
   const onHandleReset = () => {
-    //  컬럼별 리셋
     setJoinForm({});
     setFilteredInfo({});
     setDateRange([]);
@@ -207,7 +181,6 @@ const EasyProductEco = () => {
         } else {
           const selectedDate = moment(startDate);
           if (selectedDate.day() !== 1) {
-            // 1은 월요일을 의미합니다
             document.getElementById("swal-input3-error").textContent =
               "노출 시작일은 월요일이어야 합니다.";
             isValid = false;
@@ -269,7 +242,7 @@ const EasyProductEco = () => {
 
   // 재고 등록 버튼
   const onHandleInventoryRegister = (event, record) => {
-    event.stopPropagation(); // 이벤트 전파 중단
+    event.stopPropagation();
     Swal.fire({
       title: "재고 등록",
       html:
@@ -320,11 +293,10 @@ const EasyProductEco = () => {
         expirationDate,
       };
       const response = await registerProductInventory(registerData);
-      if (response && response.successCode === SuccessCode.INSERT_SUCCESS) {
+      if (response && response.successCode === "INSERT_SUCCESS") {
         message.success("재고가 성공적으로 등록되었습니다.");
-        //fetchInventorySummaryData(); // 재고 요약 데이터 새로고침
       } else {
-        //message.error('재고 등록에 실패했습니다.');
+        message.error("재고 등록에 실패했습니다.");
       }
     } catch (error) {
       console.error("재고 등록 오류:", error);
@@ -373,8 +345,6 @@ const EasyProductEco = () => {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
-    // onFilter: (value, record) =>
-    //   record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : '',
     onFilter: (value, record) => {
       if (record[dataIndex] == null) return false;
 
@@ -404,7 +374,6 @@ const EasyProductEco = () => {
     setPagination(newPagination);
     setFilteredInfo(filters);
 
-    // 모든 필터를 joinForm에 추가
     const newJoinForm = { ...joinForm };
     Object.keys(filters).forEach(key => {
       if (filters[key]) {
@@ -473,9 +442,7 @@ const EasyProductEco = () => {
         "</div>" +
         '<div id="swal-input4-error" style="color: red; margin-left: 150px;"></div>',
       focusConfirm: false,
-      //showCancelButton: true,
       confirmButtonText: "신청하기",
-      //cancelButtonText: '취소',
       showCloseButton: true,
       width: "700px",
       padding: "20px",
@@ -525,8 +492,8 @@ const EasyProductEco = () => {
       try {
         const timesaleData = {
           productId: parseInt(productId),
-          startTime: moment(startTime).toISOString(),
-          endTime: moment(endTime).toISOString(),
+          startTime: moment.tz(startTime, "Asia/Seoul").add(9, "hours"),
+          endTime: moment.tz(endTime, "Asia/Seoul").add(9, "hours"),
           discountRate: parseInt(discountRate),
         };
 
@@ -543,7 +510,6 @@ const EasyProductEco = () => {
     navigate("../create");
   };
 
-  // -------------------------------------------------------------------------
   const columns = [
     {
       title: "식품 아이디",
@@ -573,6 +539,7 @@ const EasyProductEco = () => {
       dataIndex: "productName",
       key: "productName",
       fixed: "left",
+      width: "17%",
       filteredValue: joinForm.productName ? [joinForm.productName] : null,
       ...getColumnSearchProps("productName"),
       onCell: () => ({
@@ -608,7 +575,7 @@ const EasyProductEco = () => {
       title: "정기배송할인율",
       dataIndex: "regularDiscountRate",
       key: "regularDiscountRate",
-      width: "13%",
+      width: "10%",
       render: (regularDiscountRate, record) =>
         record.isRegularSale === "ACTIVE" ? `${regularDiscountRate}%` : "-",
       filteredValue: joinForm.regularDiscountRate ? [joinForm.regularDiscountRate] : null,
@@ -632,6 +599,7 @@ const EasyProductEco = () => {
         { text: "O", value: "ACTIVE" },
         { text: "X", value: "INACTIVE" },
       ],
+      width: "6%",
       filteredValue: joinForm.isRegularSale ? [joinForm.isRegularSale] : null,
       onFilter: (value, record) => record.isRegularSale === value,
       render: status => (
@@ -652,6 +620,7 @@ const EasyProductEco = () => {
         { text: "O", value: "ACTIVE" },
         { text: "X", value: "INACTIVE" },
       ],
+      width: "7%",
       filteredValue: joinForm.isPageVisibility ? [joinForm.isPageVisibility] : null,
       onFilter: (value, record) => record.isPageVisibility === value,
       render: status => (
@@ -700,16 +669,14 @@ const EasyProductEco = () => {
         <Button onClick={onHandleReset} style={getTableCellStyle()}>
           정렬 초기화
         </Button>
-        <Flex gap='small' align='center'>
-          <Text strong style={getTableCellStyle()}>
-            글꼴 크기:
-          </Text>
+        <Flex gap='small' align='center' style={{ marginLeft: "240px" }}>
+          <Text strong>글꼴 크기:</Text>
           <Slider
             min={12}
             max={30}
             value={tableFontSize}
             onChange={setTableFontSize}
-            style={{ width: 200 }}
+            style={{ width: "200px" }}
           />
         </Flex>
         <Flex gap='small' wrap>

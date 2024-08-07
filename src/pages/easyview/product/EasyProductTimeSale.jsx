@@ -40,24 +40,9 @@ const EasyProductTimeSale = () => {
   const [searchedColumn, setSearchedColumn] = useState("");
   const [searchText, setSearchText] = useState("");
   const [statusCount, setStatusCount] = useState({});
-  const [dateRange, setDateRange] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedTimesaleId, setSelectedTimesaleId] = useState(null);
   const searchInput = useRef(null);
-  const tableRef = useRef();
-  const navigate = useNavigate();
-
-  const [state, setState] = useState({
-    isModalOpen: false,
-    selectedRowKeys: [],
-    filteredInfo: {},
-    tableParams: {
-      pagination: {
-        current: 1,
-        pageSize: 20,
-      },
-    },
-  });
 
   const getTableCellStyle = () => ({
     fontSize: `${tableFontSize}px`,
@@ -66,14 +51,6 @@ const EasyProductTimeSale = () => {
   useEffect(() => {
     fetchTimeSales();
   }, []);
-
-  const rowSelection = {
-    type: "radio",
-    selectedRowKeys,
-    onChange: selectedRowKeys => {
-      setSelectedRowKeys(selectedRowKeys);
-    },
-  };
 
   const fetchTimeSales = async (
     page = pagination.current,
@@ -136,11 +113,6 @@ const EasyProductTimeSale = () => {
     setSearchText("");
   };
 
-  const handleCellClick = record => {
-    console.log("클릭한 행의 key: ", record.timesaleId);
-    setSelectedRowKeys(record.productId);
-  };
-
   const onRow = record => {
     return {
       onClick: () => {
@@ -153,7 +125,7 @@ const EasyProductTimeSale = () => {
   const handleDrawerClose = () => {
     setDrawerVisible(false);
     setSelectedTimesaleId(null);
-    fetchTimeSales(); // Drawer가 닫힐 때 타임세일 목록을 새로고침
+    fetchTimeSales();
   };
 
   const getColumnSearchProps = dataIndex => ({
@@ -165,10 +137,10 @@ const EasyProductTimeSale = () => {
         onKeyDown={e => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0] || ""} // 빈 문자열도 처리
+          placeholder={`검색할 내용을 입력해 주세요`}
+          value={selectedKeys[0] || ""}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => confirm()} //  Enter 입력 시 필터링 적용
+          onPressEnter={() => confirm()}
           style={{
             marginBottom: 8,
             display: "block",
@@ -184,7 +156,7 @@ const EasyProductTimeSale = () => {
             style={{
               width: 90,
             }}>
-            Search
+            검색
           </Button>
           <Button
             onClick={() => clearFilters && onHandleReset(clearFilters)}
@@ -200,7 +172,7 @@ const EasyProductTimeSale = () => {
             onClick={() => {
               close();
             }}>
-            close
+            닫기
           </Button>
         </Space>
       </div>
@@ -247,7 +219,6 @@ const EasyProductTimeSale = () => {
     setFilteredInfo(filters);
   };
 
-  // // -------------------------------------------------------------------------
   const columns = [
     {
       title: "반짝할인식품 아이디",
@@ -284,6 +255,7 @@ const EasyProductTimeSale = () => {
       filteredValue: filteredInfo.productName || null,
       filtered: false,
       fixed: "left",
+      width: "22%",
       ...getColumnSearchProps("productName"),
       onCell: record => ({
         style: getTableCellStyle(),
@@ -330,12 +302,12 @@ const EasyProductTimeSale = () => {
     },
     {
       title: "마감여부",
-      dataIndex: "endDateTime", // 종료시간이 기준
+      dataIndex: "endDateTime",
       key: "마감여부",
       render: endDateTime => {
         const endTimeMoment = moment(endDateTime);
         const currentTime = moment();
-        return endTimeMoment.isBefore(currentTime) ? "O" : "X"; // 마감 여부 표시
+        return endTimeMoment.isBefore(currentTime) ? "O" : "X";
       },
       filters: [
         { text: "마감", value: "O" },
@@ -345,7 +317,7 @@ const EasyProductTimeSale = () => {
       onFilter: (value, record) => {
         const endTimeMoment = moment(record.endDateTime);
         const currentTime = moment();
-        return (endTimeMoment.isBefore(currentTime) ? "O" : "X") === value; // 마감 여부 필터링
+        return (endTimeMoment.isBefore(currentTime) ? "O" : "X") === value;
       },
       onCell: record => ({
         style: getTableCellStyle(),
@@ -356,7 +328,6 @@ const EasyProductTimeSale = () => {
       title: "승인 상태",
       dataIndex: "serviceStatus",
       key: "serviceStatus",
-      //render: (visible) => (visible === 'O' ? '노출' : '미노출'),
       filters: [
         { text: "승인대기", value: "PENDING" },
         { text: "승인", value: "APPROVE" },
@@ -395,9 +366,6 @@ const EasyProductTimeSale = () => {
     };
     return texts[status] || status;
   };
-  // --------------------------------------------------------------------------
-
-  // const tableData = timeAttack || [];
 
   return (
     <div>
@@ -406,14 +374,22 @@ const EasyProductTimeSale = () => {
           <h2>타임세일 식품관리</h2>
         </Flex>
       </Flex>
+      <Flex gap='small' align='center' justify='end' style={{ marginBottom: "20px" }}>
+        {["PENDING", "APPROVE", "IN_PROGRESS", "ENDED_EVENT", "CANCELED"].map(status => (
+          <StatusCard
+            key={status}
+            title={getTagText(status)}
+            count={statusCount[status] || 0}
+            color={getTagColor(status)}
+          />
+        ))}
+      </Flex>
       <Flex gap='small' align='center' justify='space-between'>
         <Button onClick={clearFilters} style={getTableCellStyle()}>
           초기화
         </Button>
-        <Flex gap='small' align='center'>
-          <Text strong style={getTableCellStyle()}>
-            글꼴 크기:
-          </Text>
+        <Flex gap='small' align='center' style={{ marginRight: "560px" }}>
+          <Text strong>글꼴 크기:</Text>
           <Slider
             min={12}
             max={30}
@@ -421,16 +397,6 @@ const EasyProductTimeSale = () => {
             onChange={setTableFontSize}
             style={{ width: 200 }}
           />
-        </Flex>
-        <Flex gap='small' wrap>
-          {["PENDING", "APPROVE", "IN_PROGRESS", "ENDED_EVENT", "CANCELED"].map(status => (
-            <StatusCard
-              key={status}
-              title={getTagText(status)}
-              count={statusCount[status] || 0}
-              color={getTagColor(status)}
-            />
-          ))}
         </Flex>
       </Flex>
       <br />

@@ -20,27 +20,19 @@ import {
 import { Header } from "antd/es/layout/layout";
 import { useFontSizeStore } from "../../stores/fontSizeStore";
 import useAuthStore from "../../stores/useAuthStore";
+import { fetchCustomerDetail } from "../../apis/apisMain";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
-// const menuItems = [
-//   {
-//     key: 'logout',
-//     icon: <LogoutOutlined />,
-//     label: 'Logout',
-//     onClick: handleLogout
-//   },
-// ];
-
 const MainHeader = ({ collapsed, onCollapse }) => {
   const { username, logout } = useAuthStore();
-  console.log("username: ", username);
 
   const { fontSize, setFontSize } = useFontSizeStore();
   const [sliderValue, setSliderValue] = useState(fontSize);
+  const [customerInfo, setCustomerInfo] = useState(null);
   const navigate = useNavigate();
 
   const handleFontSizeChange = value => {
@@ -70,16 +62,28 @@ const MainHeader = ({ collapsed, onCollapse }) => {
     },
   ];
 
+  useEffect(() => {
+    const fetchCustomerInfo = async () => {
+      if (username) {
+        try {
+          const data = await fetchCustomerDetail(username);
+          setCustomerInfo(data);
+        } catch (error) {
+          console.error('Failed to fetch customer info:', error);
+        } 
+      }
+    };
+
+    fetchCustomerInfo();
+  }, [username]);
+
   return (
     <Header
       style={{
         padding: 0,
-        // backgroundColor: '#FAF6F0',
-        //backgroundColor: '#F4EEED',
         backgroundColor: "#ffffff",
-        //background: colorBgContainer,
-        height: "55px", //  header 사이즈 조정
-        lineHeight: "55px", //  header 내의 요소들 사이즈 조정 (height와 같은 값으로 변경)
+        height: "55px",
+        lineHeight: "55px",
       }}>
       <Flex justify='space-between'>
         <Button
@@ -95,39 +99,23 @@ const MainHeader = ({ collapsed, onCollapse }) => {
         <Flex align='center' gap='large'>
           <Button onClick={handleEasyViewMode}>쉽게보기</Button>
           <Flex>
-          <span style={{ marginRight: "10px" }}>{username}님</span>
-          <Space style={{ marginRight: "16px" }}>
-            <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-              <Badge dot>
-                <Avatar
-                  size='large'
-                  max={{
-                    count: 2,
-                    style: { color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" },
-                    popover: { trigger: "click" },
-                  }}>
-                  <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
-                </Avatar>
-              </Badge>
-            </Dropdown>
-          </Space>
+          {customerInfo && <span style={{ marginRight: "10px" }}>{customerInfo.customerName}님</span>}
+            <Space style={{ marginRight: "16px" }}>
+              <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+                <Badge dot>
+                  <Avatar
+                    size='large'
+                    max={{
+                      count: 2,
+                      style: { color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" },
+                      popover: { trigger: "click" },
+                    }}>
+                    <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
+                  </Avatar>
+                </Badge>
+              </Dropdown>
+            </Space>
           </Flex>
-          {/* <span style={{ marginRight: "10px" }}>{username}님</span>
-          <Space style={{ marginRight: "16px" }}>
-            <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-              <Badge dot>
-                <Avatar
-                  size='large'
-                  max={{
-                    count: 2,
-                    style: { color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" },
-                    popover: { trigger: "click" },
-                  }}>
-                  <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
-                </Avatar>
-              </Badge>
-            </Dropdown>
-          </Space> */}
         </Flex>
       </Flex>
     </Header>

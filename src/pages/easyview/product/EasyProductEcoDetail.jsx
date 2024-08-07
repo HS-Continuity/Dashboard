@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Drawer,
   Form,
@@ -15,11 +15,7 @@ import {
   Upload,
 } from "antd";
 import { FileOutlined } from "@ant-design/icons";
-import {
-  fetchProductDetail,
-  updateProduct,
-  fetchProductCertification,
-} from "../../../apis/apisProducts";
+import { fetchProductDetail, updateProduct } from "../../../apis/apisProducts";
 
 const { Title } = Typography;
 
@@ -44,11 +40,7 @@ const EasyProductEcoDetail = ({ visible, onClose, productId }) => {
         isPageVisibility: response.isPageVisibility === "T",
         isRegularSale: response.isRegularSale === "T",
       });
-
-      // const certificationResponse = await fetchProductCertification(productId);
-      // setCertification(certificationResponse);
     } catch (error) {
-      console.error("Error fetching product detail:", error);
       message.error("상품 정보를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);

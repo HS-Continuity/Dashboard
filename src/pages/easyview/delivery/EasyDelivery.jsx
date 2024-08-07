@@ -1,19 +1,20 @@
-import { fetchDeliveries, fetchDeliveryStatusCounts } from "../../apis/apisDelivery";
+import { fetchDeliveries, fetchDeliveryStatusCounts } from "../../../apis/apisDelivery";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Flex, Space, DatePicker, Button, message, Tag, Input } from "antd";
+import { Table, Flex, Space, DatePicker, Button, Tag, Input, Slider, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import moment from "moment";
-import style from "./Delivery.module.css";
-import StatusCard from "../../components/Cards/StatusCard";
-import StatusChangeButton from "../../components/Buttons/StatusChangeButton";
-import styles from "./Table.module.css";
+import style from "../../customer/Delivery.module.css";
+import StatusCard from "../../../components/Cards/StatusCard";
+import StatusChangeButton from "../../../components/Buttons/StatusChangeButton";
 import locale from "antd/es/date-picker/locale/ko_KR";
 const { RangePicker } = DatePicker;
 
-import useAuthStore from "../../stores/useAuthStore";
+import useAuthStore from "../../../stores/useAuthStore";
+import { useFontSizeStore } from "../../../stores/fontSizeStore";
 
-const Delivery = () => {
+const { Text } = Typography;
+
+const EasyDelivery = () => {
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,8 +31,12 @@ const Delivery = () => {
   const [dateRange, setDateRange] = useState([]);
   const searchInput = useRef(null);
   const tableRef = useRef();
-  const navigate = useNavigate();
   const { username } = useAuthStore();
+  const { tableFontSize, setTableFontSize } = useFontSizeStore();
+
+  const getTableCellStyle = () => ({
+    fontSize: `${tableFontSize}px`,
+  });
 
   useEffect(() => {
     fetchDeliveryData();
@@ -49,8 +54,8 @@ const Delivery = () => {
     setLoading(true);
     try {
       const params = {
-        // customerId: String(username),
-        customerId: 1,
+        customerId: String(username),
+        // customerId: 1,
         page: pagination.current - 1,
         size: pagination.pageSize,
         ...joinForm,
@@ -73,8 +78,6 @@ const Delivery = () => {
       console.log("받아오는 배송 데이터: ", response);
 
       const transformedDeliveries = response.content.map(delivery => ({
-        //const productOrderListEntityLists = delivery.productOrderListEntityLists?.productOrderListEntityLists || null;
-
         additionalOrderCount: delivery.additionalOrderCount.toString() || "",
         deliveryId: delivery.deliveryId || "",
         deliveryStatusCode: delivery.deliveryStatusCode || "",
@@ -91,7 +94,6 @@ const Delivery = () => {
         total: response.totalElements,
       });
     } catch (error) {
-      //message.error('배송 데이터를 불러오는데 실패했습니다.');
       setIsServerUnstable(true);
     } finally {
       setLoading(false);
@@ -114,7 +116,6 @@ const Delivery = () => {
       }
     } catch (error) {
       console.error("Failed to fetch status counts:", error);
-      //message.error('상태별 개수를 불러오는데 실패했습니다.');
     }
   };
 
@@ -206,8 +207,6 @@ const Delivery = () => {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
-    // onFilter: (value, record) =>
-    //   record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : '',
     onFilter: (value, record) => {
       if (record[dataIndex] == null) return false;
 
@@ -235,37 +234,39 @@ const Delivery = () => {
 
   const columns = [
     {
-      title: "No.",
-      key: "no",
-      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1, //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
-      width: "5%",
-      fixed: "left",
-      //width: '5%',
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
-    },
-    {
       title: "배송ID",
       dataIndex: "deliveryId",
       key: "deliveryId",
       fixed: "left",
+      width: "7%",
       filteredValue: joinForm.deliveryId ? [joinForm.deliveryId] : null,
       ...getColumnSearchProps("deliveryId"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "배송시작일",
       dataIndex: "startDeliveryDate",
       key: "startDeliveryDate",
       fixed: "left",
+      width: "15%",
       filteredValue: joinForm.startDeliveryDate ? [joinForm.startDeliveryDate] : null,
-      // ...getColumnSearchProps('startDeliveryDate'),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "회원ID",
       dataIndex: "memberId",
       key: "memberId",
       fixed: "left",
+      width: "18%",
       filteredValue: joinForm.memberId ? [joinForm.memberId] : null,
       ...getColumnSearchProps("memberId"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "합배송대표주문ID",
@@ -273,6 +274,9 @@ const Delivery = () => {
       key: "representativeOrderId",
       filteredValue: joinForm.representativeOrderId ? [joinForm.representativeOrderId] : null,
       ...getColumnSearchProps("representativeOrderId"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "출고번호",
@@ -280,6 +284,9 @@ const Delivery = () => {
       key: "shipmentNumber",
       filteredValue: joinForm.shipmentNumber ? [joinForm.shipmentNumber] : null,
       ...getColumnSearchProps("shipmentNumber"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "배송상태",
@@ -349,6 +356,16 @@ const Delivery = () => {
             </Flex>
             <Button onClick={onHandleReset}>초기화</Button>
           </Flex>
+          <Flex style={{ marginRight: "100px" }}>
+            <Text strong>글꼴 크기 : </Text>
+            <Slider
+              min={12}
+              max={30}
+              value={tableFontSize}
+              onChange={setTableFontSize}
+              style={{ width: 200, marginBottom: 16 }}
+            />
+          </Flex>
           <Flex gap='small'>
             <Space align='center'>출고상태변경</Space>
             <StatusChangeButton title={"배송시작"} />
@@ -358,7 +375,7 @@ const Delivery = () => {
       </Flex>
       <br />
       <Table
-        className={styles.customTable}
+        // className={styles.customTable}
         columns={columns}
         dataSource={deliveries}
         rowKey='deliveryId'
@@ -366,11 +383,11 @@ const Delivery = () => {
         loading={loading}
         onChange={onHandleTableChange}
         rowSelection={rowSelection}
-        style={{ width: "100%", height: "400px" }} // 전체 테이블 크기 조정
-        scroll={{ x: "100%", y: 400 }} // 가로 스크롤과 세로 스크롤 설정
+        style={{ width: "100%", height: "400px" }}
+        scroll={{ x: "100%", y: 400 }}
       />
     </div>
   );
 };
 
-export default Delivery;
+export default EasyDelivery;

@@ -3,34 +3,51 @@ import {
   updateOrderStatus,
   updateBulkOrderStatus,
   subscribeToOrderStatusUpdates,
-} from "../../apis/apisOrders";
+} from "../../../apis/apisOrders";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flex, Space, DatePicker, Table, Tag, Button, Input, message, Switch, Tooltip } from "antd";
+import {
+  Flex,
+  Space,
+  DatePicker,
+  Table,
+  Tag,
+  Button,
+  Input,
+  message,
+  Switch,
+  Slider,
+  Typography,
+  Tooltip,
+} from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
 import Swal from "sweetalert2";
-import StatusCard from "../../components/Cards/StatusCard";
-import StatusChangeButton from "../../components/Buttons/StatusChangeButton";
-import style from "./Order.module.css";
-import newVoice from "../../assets/audio/newVoice.m4a";
-import styles from "./Table.module.css";
+import StatusCard from "../../../components/Cards/StatusCard";
+import StatusChangeButton from "../../../components/Buttons/StatusChangeButton";
+import style from "../../customer/Order.module.css";
+import newVoice2 from "../../../assets/audio/newVoice2.m4a";
 import locale from "antd/es/date-picker/locale/ko_KR";
-
-import useAuthStore from "../../stores/useAuthStore";
+import useAuthStore from "../../../stores/useAuthStore";
+import EasyOrderGeneralDetail from "./EasyOrderGeneralDetail";
+import { useFontSizeStore } from "../../../stores/fontSizeStore";
 
 const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
-const OrderGeneral = () => {
+const EasyOrderGeneral = () => {
   const { username } = useAuthStore();
 
-  const audioRef = useRef(new Audio(newVoice)); // 오디오 객체 생성
+  const audioRef = useRef(new Audio(newVoice2)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
+  const { tableFontSize, setTableFontSize } = useFontSizeStore();
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
   });
 
@@ -40,27 +57,15 @@ const OrderGeneral = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [statusCount, setStatusCount] = useState({});
   const [dateRange, setDateRange] = useState([]);
-  const [prevStatusCount, setPrevStatusCount] = useState({});
   const [isSoundOn, setIsSoundOn] = useState(false);
   const searchInput = useRef(null);
   const tableRef = useRef();
-  const navigate = useNavigate();
   const eventSourceRef = useRef(null);
   const prevStatusCountRef = useRef({});
 
-  const updateStatusCount = useCallback(newData => {
-    setStatusCount(prevStatusCount => {
-      const updatedStatusCount = { ...prevStatusCount };
-      newData.forEach(item => {
-        if (
-          ["PAYMENT_COMPLETED", "PREPARING_PRODUCT", "AWAITING_RELEASE"].includes(item.statusName)
-        ) {
-          updatedStatusCount[item.statusName] = item.count;
-        }
-      });
-      return updatedStatusCount;
-    });
-  }, []);
+  const getTableCellStyle = () => ({
+    fontSize: `${tableFontSize}px`,
+  });
 
   const checkForNewOrders = useCallback(newStatusCount => {
     let hasNewOrder = false;
@@ -133,11 +138,9 @@ const OrderGeneral = () => {
         eventSourceRef.current.close();
       }
     };
-    // }, [updateStatusCount]);
   }, [checkForNewOrders, isSoundOn]);
 
   useEffect(() => {
-    // 사용자 상호작용 후 오디오를 로드합니다.
     const handleUserInteraction = () => {
       audioRef.current.load();
       document.removeEventListener("click", handleUserInteraction);
@@ -156,34 +159,30 @@ const OrderGeneral = () => {
     },
   };
 
-  const fetchOrders = async (page = pagination.current, pageSize = pagination.pageSize) => {
+  const fetchOrders = async () => {
     setLoading(true);
     try {
       const params = {
         customerId: String(username),
-        page: page - 1,
-        size: pageSize,
+        page: pagination.current - 1,
+        size: pagination.pageSize,
         ...joinForm,
       };
 
       Object.entries(joinForm).forEach(([key, value]) => {
         if (value != null && value !== "") {
           if (value instanceof Date) {
-            params[key] = value.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
+            params[key] = value.toISOString().split("T")[0];
           } else if (Array.isArray(value)) {
-            params[key] = value.join(","); // 배열을 쉼표로 구분된 문자열로 변환
+            params[key] = value.join(",");
           } else {
             params[key] = value;
           }
         }
       });
 
-      console.log("Sending params:", params);
-      console.log("Fetching with params:", params);
-
       const response = await fetchCustomerOrders(params);
       setFullOrders(response.content);
-      console.log("받아온 주문 데이터: ", response);
 
       let isServerUnstable = false;
 
@@ -220,6 +219,8 @@ const OrderGeneral = () => {
         pageSize: response.size,
         total: response.totalElements,
       });
+    } catch (error) {
+      message.error("주문 데이터를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -270,7 +271,7 @@ const OrderGeneral = () => {
             onClick={() => onHandleReset(clearFilters, dataIndex)}
             size='small'
             style={{ width: 90 }}>
-            Reset
+            초기화
           </Button>
           <Button
             type='link'
@@ -316,7 +317,6 @@ const OrderGeneral = () => {
       ...prev,
       orderStatusCode: filters.orderStatusCode ? filters.orderStatusCode[0] : null,
     }));
-    fetchOrders(newPagination.current, newPagination.pageSize);
   };
 
   const onHandleRangePickerChange = dates => {
@@ -345,16 +345,7 @@ const OrderGeneral = () => {
       return;
     }
 
-    // selectedRowKeys 를 orderId로 가지고 있는 데이터를 찾아서 그 데이터의 status 값을 가지고 오면 됨
-    // 1. 선택된 주문들의 정보를 가져옵니다.
     const selectedOrders = orders.filter(order => selectedRowKeys.includes(order.orderDetailId));
-
-    // 2. 선택된 주문들의 현재 상태를 가져옵니다.
-    const currentStatuses = selectedOrders.map(order => order.orderStatusCode);
-
-    console.log("선택된 주문들:", selectedOrders);
-    console.log("현재 상태들:", currentStatuses);
-
 
     const isValidStatus = selectedOrders.every(order => {
       console.log("현재 status: ", order.orderStatusCode);
@@ -387,15 +378,6 @@ const OrderGeneral = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (!fetchOrders.length > 0) {
-  //     if (isServerUnstable) {
-  //       message.warning('일부 주문에서 서버 연결이 불안정합니다.');
-  //     } else {
-  //       //message.success('주문 데이터를 성공적으로 불러왔습니다.');
-  //     }
-  //   }
-  // }, [isServerUnstable]);
   useEffect(() => {
     if (isServerUnstable) {
       message.warning("일부 서비스에 연결할 수 없습니다. 데이터가 부분적으로 표시될 수 있습니다.");
@@ -408,27 +390,15 @@ const OrderGeneral = () => {
         const fullOrderData = fullOrders.find(
           order => order.orderDetailId === record.orderDetailId
         );
-        console.log("Clicked record:", record);
-        console.log("상세 페이지로 넘기는 데이터: ", fullOrderData);
-        navigate("../general/${orderDetailId}", {
-          state: {
-            orderDetail: fullOrderData,
-          },
-        });
+        setSelectedOrder(fullOrderData);
+        setIsDrawerVisible(true);
       },
     };
   };
 
   const columns = [
     {
-      title: "No.",
-      key: "no",
-      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1, //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
-      width: "5%",
-      fixed: "left",
-    },
-    {
-      title: "주문ID",
+      title: "주문 아이디",
       dataIndex: "orderDetailId",
       key: "orderDetailId",
       fixed: "left",
@@ -437,6 +407,9 @@ const OrderGeneral = () => {
       ...getColumnSearchProps("orderDetailId"),
       width: "15%",
       render: text => text || "null",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "회원ID",
@@ -447,6 +420,9 @@ const OrderGeneral = () => {
       filtered: false,
       ...getColumnSearchProps("memberId"),
       width: "15%",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "주문날짜",
@@ -463,16 +439,22 @@ const OrderGeneral = () => {
         }
         return moment(text).format("YYYY-MM-DD HH:mm");
       },
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "배송지",
       dataIndex: "deliveryAddress",
       key: "deliveryAddress",
+      width: "30%",
       filteredValue: joinForm.deliveryAddress ? [joinForm.deliveryAddress] : null,
       filtered: false,
       ...getColumnSearchProps("deliveryAddress"),
-      width: "20%",
       render: text => text || "null",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "수령인",
@@ -483,6 +465,9 @@ const OrderGeneral = () => {
       ...getColumnSearchProps("recipient"),
       width: "10%",
       render: text => text || "null",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "주문 상태",
@@ -557,6 +542,16 @@ const OrderGeneral = () => {
             </Flex>
             <Button onClick={onHandleReset}>초기화</Button>
           </Flex>
+          <Flex>
+            <Text strong>글꼴 크기 : </Text>
+            <Slider
+              min={12}
+              max={30}
+              value={tableFontSize}
+              onChange={setTableFontSize}
+              style={{ width: 200, marginBottom: 16 }}
+            />
+          </Flex>
           <Flex gap='small'>
             <Flex gap='small' align='center'>
               <Space align='center'>음성 알림</Space>
@@ -581,7 +576,6 @@ const OrderGeneral = () => {
       </Flex>
       <br />
       <Table
-        className={styles.customTable}
         columns={columns}
         dataSource={orders}
         rowKey='orderDetailId'
@@ -590,11 +584,16 @@ const OrderGeneral = () => {
         onChange={onHandleTableChange}
         rowSelection={rowSelection}
         onRow={onRow}
-        style={{ width: "100%", height: "300px" }} // 전체 테이블 크기 조정
-        scroll={{ x: "100%", y: 300 }} // 가로 스크롤과 세로 스크롤 설정
+        style={{ width: "100%", height: "300px" }}
+        scroll={{ x: "100%", y: 300 }}
+      />
+      <EasyOrderGeneralDetail
+        visible={isDrawerVisible}
+        onClose={() => setIsDrawerVisible(false)}
+        orderDetail={selectedOrder}
       />
     </div>
   );
 };
 
-export default OrderGeneral;
+export default EasyOrderGeneral;

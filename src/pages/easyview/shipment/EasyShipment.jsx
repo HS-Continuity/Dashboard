@@ -1,29 +1,49 @@
-
-import { fetchReleases, updateReleaseStatus, updateBulkReleaseStatus, requestCombinedPackaging, fetchReleaseStatusCounts} from '../../apis/apisShipments';
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom';
-import { Table, Flex, Space, DatePicker, Button, message, Tag, Input, Tooltip } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-import useAuthStore from '../../stores/useAuthStore';
-import Swal from 'sweetalert2';
-import moment from 'moment';
-import style from './Shipment.module.css';
-import StatusCard from '../../components/Cards/StatusCard';
-import StatusChangeButton from '../../components/Buttons/StatusChangeButton';
-import styles from './Table.module.css';
-
-
+import {
+  fetchReleases,
+  updateReleaseStatus,
+  updateBulkReleaseStatus,
+  requestCombinedPackaging,
+  fetchReleaseStatusCounts,
+} from "../../../apis/apisShipments";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Table,
+  Flex,
+  Space,
+  DatePicker,
+  Button,
+  message,
+  Tag,
+  Input,
+  Drawer,
+  Slider,
+  Typography,
+  Tooltip,
+} from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import Swal from "sweetalert2";
+import style from "../../customer/Shipment.module.css";
+import StatusCard from "../../../components/Cards/StatusCard";
+import StatusChangeButton from "../../../components/Buttons/StatusChangeButton";
+import locale from "antd/es/date-picker/locale/ko_KR";
 const { RangePicker } = DatePicker;
 
+import useAuthStore from "../../../stores/useAuthStore";
+import EasyShipmentDetail from "./EasyShipmentDetail";
+import { useFontSizeStore } from "../../../stores/fontSizeStore";
 
-const Shipment = () => {
+const { Text } = Typography;
 
+const EasyShipment = () => {
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedShipment, setSelectedShipment] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
   });
 
@@ -34,9 +54,13 @@ const Shipment = () => {
   const [dateRange, setDateRange] = useState([]);
   const searchInput = useRef(null);
   const tableRef = useRef();
-  const navigate = useNavigate();
 
   const { username } = useAuthStore();
+  const { tableFontSize, setTableFontSize } = useFontSizeStore();
+
+  const getTableCellStyle = () => ({
+    fontSize: `${tableFontSize}px`,
+  });
 
   useEffect(() => {
     fetchShipments();
@@ -55,7 +79,6 @@ const Shipment = () => {
     try {
       const params = {
         customerId: String(username),
-        // customerId: 1,
         page: pagination.current - 1,
         size: pagination.pageSize,
         ...joinForm,
@@ -64,23 +87,18 @@ const Shipment = () => {
       Object.entries(joinForm).forEach(([key, value]) => {
         if (value != null && value !== "") {
           if (value instanceof Date) {
-            params[key] = value.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
+            params[key] = value.toISOString().split("T")[0];
           } else if (Array.isArray(value)) {
-            params[key] = value.join(","); // 배열을 쉼표로 구분된 문자열로 변환
+            params[key] = value.join(",");
           } else {
             params[key] = value;
           }
         }
       });
 
-      console.log("Sending params:", params);
-      console.log("Fetching with params:", params);
-
       const response = await fetchReleases(params);
 
-
       let isServerUnstable = false;
-      console.log("서버에서 받아온 데이터: ", response);
       const transformedOrders = response.content.map(order => {
         const productOrderList = order.productOrderList?.productOrderList || "null";
         const recipient = order.recipient;
@@ -127,7 +145,9 @@ const Shipment = () => {
       setPagination({
         ...pagination,
         total: response.totalElements,
-      }); 
+      });
+    } catch (error) {
+      message.error("출고 데이터를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -148,7 +168,7 @@ const Shipment = () => {
         console.error("No response received for status counts.");
       }
     } catch (error) {
-      console.error("Failed to fetch status counts:", error);
+      message.error("상태별 개수를 불러오는데 실패했습니다.");
     }
   };
 
@@ -169,6 +189,8 @@ const Shipment = () => {
     }
     fetchShipments();
   };
+
+  console.log("release:", releases);
 
   const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -219,7 +241,7 @@ const Shipment = () => {
 
       // 날짜 처리
       if (itemValue instanceof Date) {
-        const dateValue = itemValue.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+        const dateValue = itemValue.toISOString().split("T")[0];
         return dateValue.includes(filterValue);
       }
 
@@ -270,7 +292,6 @@ const Shipment = () => {
       message.warning("변경할 항목을 선택해주세요.");
       return;
     }
-    console.log("변경할 status: ", releases.releaseStatus);
 
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
 
@@ -288,7 +309,6 @@ const Shipment = () => {
     }
 
     const isValidStatus = selectedReleases.every(release => {
-      console.log("현재 status: ", release.releaseStatus);
       if (status === "RELEASE_COMPLETED") {
         if (release.releaseStatus === "RELEASE_COMPLETED") {
           return false;
@@ -324,7 +344,6 @@ const Shipment = () => {
       fetchShipments();
       setSelectedRowKeys([]);
     } catch (error) {
-      console.error("출고 상태 변경 실패:", error);
       message.error("출고 상태 변경에 실패했습니다.");
     }
   };
@@ -336,20 +355,6 @@ const Shipment = () => {
     }
 
     const selectedReleases = releases.filter(release => selectedRowKeys.includes(release.orderId));
-
-    // 배송시작일이 없는 주문 확인
-    const missingDeliveryDates = selectedReleases.filter(release => !release.startDeliveryDate);
-    if (missingDeliveryDates.length > 0) {
-      Swal.fire({
-        title: "배송시작일 미입력",
-        text: "배송시작일을 선택해주세요",
-        icon: "warning",
-        confirmButtonText: "확인"
-      });
-      return;
-    }
-
-    // 선택된 주문들의 회원 ID, 배송 시작일, 배송지, 주문 상태가 모두 동일한지 확인
     const isValid = selectedReleases.every(
       (release, _, arr) =>
         release.memberId === arr[0].memberId &&
@@ -391,7 +396,7 @@ const Shipment = () => {
         requestCombinedPackaging(combinedPackagingInfo.orderIds)
           .then(() => {
             message.success("합포장 신청이 완료되었습니다.");
-            fetchShipments(); // 테이블 데이터 새로고침
+            fetchShipments();
             setSelectedRowKeys([]);
           })
           .catch(error => {
@@ -412,25 +417,9 @@ const Shipment = () => {
 
   const onRow = record => {
     return {
-      onClick: event => {
-        const target = event.target;
-        if (
-          target.tagName === "TD" &&
-          target.cellIndex !== columns.findIndex(col => col.dataIndex === "startDeliveryDate")
-        ) {
-          if (record && record.orderId) {
-            console.log("Navigation to detail page with data: ", record);
-            navigate("${orderId}", {
-              state: {
-                shipmentDetail: record,
-                productOrderList: record.productOrderList,
-              },
-            });
-          } else {
-            console.error("Invalid record: ", record);
-            message.error("회원 정보를 불러올 수 없습니다.");
-          }
-        }
+      onClick: () => {
+        setSelectedShipment(record);
+        setDrawerVisible(true);
       },
     };
   };
@@ -443,6 +432,9 @@ const Shipment = () => {
       filteredValue: joinForm.orderId ? [joinForm.orderId] : null,
       ...getColumnSearchProps("orderId"),
       width: "15%",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "회원명",
@@ -450,7 +442,10 @@ const Shipment = () => {
       key: "recipient",
       filteredValue: joinForm.memberName ? [joinForm.recipient] : null,
       ...getColumnSearchProps("recipient"),
-      width: "15%",
+      width: "8%",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "휴대전화",
@@ -458,6 +453,10 @@ const Shipment = () => {
       key: "recipientPhoneNumber",
       filteredValue: joinForm.memberPhoneNumber ? [joinForm.recipientPhoneNumber] : null,
       ...getColumnSearchProps("recipientPhoneNumber"),
+      width: "15%",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "배송시작일",
@@ -465,6 +464,10 @@ const Shipment = () => {
       key: "startDeliveryDate",
       filteredValue: joinForm.startDeliveryDate ? [joinForm.startDeliveryDate] : null,
       ...getColumnSearchProps("startDeliveryDate"),
+      width: "15%",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "주문상품",
@@ -472,6 +475,9 @@ const Shipment = () => {
       key: "productName",
       filteredValue: joinForm.productName ? [joinForm.productName] : null,
       ...getColumnSearchProps("productName"),
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
     {
       title: "출고상태",
@@ -487,6 +493,9 @@ const Shipment = () => {
       onFilter: (value, record) => record.releaseStatus === value,
       render: status => <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>,
       width: "10%",
+      onCell: () => ({
+        style: getTableCellStyle(),
+      }),
     },
   ];
 
@@ -543,11 +552,21 @@ const Shipment = () => {
               <RangePicker
                 value={dateRange}
                 onChange={onHandleRangePickerChange}
+                locale={locale}
                 allowClear
-                //locale={locale}
               />
             </Flex>
-            <Button onClick={onHandleReset}>초기화</Button>
+            <Button onClick={onHandleReset}>정렬 초기화</Button>
+          </Flex>
+          <Flex gap='small' align='center' style={{ marginRight: "50px" }}>
+            <Text strong>글꼴 크기:</Text>
+            <Slider
+              min={12}
+              max={30}
+              value={tableFontSize}
+              onChange={setTableFontSize}
+              style={{ width: "200px" }}
+            />
           </Flex>
           <Flex gap='small' wrap>
             <Space align='center'>출고상태변경</Space>
@@ -569,7 +588,6 @@ const Shipment = () => {
         </Flex>
         <br />
         <Table
-          className={styles.customTable}
           columns={columns}
           dataSource={releases}
           rowKey='orderId'
@@ -578,8 +596,8 @@ const Shipment = () => {
           onChange={onHandleTableChange}
           rowSelection={rowSelection}
           onRow={onRow}
-          style={{ width: "100%", height: "400px" }} // 전체 테이블 크기 조정
-          scroll={{ x: "100%", y: 300 }} // 가로 스크롤과 세로 스크롤 설정
+          style={{ width: "100%", height: "400px" }}
+          scroll={{ x: "100%", y: 300 }}
         />
       </Flex>
       <Button
@@ -592,8 +610,20 @@ const Shipment = () => {
         }}>
         합포장 요청
       </Button>
+      <Drawer
+        width={800}
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        title='출고 상세 정보'>
+        {selectedShipment && (
+          <EasyShipmentDetail
+            shipmentDetail={selectedShipment}
+            productOrderList={selectedShipment.productOrderList}
+          />
+        )}
+      </Drawer>
     </div>
   );
 };
 
-export default Shipment;
+export default EasyShipment;
