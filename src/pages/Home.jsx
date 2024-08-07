@@ -325,8 +325,8 @@ const Home = () => {
           <Card 
             title={
               <div>
-                  <span style={{ color: "green", fontSize: "25px" }}>월별</span>
-                  <span style={{ fontSize: "20px" }}> 수익 비교</span>
+                <span style={{ color: "green", fontSize: "25px" }}>월별</span>
+                <span style={{ fontSize: "20px" }}> 수익 비교 (단위: 1000원)</span>
               </div>
             }
             style={{ height: '400px', borderRadius: '0', border: '1px solid #d9d9d9', fontSize: "20px" }}

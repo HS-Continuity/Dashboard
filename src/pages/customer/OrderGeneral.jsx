@@ -13,7 +13,7 @@ import Swal from "sweetalert2";
 import StatusCard from "../../components/Cards/StatusCard";
 import StatusChangeButton from "../../components/Buttons/StatusChangeButton";
 import style from "./Order.module.css";
-import newVoice2 from "../../assets/audio/newVoice2.m4a";
+import newVoice from "../../assets/audio/newVoice.m4a";
 import styles from "./Table.module.css";
 import locale from "antd/es/date-picker/locale/ko_KR";
 
@@ -24,7 +24,7 @@ const { RangePicker } = DatePicker;
 const OrderGeneral = () => {
   const { username } = useAuthStore();
 
-  const audioRef = useRef(new Audio(newVoice2)); // 오디오 객체 생성
+  const audioRef = useRef(new Audio(newVoice)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -77,7 +77,6 @@ const OrderGeneral = () => {
 
   useEffect(() => {
     fetchOrders();
-    // const customerId = 1;
     const customerId = String(username);
     eventSourceRef.current = subscribeToOrderStatusUpdates(customerId);
 
@@ -198,7 +197,6 @@ const OrderGeneral = () => {
 
         return {
           orderDetailId: order.orderDetailId?.toString() || "",
-          // memberId: order.memberInfo?.memberId?.toString() || '',
           memberId: isMemberInfoAvailable
             ? order.memberInfo?.memberId?.toString() || ""
             : "불러오는 중..",
@@ -206,7 +204,6 @@ const OrderGeneral = () => {
           deliveryAddress: order.recipient?.recipientAddress?.toString() || "",
           recipient: order.recipient?.recipient?.toString() || "",
           orderStatusCode: order.orderStatusCode?.toString() || "",
-          //productName: order.productOrderList?.length > 0 ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ''}` : '',
           productName: isProductInfoAvailable
             ? order.productOrderList?.length > 0
               ? `${order.productOrderList[0].name} ${order.productOrderList.length > 1 ? `외 ${order.productOrderList.length - 1}건` : ""}`
@@ -429,8 +426,6 @@ const OrderGeneral = () => {
       render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1, //  페이지가 넘어가도 순번 규칙이 이어서 적용됨
       width: "5%",
       fixed: "left",
-      //width: '5%',
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
       title: "주문ID",
@@ -442,7 +437,6 @@ const OrderGeneral = () => {
       ...getColumnSearchProps("orderDetailId"),
       width: "15%",
       render: text => text || "null",
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
       title: "회원ID",
@@ -453,9 +447,6 @@ const OrderGeneral = () => {
       filtered: false,
       ...getColumnSearchProps("memberId"),
       width: "15%",
-      // render: (text) => text || 'null',
-      // render: (text) => text === '로딩중' ? <span style={{ color: 'orange' }}>로딩중</span> : (text || 'null'),
-      //fixed: 'left'  // 테이블의 왼쪽에 고정
     },
     {
       title: "주문날짜",
@@ -493,18 +484,6 @@ const OrderGeneral = () => {
       width: "10%",
       render: text => text || "null",
     },
-    // {
-    //   title: '주문상품',
-    //   dataIndex: 'productName',
-    //   key: 'productName',
-    //   fixed: 'left',
-    //   filteredValue: filteredInfo.productName || null,
-    //   filtered: false,
-    //   ...getColumnSearchProps('productName'),
-    //   width: '10%',
-    //   // render: (text) => text || 'null',
-    //   // render: (text) => text === '확인중' ? <span style={{ color: 'orange' }}>확인중</span> : (text || 'null'),
-    // },
     {
       title: "주문 상태",
       dataIndex: "orderStatusCode",
@@ -524,10 +503,7 @@ const OrderGeneral = () => {
   const getStatusColor = status => {
     const colors = {
       PAYMENT_COMPLETED: "#E2860A",
-      // ORDER_APPROVED: 'blue',
       PREPARING_PRODUCT: "#447E7A",
-      // IN_DELIVERY: 'purple',
-      // DELIVERY_COMPLETED: 'cyan',
       AWAITING_RELEASE: "#D6737A",
     };
     return colors[status] || "default";
@@ -546,8 +522,6 @@ const OrderGeneral = () => {
     };
     return texts[status] || status;
   };
-
-  //const statusTags = ['결제완료', '상품준비중', '출고대기중'];
 
   return (
     <div>

@@ -211,8 +211,6 @@ const Shipment = () => {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
-    // onFilter: (value, record) =>
-    //   record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : '',
     onFilter: (value, record) => {
       if (record[dataIndex] == null) return false;
 
@@ -409,9 +407,6 @@ const Shipment = () => {
       if (isServerUnstable) {
         message.warning("일부 주문에서 서버 연결이 불안정합니다.");
       }
-      // } else {
-      //   //message.success('주문 데이터를 성공적으로 불러왔습니다.');
-      // }
     }
   }, [isServerUnstable]);
 
@@ -449,13 +444,6 @@ const Shipment = () => {
       ...getColumnSearchProps("orderId"),
       width: "15%",
     },
-    // {
-    //   title: '회원ID',
-    //   dataIndex: 'memberId',
-    //   key: 'orderId',
-    //   filteredValue: joinForm.memberId ? [joinForm.memberId] : null,
-    //   ...getColumnSearchProps('memberId'),
-    // },
     {
       title: "회원명",
       dataIndex: "recipient",
@@ -596,7 +584,6 @@ const Shipment = () => {
       </Flex>
       <Button
         onClick={onHandleCombinedPackaging}
-        // color='#FFE88F'
         style={{
           backgroundColor: "#FFEDB1",
           opacity: 0.8,
