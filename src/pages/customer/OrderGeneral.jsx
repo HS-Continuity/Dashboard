@@ -13,7 +13,7 @@ import Swal from "sweetalert2";
 import StatusCard from "../../components/Cards/StatusCard";
 import StatusChangeButton from "../../components/Buttons/StatusChangeButton";
 import style from "./Order.module.css";
-import newVoice2 from "../../assets/audio/newVoice2.m4a";
+import newVoice from "../../assets/audio/newVoice.m4a";
 import styles from "./Table.module.css";
 import locale from "antd/es/date-picker/locale/ko_KR";
 
@@ -24,7 +24,7 @@ const { RangePicker } = DatePicker;
 const OrderGeneral = () => {
   const { username } = useAuthStore();
 
-  const audioRef = useRef(new Audio(newVoice2)); // 오디오 객체 생성
+  const audioRef = useRef(new Audio(newVoice)); // 오디오 객체 생성
   const [isServerUnstable, setIsServerUnstable] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
